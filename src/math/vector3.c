@@ -2,11 +2,19 @@
 #include "vector3.h"
 #include "mathf.h"
 
+#include <ultra64.h>
+
 struct Vector3 gRight = {1.0f, 0.0f, 0.0f};
 struct Vector3 gUp = {0.0f, 1.0f, 0.0f};
 struct Vector3 gForward = {0.0f, 0.0f, 1.0f};
 struct Vector3 gZeroVec = {0.0f, 0.0f, 0.0f};
 struct Vector3 gOneVec = {1.0f, 1.0f, 1.0f};
+
+void vector3Abs(struct Vector3* in, struct Vector3* out) {
+    out->x = fabsf(in->x);
+    out->y = fabsf(in->y);
+    out->z = fabsf(in->z);
+}
 
 void vector3Negate(struct Vector3* in, struct Vector3* out) {
     out->x = -in->x;
@@ -86,6 +94,14 @@ void vector3Cross(struct Vector3* a, struct Vector3* b, struct Vector3* out) {
     out->z = a->x * b->y - a->y * b->x;
 }
 
+void vector3Perp(struct Vector3* a, struct Vector3* out) {
+    if (fabsf(a->x) > fabsf(a->z)) {
+        vector3Cross(a, &gForward, out);
+    } else {
+        vector3Cross(a, &gRight, out);
+    }
+}
+
 void vector3Project(struct Vector3* in, struct Vector3* normal, struct Vector3* out) {
     float mag = vector3Dot(in, normal);
     out->x = normal->x * mag;
@@ -115,8 +131,33 @@ int vector3MoveTowards(struct Vector3* from, struct Vector3* towards, float maxD
     }
 }
 
+void vector3TripleProduct(struct Vector3* a, struct Vector3* b, struct Vector3* c, struct Vector3* output) {
+    vector3Scale(b, output, vector3Dot(a, c));
+    vector3AddScaled(output, a, -vector3Dot(b, c), output);
+}
+
+void vector3Max(struct Vector3* a, struct Vector3* b, struct Vector3* out) {
+    out->x = MAX(a->x, b->x);
+    out->y = MAX(a->y, b->y);
+    out->z = MAX(a->z, b->z);
+}
+
+void vector3Min(struct Vector3* a, struct Vector3* b, struct Vector3* out) {
+    out->x = MIN(a->x, b->x);
+    out->y = MIN(a->y, b->y);
+    out->z = MIN(a->z, b->z);
+}
+
+int vector3IsZero(struct Vector3* vector) {
+    return vector->x == 0.0f && vector->y == 0.0f && vector->z == 0.0f;
+}
+
 void vector3ToVector3u8(struct Vector3* input, struct Vector3u8* output) {
     output->x = floatTos8norm(input->x);
     output->y = floatTos8norm(input->y);
     output->z = floatTos8norm(input->z);
+}
+
+float vector3EvalBarycentric1D(struct Vector3* baryCoords, float a, float b, float c) {
+    return baryCoords->x * a + baryCoords->y * b + baryCoords->z * c;
 }

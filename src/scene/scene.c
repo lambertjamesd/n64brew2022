@@ -10,6 +10,7 @@
 #include "../materials/point_light_rendered.h"
 #include "../controls/controller.h"
 #include "../util/time.h"
+#include "../defs.h"
 
 #define ROTATE_PER_SECOND       (M_PI * 0.25f)
 #define MOVE_PER_SECOND         (3.0f * SCENE_SCALE)
@@ -103,21 +104,21 @@ void sceneUpdate(struct Scene* scene) {
     OSContPad* input = controllersGetControllerData(0);
 
     struct Quaternion rotate;
-    quatAxisAngle(&gUp, (ROTATE_PER_SECOND * (1.0f / 80.0f)) * gTimeDelta * input->stick_x, &rotate);
+    quatAxisAngle(&gUp, (ROTATE_PER_SECOND * (1.0f / 80.0f)) * FIXED_DELTA_TIME * input->stick_x, &rotate);
     struct Quaternion finalRotation;
     quatMultiply(&rotate, &scene->camera.transform.rotation, &finalRotation);
     scene->camera.transform.rotation = finalRotation;
 
-    quatAxisAngle(&gRight, -(ROTATE_PER_SECOND * (1.0f / 80.0f)) * gTimeDelta * input->stick_y, &rotate);
+    quatAxisAngle(&gRight, -(ROTATE_PER_SECOND * (1.0f / 80.0f)) * FIXED_DELTA_TIME * input->stick_y, &rotate);
     quatMultiply(&scene->camera.transform.rotation, &rotate, &finalRotation);
     scene->camera.transform.rotation = finalRotation;
 
     if (!ignoreInputFrames && controllerGetButton(0, A_BUTTON)) {
-        gCameraDistance -= MOVE_PER_SECOND * gTimeDelta;
+        gCameraDistance -= MOVE_PER_SECOND * FIXED_DELTA_TIME;
     }
 
     if (!ignoreInputFrames && controllerGetButton(0, B_BUTTON)) {
-        gCameraDistance += MOVE_PER_SECOND * gTimeDelta;
+        gCameraDistance += MOVE_PER_SECOND * FIXED_DELTA_TIME;
     }
 
     if (!ignoreInputFrames && controllerGetButtonDown(0, R_TRIG)) {
@@ -167,7 +168,7 @@ void sceneRenderObject(struct Scene* scene, struct RenderState* renderState, str
 
     gSPLight(renderState->dl++, light, 1);
 
-    transformToMatrixL(transform, mtxTransform);
+    transformToMatrixL(transform, mtxTransform, SCENE_SCALE);
     renderMode->setObjectMaterial(renderState, objectIndex);
     gSPMatrix(renderState->dl++, mtxTransform, G_MTX_MODELVIEW | G_MTX_PUSH | G_MTX_MUL);
     gSPDisplayList(renderState->dl++, model);
@@ -223,7 +224,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     Mtx* lightMtx = renderStateRequestMatrices(renderState, 1);
     transform.position = scene->pointLight.position;
     vector3Scale(&gOneVec, &transform.scale, 0.25f);
-    transformToMatrixL(&transform, lightMtx);
+    transformToMatrixL(&transform, lightMtx, SCENE_SCALE);
 
     gDPSetEnvColor(renderState->dl++, 255, 255, 255, 255);
     gDPSetCombineLERP(renderState->dl++, 0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT);

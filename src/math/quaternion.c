@@ -3,6 +3,7 @@
 #include <ultra64.h>
 #include <assert.h>
 #include "mathf.h"
+#include <math.h>
 
 void quatIdent(struct Quaternion* q) {
     q->x = 0.0f;
@@ -91,12 +92,45 @@ void quatMultVector(struct Quaternion* q, struct Vector3* a, struct Vector3* out
     out->z = asQuat.z;
 }
 
+void quatRotatedBoundingBoxSize(struct Quaternion* q, struct Vector3* halfBoxSize, struct Vector3* out) {
+    float xx = q->x*q->x;
+    float yy = q->y*q->y;
+    float zz = q->z*q->z;
+
+    float xy = q->x*q->y;
+    float yz = q->y*q->z;
+    float xz = q->x*q->z;
+
+    float xw = q->x*q->w;
+    float yw = q->y*q->w;
+    float zw = q->z*q->w;
+
+    out->x = fabsf(1.0f - 2.0f * (yy + zz)) * halfBoxSize->x +
+        fabsf(2.0f * (xy - zw)) * halfBoxSize->y +
+        fabsf(2.0f * (xz + yw)) * halfBoxSize->z;
+
+    out->y = fabsf(2.0f * (xy + zw)) * halfBoxSize->x +
+        fabsf(1.0f - 2.0f * (xx + zz)) * halfBoxSize->y +
+        fabsf(2.0f * (yz - xw)) * halfBoxSize->z;
+
+    out->z = fabsf(2.0f * (xz - yw)) * halfBoxSize->x +
+        fabsf(2.0f * (yz + xw)) * halfBoxSize->y +
+        fabsf(1.0f - 2.0f * (xx + yy));
+}
+
 void quatMultiply(struct Quaternion* a, struct Quaternion* b, struct Quaternion* out) {
     assert(a != out && b != out);
     out->x = a->w*b->x + a->x*b->w + a->y*b->z - a->z*b->y;
     out->y = a->w*b->y + a->y*b->w + a->z*b->x - a->x*b->z;
     out->z = a->w*b->z + a->z*b->w + a->x*b->y - a->y*b->x;
     out->w = a->w*b->w - a->x*b->x - a->y*b->y - a->z*b->z;
+}
+
+void quatAdd(struct Quaternion* a, struct Quaternion* b, struct Quaternion* out) {
+    out->x = a->x + b->x;
+    out->y = a->y + b->y;
+    out->z = a->z + b->z;
+    out->w = a->w + b->w;
 }
 
 void quatToMatrix(struct Quaternion* q, float out[4][4]) {
@@ -157,28 +191,49 @@ void quatRandom(struct Quaternion* q) {
 }
 
 void quatLook(struct Vector3* lookDir, struct Vector3* up, struct Quaternion* out) {
-    struct Vector3 horizontal;
-    horizontal = *lookDir;
-    horizontal.y = 0.0f;
-    vector3Normalize(&horizontal, &horizontal);
+    // calculate orthonormal basis
+    struct Vector3 zDir;
+    vector3Normalize(lookDir, &zDir);
+    vector3Negate(&zDir, &zDir);
 
-    struct Vector2 complex;
-    complex.x = -horizontal.z;
-    complex.y = -horizontal.x;
+    struct Vector3 yDir;
+    vector3AddScaled(up, &zDir, -vector3Dot(&zDir, up), &yDir);
+    vector3Normalize(&yDir, &yDir);
 
-    struct Quaternion yaw;
-    quatAxisComplex(&gUp, &complex, &yaw);
+    struct Vector3 xDir;
+    vector3Cross(&yDir, &zDir, &xDir);
 
-    struct Vector3 lookNormalized;
-    vector3Normalize(lookDir, &lookNormalized);
-
-    complex.y = lookNormalized.y;
-    complex.x = sqrtf(1.0f - complex.y * complex.y);
-
-    struct Quaternion pitch;
-    quatAxisComplex(&gRight, &complex, &pitch);
-
-    quatMultiply(&yaw, &pitch, out);
+    // convert orthonormal basis to a quaternion
+    float trace = xDir.x + yDir.y + zDir.z;
+    if (trace > 0) { 
+        float sqrtResult = sqrtf(trace+1.0f) * 2.0f;
+        float invSqrtResult = 1.0f / sqrtResult;
+        out->w = 0.25 * sqrtResult;
+        out->x = (yDir.z - zDir.y) * invSqrtResult;
+        out->y = (zDir.x - xDir.z) * invSqrtResult; 
+        out->z = (xDir.y - yDir.x) * invSqrtResult; 
+    } else if ((xDir.x > yDir.y) && (xDir.x > zDir.z)) { 
+        float sqrtResult = sqrtf(1.0 + xDir.x - yDir.y - zDir.z) * 2.0f;
+        float invSqrtResult = 1.0f / sqrtResult;
+        out->w = (yDir.z - zDir.y) * invSqrtResult;
+        out->x = 0.25 * sqrtResult;
+        out->y = (yDir.x + xDir.y) * invSqrtResult; 
+        out->z = (zDir.x + xDir.z) * invSqrtResult; 
+    } else if (yDir.y > zDir.z) { 
+        float sqrtResult = sqrtf(1.0 + yDir.y - xDir.x - zDir.z) * 2.0f;
+        float invSqrtResult = 1.0f / sqrtResult;
+        out->w = (zDir.x - xDir.z) * invSqrtResult;
+        out->x = (yDir.x + xDir.y) * invSqrtResult; 
+        out->y = 0.25 * sqrtResult;
+        out->z = (zDir.y + yDir.z) * invSqrtResult; 
+    } else { 
+        float sqrtResult = sqrtf(1.0 + zDir.z - xDir.x - yDir.y) * 2.0f;
+        float invSqrtResult = 1.0f / sqrtResult;
+        out->w = (xDir.y - yDir.x) * invSqrtResult;
+        out->x = (zDir.x + xDir.z) * invSqrtResult;
+        out->y = (zDir.y + yDir.z) * invSqrtResult;
+        out->z = 0.25 * sqrtResult;
+    }
 }
 
 void quatLerp(struct Quaternion* a, struct Quaternion* b, float t, struct Quaternion* out) {
@@ -194,4 +249,36 @@ void quatLerp(struct Quaternion* a, struct Quaternion* b, float t, struct Quater
     out->w = tInv * a->w + t * b->w;
 
     quatNormalize(out, out);
+}
+
+void quatApplyAngularVelocity(struct Quaternion* input, struct Vector3* w, float timeStep, struct Quaternion* output) {
+    struct Quaternion velocityAsQuat;
+    velocityAsQuat.w = 0.0f;
+    velocityAsQuat.x = w->x * timeStep * 0.5f;
+    velocityAsQuat.y = w->y * timeStep * 0.5f;
+    velocityAsQuat.z = w->z * timeStep * 0.5f;
+
+    struct Quaternion intermediate;
+    quatMultiply(&velocityAsQuat, input, &intermediate);
+
+    quatAdd(&intermediate, input, output);
+    quatNormalize(output, output);
+}
+
+
+void quatDecompose(struct Quaternion* input, struct Vector3* axis, float* angle) {
+    float axisMag = sqrtf(input->x * input->x + input->y * input->y + input->z * input->z);
+
+    if (axisMag < 0.0001f) {
+        *axis = gUp;
+        *angle = 0.0f;
+        return;
+    }
+
+    float magInv = 1.0f / axisMag;
+
+    axis->x = input->x * magInv;
+    axis->y = input->y * magInv;
+    axis->z = input->z * magInv;
+    *angle = sinf(axisMag) * 2.0f;
 }

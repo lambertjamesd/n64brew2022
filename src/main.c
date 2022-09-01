@@ -29,7 +29,7 @@ OSMesgQueue      gfxFrameMsgQ;
 static OSMesg           gfxFrameMsgBuf[MAX_FRAME_BUFFER_MESGS];
 static OSScClient       gfxClient;
 
-static OSSched scheduler;
+OSSched scheduler;
 u64            scheduleStack[OS_SC_STACKSIZE/8];
 OSMesgQueue	*schedulerCommandQueue;
 

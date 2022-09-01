@@ -8,22 +8,22 @@ void transformInitIdentity(struct Transform* in) {
     in->scale = gOneVec;
 }
 
-void transformToMatrix(struct Transform* in, float mtx[4][4]) {
+void transformToMatrix(struct Transform* in, float mtx[4][4], float sceneScale) {
     quatToMatrix(&in->rotation, mtx);
 
     mtx[0][0] *= in->scale.x; mtx[0][1] *= in->scale.x; mtx[0][2] *= in->scale.x;
     mtx[1][0] *= in->scale.y; mtx[1][1] *= in->scale.y; mtx[1][2] *= in->scale.y;
     mtx[2][0] *= in->scale.z; mtx[2][1] *= in->scale.z; mtx[2][2] *= in->scale.z;
 
-    mtx[3][0] = in->position.x;
-    mtx[3][1] = in->position.y;
-    mtx[3][2] = in->position.z;
+    mtx[3][0] = in->position.x * sceneScale;
+    mtx[3][1] = in->position.y * sceneScale;
+    mtx[3][2] = in->position.z * sceneScale;
 }
 
 
-void transformToMatrixL(struct Transform* in, Mtx* mtx) {
+void transformToMatrixL(struct Transform* in, Mtx* mtx, float sceneScale) {
     float mtxf[4][4];
-    transformToMatrix(in, mtxf);
+    transformToMatrix(in, mtxf, sceneScale);
     guMtxF2L(mtxf, mtx);
 }
 
@@ -72,6 +72,13 @@ void transformPointInverse(struct Transform* transform, struct Vector3* in, stru
     out->x /= transform->scale.x;
     out->y /= transform->scale.y;
     out->z /= transform->scale.z;
+}
+
+void transformPointInverseNoScale(struct Transform* transform, struct Vector3* in, struct Vector3* out) {
+    vector3Sub(in, &transform->position, out);
+    struct Quaternion quatInverse;
+    quatConjugate(&transform->rotation, &quatInverse);
+    quatMultVector(&quatInverse, out, out);
 }
 
 void transformConcat(struct Transform* left, struct Transform* right, struct Transform* output) {

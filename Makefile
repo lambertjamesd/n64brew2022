@@ -87,6 +87,24 @@ src/models/ground.h src/models/ground_geo.inc.h: assets/Ground.fbx
 	skeletool64 -s 100 -r 0,0,0 -n ground -o src/models/ground.h assets/Ground.fbx
 
 ####################
+## Sounds
+####################
+
+
+SOUND_CLIPS = $(shell find assets/ -type f -name '*.wav')
+
+build/assets/sound/sounds.sounds build/assets/sound/sounds.sounds.tbl: $(SOUND_CLIPS)
+	@mkdir -p $(@D)
+	$(SFZ2N64) -o $@ $^
+
+
+build/asm/sound_data.o: build/assets/sound/sounds.sounds build/assets/sound/sounds.sounds.tbl
+
+build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
+	@mkdir -p $(@D)
+	node tools/generate_sound_ids.js -o $@ -p SOUNDS_ $(SOUND_CLIPS)
+
+####################
 ## Linking
 ####################
 

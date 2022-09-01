@@ -18,16 +18,6 @@ float randomInRangef(float min, float maxPlusOne) {
     return randomInt() * (maxPlusOne - min) / (MAX_INT_VALUE + 1) + min;
 }
 
-float fsign(float in) {
-    if (in > 0.0f) {
-        return 1.0f;
-    } else if (in < 0.0f) {
-        return -1.0f;
-    } else {
-        return 0.0f;
-    }
-}
-
 float fabsf(float input) {
     if (input < 0) {
         return -input;
@@ -45,7 +35,7 @@ float mathfMoveTowards(float from, float to, float maxMove) {
     if (fabsf(offset) <= maxMove) {
         return to;
     } else {
-        return fsign(offset) * maxMove + from;
+        return signf(offset) * maxMove + from;
     }
 }
 
@@ -92,6 +82,34 @@ float clampf(float input, float min, float max) {
     return input;
 }
 
+float signf(float input) {
+    if (input > 0.0f) {
+        return 1.0f;
+    } else if (input < 0.0f) {
+        return -1.0f;
+    } else {
+        return 0.0f;
+    }
+}
+
+
+int sign(int input) {
+    if (input > 0) {
+        return 1;
+    } else if (input < 0) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+int abs(int input) {
+    if (input < 0) {
+        return -input;
+    }
+    return input;
+}
+
 float minf(float a, float b) {
     return a < b ? a : b;
 }
@@ -110,4 +128,12 @@ char floatTos8norm(float input) {
     } else {
         return (char)result;
     }
+}
+
+float safeInvert(float input) {
+    if (input == 0.0f) {
+        return 0.0f;
+    }
+
+    return 1.0f / input;
 }
