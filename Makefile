@@ -74,17 +74,38 @@ build/%.o: %.s
 ## Assets
 ####################
 
-src/models/cylinder.h src/models/cylinder_geo.inc.h: assets/Cylinder.fbx
-	skeletool64 -s 100 -r 0,0,0 -n cylinder -o src/models/cylinder.h assets/Cylinder.fbx
+####################
+## Materials
+####################
 
-src/models/sphere.h src/models/sphere_geo.inc.h: assets/Sphere.fbx
-	skeletool64 -s 100 -r 0,0,0 -n sphere -o src/models/sphere.h assets/Sphere.fbx
+build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/levels/test_level.fbx $(SKELATOOL64)
+	@mkdir -p $(@D)
+	$(SKELATOOL64) --name static -m $< -m build/assets/levels/test_level.fbx --pallete assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
-src/models/suzanne.h src/models/suzanne_geo.inc.h: assets/Suzanne.fbx
-	skeletool64 -s 100 -r 0,0,0 -n suzanne -o src/models/suzanne.h assets/Suzanne.fbx
+####################
+## Levels
+####################
 
-src/models/ground.h src/models/ground_geo.inc.h: assets/Ground.fbx
-	skeletool64 -s 100 -r 0,0,0 -n ground -o src/models/ground.h assets/Ground.fbx
+LEVEL_LIST = $(shell find assets/levels/ -type f -name '*.blend')
+
+LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
+
+build/assets/levels/test_level.fbx: assets/levels/test_level.blend
+	@mkdir -p $(@D)
+	$(BLENDER_2_9) $< --background --python tools/export_fbx.py -- $@
+
+build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(SKELATOOL64)
+	@mkdir -p $(@D)
+	$(SKELATOOL64) --script tools/generate_level.lua --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.h=%) -m assets/materials/static.skm.yaml --pallete assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
+
+build/assets/levels/%.o: build/assets/levels/%.c build/assets/materials/static.h
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -MM $^ -MF "$(@:.o=.d)" -MT"$@"
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+build/levels.ld: $(LEVEL_LIST_OBJECTS) tools/generate_level_ld.js
+	@mkdir -p $(@D)
+	node tools/generate_level_ld.js $@ $(LEVEL_LIST_OBJECTS)
 
 ####################
 ## Sounds
@@ -126,7 +147,7 @@ $(CODESEGMENT)_no_debug.o:	$(CODEOBJECTS_NO_DEBUG)
 $(CP_LD_SCRIPT)_no_debug.ld: $(LD_SCRIPT)
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_no_debug.o -o $@ $<
 
-$(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld
+$(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld build/levels.ld
 	$(LD) -L. -T $(CP_LD_SCRIPT)_no_debug.ld -Map $(BASE_TARGET_NAME)_no_debug.map -o $(BASE_TARGET_NAME).elf
 	$(OBJCOPY) --pad-to=0x100000 --gap-fill=0xFF $(BASE_TARGET_NAME).elf $(BASE_TARGET_NAME).z64 -O binary
 	makemask $(BASE_TARGET_NAME).z64
@@ -144,7 +165,7 @@ $(CODESEGMENT)_debug.o:	$(CODEOBJECTS_DEBUG)
 $(CP_LD_SCRIPT)_debug.ld: $(LD_SCRIPT)
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_debug.o -o $@ $<
 
-$(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(CP_LD_SCRIPT)_debug.ld
+$(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_debug.ld build/levels.ld
 	$(LD) -L. -T $(CP_LD_SCRIPT)_debug.ld -Map $(BASE_TARGET_NAME)_debug.map -o $(BASE_TARGET_NAME)_debug.elf
 	$(OBJCOPY) --pad-to=0x100000 --gap-fill=0xFF $(BASE_TARGET_NAME)_debug.elf $(BASE_TARGET_NAME)_debug.z64 -O binary
 	makemask $(BASE_TARGET_NAME)_debug.z64
