@@ -13,4 +13,6 @@ struct LevelDefinition {
     short staticContentCount;
 };
 
+struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);
+
 #endif

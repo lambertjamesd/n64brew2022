@@ -82,12 +82,15 @@ build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/l
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --name static -m $< -m build/assets/levels/test_level.fbx --pallete assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
+build/src/level/level.o: build/assets/materials/static.h build/assets/levels/level_list.h
+
 ####################
 ## Levels
 ####################
 
 LEVEL_LIST = $(shell find assets/levels/ -type f -name '*.blend')
 
+LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
 LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 
 build/assets/levels/test_level.fbx: assets/levels/test_level.blend
@@ -96,7 +99,7 @@ build/assets/levels/test_level.fbx: assets/levels/test_level.blend
 
 build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(SKELATOOL64)
 	@mkdir -p $(@D)
-	$(SKELATOOL64) --script tools/generate_level.lua --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.h=%) -m assets/materials/static.skm.yaml --pallete assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
+	$(SKELATOOL64) --script tools/generate_level.lua --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
 
 build/assets/levels/%.o: build/assets/levels/%.c build/assets/materials/static.h
 	@mkdir -p $(@D)
@@ -106,6 +109,10 @@ build/assets/levels/%.o: build/assets/levels/%.c build/assets/materials/static.h
 build/levels.ld: $(LEVEL_LIST_OBJECTS) tools/generate_level_ld.js
 	@mkdir -p $(@D)
 	node tools/generate_level_ld.js $@ $(LEVEL_LIST_OBJECTS)
+
+build/assets/levels/level_list.h: $(LEVEL_LIST_HEADERS) tools/generate_level_list.js
+	@mkdir -p $(@D)
+	node tools/generate_level_list.js $@ $(LEVEL_LIST_HEADERS)
 
 ####################
 ## Sounds
@@ -134,7 +141,7 @@ $(BOOT_OBJ): $(BOOT)
 
 # without debugger
 
-CODEOBJECTS_NO_DEBUG = $(CODEOBJECTS)
+CODEOBJECTS_NO_DEBUG = $(CODEOBJECTS) build/assets/materials/static_mat.o
 
 ifeq ($(WITH_DEBUGGER),1)
 CODEOBJECTS_NO_DEBUG += build/debugger/debugger_stub.o build/debugger/serial.o 
@@ -144,16 +151,16 @@ $(CODESEGMENT)_no_debug.o:	$(CODEOBJECTS_NO_DEBUG)
 	$(LD) -o $(CODESEGMENT)_no_debug.o -r $(CODEOBJECTS_NO_DEBUG) $(LDFLAGS)
 
 
-$(CP_LD_SCRIPT)_no_debug.ld: $(LD_SCRIPT)
+$(CP_LD_SCRIPT)_no_debug.ld: $(LD_SCRIPT) build/levels.ld
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_no_debug.o -o $@ $<
 
-$(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld build/levels.ld
+$(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld
 	$(LD) -L. -T $(CP_LD_SCRIPT)_no_debug.ld -Map $(BASE_TARGET_NAME)_no_debug.map -o $(BASE_TARGET_NAME).elf
 	$(OBJCOPY) --pad-to=0x100000 --gap-fill=0xFF $(BASE_TARGET_NAME).elf $(BASE_TARGET_NAME).z64 -O binary
 	makemask $(BASE_TARGET_NAME).z64
 
 # with debugger
-CODEOBJECTS_DEBUG = $(CODEOBJECTS) 
+CODEOBJECTS_DEBUG = $(CODEOBJECTS) build/assets/materials/static_mat.o
 
 ifeq ($(WITH_DEBUGGER),1)
 CODEOBJECTS_DEBUG += build/debugger/debugger.o build/debugger/serial.o 
@@ -162,10 +169,10 @@ endif
 $(CODESEGMENT)_debug.o:	$(CODEOBJECTS_DEBUG)
 	$(LD) -o $(CODESEGMENT)_debug.o -r $(CODEOBJECTS_DEBUG) $(LDFLAGS)
 
-$(CP_LD_SCRIPT)_debug.ld: $(LD_SCRIPT)
+$(CP_LD_SCRIPT)_debug.ld: $(LD_SCRIPT) build/levels.ld
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_debug.o -o $@ $<
 
-$(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_debug.ld build/levels.ld
+$(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_debug.ld
 	$(LD) -L. -T $(CP_LD_SCRIPT)_debug.ld -Map $(BASE_TARGET_NAME)_debug.map -o $(BASE_TARGET_NAME)_debug.elf
 	$(OBJCOPY) --pad-to=0x100000 --gap-fill=0xFF $(BASE_TARGET_NAME)_debug.elf $(BASE_TARGET_NAME)_debug.z64 -O binary
 	makemask $(BASE_TARGET_NAME)_debug.z64
