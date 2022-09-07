@@ -105,6 +105,7 @@ void gameProc(void *arg) {
         1
     );
 
+
     schedulerCommandQueue = osScGetCmdQ(&scheduler);
 
     osCreateMesgQueue(&gfxFrameMsgQ, gfxFrameMsgBuf, MAX_FRAME_BUFFER_MESGS);

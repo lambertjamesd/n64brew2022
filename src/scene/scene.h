@@ -7,16 +7,6 @@
 #include "point_light.h"
 #include "camera.h"
 
-enum RenderMode {
-    RenderModeFire,
-    RenderModeIce,
-    RenderModeHeat,
-    RenderModeRainbow,
-    RenderModeToon,
-    RenderModeYesWeCan,
-    RenderModeCount,
-};
-
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
 enum RenderModeFlags {
@@ -34,9 +24,7 @@ struct RenderModeData {
 
 struct Scene {
     struct Camera camera;
-    enum RenderMode renderMode;
     struct PointLight pointLight;
-    struct PointLightableMesh ground;
 };
 
 void sceneInit(struct Scene* scene);
