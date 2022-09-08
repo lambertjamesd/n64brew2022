@@ -2,4 +2,6 @@
 build/
 debugger
 
+tools/skeletool64
+
 *.blend1

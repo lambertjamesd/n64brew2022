@@ -2,9 +2,15 @@ materials:
   texture_lit:
 
     gDPSetCombineMode:
-      color: ["0", "0", "0", "TEXEL0"]
+      color: ["SHADE", "0", "ENVIRONMENT", "TEXEL0"]
+    gDPSetEnvColor:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+      bypassEffects: true
     gSPGeometryMode:
-      clear: [G_SHADE, G_LIGHTING]
+      set: [G_SHADE, G_LIGHTING]
 
   default:
     gDPSetRenderMode: G_RM_ZB_OPA_SURF
