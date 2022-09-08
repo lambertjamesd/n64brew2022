@@ -16,8 +16,8 @@ int levelMaterialTransparentStart() {
     return STATIC_TRANSPARENT_START;
 }
 
-int levelMaterialDefault() {
-    return DEFAULT_INDEX;
+Gfx* levelMaterialDefault() {
+    return static_material_list[DEFAULT_INDEX];
 }
 
 Gfx* levelMaterial(int index) {

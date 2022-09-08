@@ -11,6 +11,8 @@
 #include "../controls/controller.h"
 #include "../util/time.h"
 #include "../defs.h"
+#include "../level/level.h"
+#include "../graphics/render_scene.h"
 
 #include "../build/assets/materials/static.h"
 
@@ -19,10 +21,12 @@
 #define MIN_DISTANCE            (2.0f)
 #define MAX_DISTANCE            (20.0f)
 
+#define RENDER_SCENE_CAPACITY   256
+
 Lights1 gLights = gdSPDefLights1(0x10, 0, 0, 0xE0, 0xE0, 0xE0, 90, 90, 0);
 
 struct Vector3 gCameraFocus = {0.0f, 0.0f, 0.0f};
-struct Vector3 gCameraStart = {0.0f, 0.0f, 5.0f};
+struct Vector3 gCameraStart = {0.0f, 2.0f, 5.0f};
 float gCameraDistance = 0.0f;
 
 #define OBJECT_COUNT    3
@@ -130,6 +134,8 @@ void sceneRenderObject(struct Scene* scene, struct RenderState* renderState, Gfx
 }
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
+    struct RenderScene* renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0);
+
     gDPPipeSync(renderState->dl++);
     gDPSetColorImage(renderState->dl++, G_IM_FMT_CI, G_IM_SIZ_8b, SCREEN_WD, indexColorBuffer);
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
@@ -144,6 +150,12 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     cameraSetupMatrices(&scene->camera, renderState, (float)SCREEN_WD / (float)SCREEN_HT, &fullscreenViewport, &cullingInformation);
     
     gSPSetLights1(renderState->dl++, gLights);
+    
+    for (unsigned i = 0; i < gCurrentLevel->staticContentCount; ++i) {
+        renderSceneAdd(renderScene, gCurrentLevel->staticContent[i].displayList, NULL, gCurrentLevel->staticContent[i].materialIndex, &gZeroVec, NULL);
+    }
+
+    renderSceneGenerate(renderScene, renderState);
 
     for (unsigned i = 0; i < OBJECT_COUNT; ++i) {
         sceneRenderObject(
@@ -182,4 +194,8 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPLoadTLUT_pal256(renderState->dl++, static_pallete_tlut);
 
     gSPDisplayList(renderState->dl++, gCopyCB);
+
+    gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
+
+    renderSceneFree(renderScene);
 }

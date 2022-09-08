@@ -13,7 +13,11 @@ extern int gCurrentLevelIndex;
 extern int gQueuedLevel;
 
 int levelMaterialTransparentStart();
-int levelMaterialDefault();
+Gfx* levelMaterialDefault();
+
+void loadLevel(unsigned index);
+void levelQueueLoad(int index);
+int levelGetQueued();
 
 Gfx* levelMaterial(int index);
 Gfx* levelMaterialRevert(int index);

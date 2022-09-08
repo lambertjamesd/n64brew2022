@@ -22,7 +22,7 @@
 
 #define SIMPLE_CONTROLLER_MSG	    (5)
 
-#define HIGH_RES    0
+#define HIGH_RES    1
 
 #define PRINTF(a) 
 

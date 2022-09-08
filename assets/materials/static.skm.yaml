@@ -1,7 +1,14 @@
 materials:
+  texture_lit:
+
+    gDPSetCombineMode:
+      color: ["0", "0", "0", "TEXEL0"]
+    gSPGeometryMode:
+      clear: [G_SHADE, G_LIGHTING]
+
   default:
     gDPSetRenderMode: G_RM_ZB_OPA_SURF
-    gDPSetTextureFilter: G_TF_BILERP
+    gDPSetTextureFilter: G_TF_POINT
     gDPSetTexturePersp: G_TP_PERSP
     gDPSetCycleType: G_CYC_1CYCLE
     gDPSetAlphaCompare: G_AC_NONE

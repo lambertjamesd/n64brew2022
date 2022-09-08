@@ -7,6 +7,7 @@
 #include "graphics/graphics.h"
 #include "scene/scene.h"
 #include "controls/controller.h"
+#include "level/level.h"
 
 #ifdef WITH_DEBUGGER
 #include "../debugger/debugger.h"
@@ -122,6 +123,9 @@ void gameProc(void *arg) {
     u16* memoryEnd = graphicsLayoutScreenBuffers((u16*)PHYS_TO_K0(osMemSize));
 
     heapInit(_heapStart, memoryEnd);
+    romInit();
+
+    loadLevel(0);
 
     sceneInit(&gScene);
     controllersInit();
