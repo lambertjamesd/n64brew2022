@@ -78,11 +78,17 @@ build/%.o: %.s
 ## Materials
 ####################
 
+build/assets/materials/pallete.png: assets/materials/half_pallete.png
+	@mkdir -p $(@D)
+	convert assets/materials/half_pallete.png -sample 16x16\! build/assets/materials/pallete.png
+
+GENERATED_IMAGES = build/assets/materials/pallete.png
+
 IMAGE_LIST = $(shell find assets/ -type f -name '*.png')
 
-build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/levels/test_level.fbx $(SKELATOOL64) $(IMAGE_LIST)
+build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/levels/test_level.fbx $(SKELATOOL64) $(IMAGE_LIST) $(GENERATED_IMAGES)
 	@mkdir -p $(@D)
-	$(SKELATOOL64) --name static --ci-buffer -m $< -m build/assets/levels/test_level.fbx --pallete assets/materials/pallete.png --material-output -o build/assets/materials/static.h
+	$(SKELATOOL64) --name static --ci-buffer -m $< -m build/assets/levels/test_level.fbx --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
 build/src/level/level.o: build/assets/materials/static.h build/assets/levels/level_list.h
 
@@ -101,9 +107,9 @@ build/assets/levels/test_level.fbx: assets/levels/test_level.blend
 	@mkdir -p $(@D)
 	$(BLENDER_2_9) $< --background --python tools/export_fbx.py -- $@
 
-build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(SKELATOOL64)
+build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(SKELATOOL64) $(IMAGE_LIST) $(GENERATED_IMAGES)
 	@mkdir -p $(@D)
-	$(SKELATOOL64) --script tools/generate_level.lua --ci-buffer --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
+	$(SKELATOOL64) --script tools/generate_level.lua --ci-buffer --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete build/assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
 
 build/assets/levels/%.o: build/assets/levels/%.c build/assets/materials/static.h
 	@mkdir -p $(@D)
