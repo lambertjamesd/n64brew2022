@@ -19,6 +19,7 @@ struct RenderState {
 };
 
 void renderStateInit(struct RenderState* renderState, u16* framebuffer, u16* depthBuffer);
+void* renderStateRequestMemory(struct RenderState* renderState, unsigned size);
 Mtx* renderStateRequestMatrices(struct RenderState* renderState, unsigned count);
 Light* renderStateRequestLights(struct RenderState* renderState, unsigned count);
 Vp* renderStateRequestViewport(struct RenderState* renderState);

@@ -11,6 +11,7 @@ include /usr/include/n64/make/PRdefs
 MIDICVT:=tools/midicvt
 SFZ2N64:=tools/sfz2n64
 SKELATOOL64:=tools/skeletool64
+BLENDER_2_9:=tools/blender/blender
 
 OPTIMIZER		:= -O0
 LCDEFS			:= -DDEBUG -g -Isrc/ -I/usr/include/n64/nustd -Werror -Wall
@@ -90,9 +91,13 @@ build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/l
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --name static --ci-buffer -m $< -m build/assets/levels/test_level.fbx --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
+build/assets/materials/pallete.h: assets/materials/pallete.skm.yaml assets/materials/half_pallete.png
+	@mkdir -p $(@D)
+	$(SKELATOOL64) --name pallete -m $< --material-output -o build/assets/materials/pallete.h
+
 build/src/level/level.o: build/assets/materials/static.h build/assets/levels/level_list.h
 
-build/src/scene/scene.o: build/assets/materials/static.h
+build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h
 
 ####################
 ## Levels
@@ -146,12 +151,14 @@ build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
 ## Linking
 ####################
 
+DATA_OBJECTS = build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o
+
 $(BOOT_OBJ): $(BOOT)
 	$(OBJCOPY) -I binary -B mips -O elf32-bigmips $< $@
 
 # without debugger
 
-CODEOBJECTS_NO_DEBUG = $(CODEOBJECTS) build/assets/materials/static_mat.o
+CODEOBJECTS_NO_DEBUG = $(CODEOBJECTS) $(DATA_OBJECTS)
 
 ifeq ($(WITH_DEBUGGER),1)
 CODEOBJECTS_NO_DEBUG += build/debugger/debugger_stub.o build/debugger/serial.o 
@@ -170,7 +177,7 @@ $(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJEC
 	makemask $(BASE_TARGET_NAME).z64
 
 # with debugger
-CODEOBJECTS_DEBUG = $(CODEOBJECTS) build/assets/materials/static_mat.o
+CODEOBJECTS_DEBUG = $(CODEOBJECTS) $(DATA_OBJECTS)
 
 ifeq ($(WITH_DEBUGGER),1)
 CODEOBJECTS_DEBUG += build/debugger/debugger.o build/debugger/serial.o 

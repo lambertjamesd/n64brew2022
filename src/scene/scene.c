@@ -13,8 +13,10 @@
 #include "../defs.h"
 #include "../level/level.h"
 #include "../graphics/render_scene.h"
+#include "../graphics/pallete_operations.h"
 
 #include "../build/assets/materials/static.h"
+#include "../build/assets/materials/pallete.h"
 
 #define ROTATE_PER_SECOND       (M_PI * 0.25f)
 #define MOVE_PER_SECOND         (3.0f)
@@ -133,6 +135,9 @@ void sceneRenderObject(struct Scene* scene, struct RenderState* renderState, Gfx
     gSPPopMatrix(renderState->dl++, G_MTX_MODELVIEW);
 }
 
+struct Coloru8 gShadowColor = {100, 100, 100, 255};
+struct Coloru8 gLightColor = {255, 255, 255, 255};
+
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     struct RenderScene* renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0);
 
@@ -191,7 +196,9 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(task->framebuffer));
     gSPSegment(renderState->dl++, SOURCE_CB_SEGMENT, indexColorBuffer);
 
-    gDPLoadTLUT_pal256(renderState->dl++, static_pallete_tlut);
+    u16* pallete = palleteGenerateLit((struct Coloru8*)pallete_half_pallete_rgba_32b, gShadowColor, gLightColor, renderState);
+
+    gDPLoadTLUT_pal256(renderState->dl++, pallete);
 
     gSPDisplayList(renderState->dl++, gCopyCB);
 

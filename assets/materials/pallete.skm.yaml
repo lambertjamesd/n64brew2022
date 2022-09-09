@@ -1,0 +1,5 @@
+materials:
+  pallete_32b:
+    gDPSetTile:
+      filename: ./half_pallete.png
+      siz: G_IM_SIZ_32b
