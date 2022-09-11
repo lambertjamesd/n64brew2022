@@ -36,6 +36,7 @@ RUN apt install -y binutils-mips-n64 \
     libpng-dev \
     libtiff-dev \
     libassimp-dev \
+    unzip \
     build-essential
 
 COPY Makefile Makefile

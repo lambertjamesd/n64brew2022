@@ -13,6 +13,8 @@ SFZ2N64:=tools/sfz2n64
 SKELATOOL64:=tools/skeletool64
 BLENDER_2_9:=tools/blender/blender
 
+WITH_GFX_VALIDATOR:=1
+
 OPTIMIZER		:= -O0
 LCDEFS			:= -DDEBUG -g -Isrc/ -I/usr/include/n64/nustd -Werror -Wall
 N64LIB			:= -lultra_rom -lnustd
@@ -31,6 +33,11 @@ ASMFILES    =	$(shell find asm/ -type f -name '*.s')
 ASMOBJECTS  =	$(patsubst %.s, build/%.o, $(ASMFILES))
 
 CODEFILES = $(shell find src/ -type f -name '*.c')
+
+ifeq ($(WITH_GFX_VALIDATOR),1)
+LCDEFS += -DWITH_GFX_VALIDATOR
+CODEFILES += gfxvalidator/validator.c gfxvalidator/error_printer.c gfxvalidator/command_printer.c
+endif
 
 CODEOBJECTS = $(patsubst %.c, build/%.o, $(CODEFILES))
 
@@ -87,7 +94,9 @@ GENERATED_IMAGES = build/assets/materials/pallete.png
 
 IMAGE_LIST = $(shell find assets/ -type f -name '*.png')
 
-build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/levels/test_level.fbx $(SKELATOOL64) $(IMAGE_LIST) $(GENERATED_IMAGES)
+ALL_IMAGES = $(GENERATED_IMAGES) $(IMAGE_LIST)
+
+build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/levels/test_level.fbx $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --name static --ci-buffer -m $< -m build/assets/levels/test_level.fbx --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
@@ -100,6 +109,27 @@ build/src/level/level.o: build/assets/materials/static.h build/assets/levels/lev
 build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h
 
 ####################
+## Models
+####################
+
+MODEL_LIST = assets/models/player.blend
+
+MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
+MODEL_OBJECTS = $(MODEL_LIST:%.blend=build/%_geo.o)
+
+ANIM_LIST = build/assets/models/player_anim.o
+
+build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c: build/assets/models/%.fbx assets/models/%.flags assets/materials/static.skm.yaml $(ALL_IMAGES) $(SKELATOOL64)
+	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
+
+
+build/src/scene/player.o: build/assets/models/player.h
+
+build/anims.ld: $(ANIM_LIST) tools/generate_animation_ld.js
+	@mkdir -p $(@D)
+	node tools/generate_animation_ld.js $@ $(ANIM_LIST)
+
+####################
 ## Levels
 ####################
 
@@ -108,11 +138,13 @@ LEVEL_LIST = $(shell find assets/levels/ -type f -name '*.blend')
 LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
 LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 
-build/assets/levels/test_level.fbx: assets/levels/test_level.blend
+LEVEL_GENERATION_SCRIPT = $(shell find tools/generate_level/ -type f -name '*.lua')
+
+build/%.fbx: %.blend
 	@mkdir -p $(@D)
 	$(BLENDER_2_9) $< --background --python tools/export_fbx.py -- $@
 
-build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(SKELATOOL64) $(IMAGE_LIST) $(GENERATED_IMAGES)
+build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --script tools/generate_level.lua --ci-buffer --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete build/assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
 
@@ -151,7 +183,7 @@ build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
 ## Linking
 ####################
 
-DATA_OBJECTS = build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o
+DATA_OBJECTS = $(MODEL_OBJECTS) build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o
 
 $(BOOT_OBJ): $(BOOT)
 	$(OBJCOPY) -I binary -B mips -O elf32-bigmips $< $@
@@ -168,7 +200,7 @@ $(CODESEGMENT)_no_debug.o:	$(CODEOBJECTS_NO_DEBUG)
 	$(LD) -o $(CODESEGMENT)_no_debug.o -r $(CODEOBJECTS_NO_DEBUG) $(LDFLAGS)
 
 
-$(CP_LD_SCRIPT)_no_debug.ld: $(LD_SCRIPT) build/levels.ld
+$(CP_LD_SCRIPT)_no_debug.ld: $(LD_SCRIPT) build/levels.ld build/anims.ld
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_no_debug.o -o $@ $<
 
 $(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld
@@ -186,7 +218,7 @@ endif
 $(CODESEGMENT)_debug.o:	$(CODEOBJECTS_DEBUG)
 	$(LD) -o $(CODESEGMENT)_debug.o -r $(CODEOBJECTS_DEBUG) $(LDFLAGS)
 
-$(CP_LD_SCRIPT)_debug.ld: $(LD_SCRIPT) build/levels.ld
+$(CP_LD_SCRIPT)_debug.ld: $(LD_SCRIPT) build/levels.ld build/anims.ld
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_debug.o -o $@ $<
 
 $(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_debug.ld

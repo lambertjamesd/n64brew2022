@@ -15,6 +15,8 @@ void* gLevelSegment;
 #include "../../gfxvalidator/validator.h"
 #endif
 
+#define FORCE_VALIDATOR 1
+
 #if WITH_DEBUGGER
 #include "../../debugger/debugger.h"
 #include "../../debugger/serial.h"
@@ -122,13 +124,16 @@ void graphicsCreateTask(struct GraphicsTask* targetTask, GraphicsCallback callba
     scTask->state = 0;
 
 #if WITH_GFX_VALIDATOR
-#if WITH_DEBUGGER
+#if WITH_DEBUGGER || FORCE_VALIDATOR
     struct GFXValidationResult validationResult;
     zeroMemory(&validationResult, sizeof(struct GFXValidationResult));
 
     if (gfxValidate(&scTask->list, MAX_DL_LENGTH, &validationResult) != GFXValidatorErrorNone) {
+        
+#if WITH_DEBUGGER
         gfxGenerateReadableMessage(&validationResult, graphicsOutputMessageToDebugger);
         gdbBreak();
+#endif
     }
 
 #endif // WITH_DEBUGGER

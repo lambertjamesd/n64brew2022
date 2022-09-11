@@ -64,7 +64,7 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 #define GROUND_LERP  TEXEL0, 0, ENVIRONMENT, PRIMITIVE, 0, 0, 0, ENVIRONMENT
 
-void sceneInit(struct Scene* scene) {
+void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     cameraInit(&scene->camera, 90.0f, 0.5f * SCENE_SCALE, 30.0f * SCENE_SCALE);
 
     gCameraDistance = sqrtf(vector3DistSqrd(&gCameraFocus, &gCameraStart));
@@ -75,6 +75,12 @@ void sceneInit(struct Scene* scene) {
     quatLook(&offset, &gUp, &scene->camera.transform.rotation);
 
     pointLightInit(&scene->pointLight, &gLightOrbitCenter, &gColorWhite, 15.0f);
+
+    scene->playerCount = (u8)playerCount;
+
+    for (int i = 0; i < playerCount; ++i) {
+        playerInit(&scene->players[i], &definition->playerStart[i]);
+    }
 }
 
 unsigned ignoreInputFrames = 10;
@@ -115,6 +121,10 @@ void sceneUpdate(struct Scene* scene) {
 
     if (ignoreInputFrames) {
         --ignoreInputFrames;
+    }
+
+    for (int i = 0; i < scene->playerCount; ++i) {
+        playerUpdate(&scene->players[i]);
     }
 }
 
@@ -158,6 +168,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     
     for (unsigned i = 0; i < gCurrentLevel->staticContentCount; ++i) {
         renderSceneAdd(renderScene, gCurrentLevel->staticContent[i].displayList, NULL, gCurrentLevel->staticContent[i].materialIndex, &gZeroVec, NULL);
+    }
+
+    for (unsigned i = 0; i < scene->playerCount; ++i) {
+        playerRender(&scene->players[i], renderScene);
     }
 
     renderSceneGenerate(renderScene, renderState);

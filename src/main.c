@@ -127,7 +127,7 @@ void gameProc(void *arg) {
 
     loadLevel(0);
 
-    sceneInit(&gScene);
+    sceneInit(&gScene, gCurrentLevel, 1);
     controllersInit();
 
 #ifdef WITH_DEBUGGER

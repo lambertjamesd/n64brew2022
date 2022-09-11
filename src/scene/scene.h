@@ -4,8 +4,11 @@
 #include "../graphics/renderstate.h"
 #include "../graphics/graphics.h"
 
+#include "../level/level_definition.h"
+
 #include "point_light.h"
 #include "camera.h"
+#include "player.h"
 
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
@@ -25,9 +28,11 @@ struct RenderModeData {
 struct Scene {
     struct Camera camera;
     struct PointLight pointLight;
+    struct Player players[MAX_PLAYERS];
+    u8 playerCount;
 };
 
-void sceneInit(struct Scene* scene);
+void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);
 void sceneUpdate(struct Scene* scene);
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task);
 
