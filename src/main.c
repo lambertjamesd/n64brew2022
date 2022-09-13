@@ -125,7 +125,7 @@ void gameProc(void *arg) {
     heapInit(_heapStart, memoryEnd);
     romInit();
 
-    loadLevel(0);
+    loadLevel(1);
 
     sceneInit(&gScene, gCurrentLevel, 1);
     controllersInit();

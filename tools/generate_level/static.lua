@@ -1,6 +1,6 @@
 local staticContentOutput = {}
 
-local staticNodes = nodes_for_type("@static")
+local staticNodes = { table.unpack(nodes_for_type("@static")), table.unpack(nodes_for_type("")) }
 
 local staticContent = {}
 

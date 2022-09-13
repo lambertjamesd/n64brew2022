@@ -3,8 +3,6 @@ build/
 debugger
 gfxvalidator
 
-tools/skeletool64
-tools/sfz2n64
 tools/blender
 
 *.blend1

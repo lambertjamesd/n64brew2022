@@ -82,6 +82,12 @@ build/%.o: %.s
 ## Assets
 ####################
 
+LEVEL_LIST = $(shell find assets/levels/ -type f -name '*.blend')
+
+LEVEL_LIST_FBX = $(LEVEL_LIST:%.blend=build/%.fbx)
+LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
+LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
+
 ####################
 ## Materials
 ####################
@@ -96,9 +102,9 @@ IMAGE_LIST = $(shell find assets/ -type f -name '*.png')
 
 ALL_IMAGES = $(GENERATED_IMAGES) $(IMAGE_LIST)
 
-build/assets/materials/static.h: assets/materials/static.skm.yaml build/assets/levels/test_level.fbx $(SKELATOOL64) $(ALL_IMAGES)
+build/assets/materials/static.h: assets/materials/static.skm.yaml $(LEVEL_LIST_FBX) $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
-	$(SKELATOOL64) --name static --ci-buffer -m $< -m build/assets/levels/test_level.fbx --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
+	$(SKELATOOL64) --name static --ci-buffer -m $< $(LEVEL_LIST_FBX:%=-m %) --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
 build/assets/materials/pallete.h: assets/materials/pallete.skm.yaml assets/materials/half_pallete.png
 	@mkdir -p $(@D)
@@ -133,18 +139,13 @@ build/anims.ld: $(ANIM_LIST) tools/generate_animation_ld.js
 ## Levels
 ####################
 
-LEVEL_LIST = $(shell find assets/levels/ -type f -name '*.blend')
-
-LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
-LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
-
 LEVEL_GENERATION_SCRIPT = $(shell find tools/generate_level/ -type f -name '*.lua')
 
 build/%.fbx: %.blend
 	@mkdir -p $(@D)
 	$(BLENDER_2_9) $< --background --python tools/export_fbx.py -- $@
 
-build/assets/levels/test_level.h build/assets/levels/test_level_geo.c: build/assets/levels/test_level.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
+build/assets/levels/%.h build/assets/levels/%_geo.c: build/assets/levels/%.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --script tools/generate_level.lua --ci-buffer --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete build/assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
 

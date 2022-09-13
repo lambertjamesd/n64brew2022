@@ -18,7 +18,7 @@
 
 #define DMA_QUEUE_SIZE  200
 
-#define SCENE_SCALE 100
+#define SCENE_SCALE 256
 
 #define SIMPLE_CONTROLLER_MSG	    (5)
 

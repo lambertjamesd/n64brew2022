@@ -17,7 +17,8 @@ for i=1,4 do
     local currentOutput = {}
 
     if (current) then
-        local scale, rotation, position = current.node.transformation:decompose()
+        local fullTransform = settings.model_transform * current.node.full_transformation
+        local scale, rotation, position = fullTransform:decompose()
         currentOutput.position = position
         currentOutput.rotation = rotation
     else 
