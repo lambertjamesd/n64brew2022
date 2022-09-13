@@ -7,7 +7,7 @@
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation) {
     player->transform.position = startLocation->position;
-    player->transform.rotation = startLocation->rotation;
+    quatIdent(&player->transform.rotation);
     player->transform.scale = gOneVec;
 
     skArmatureInit(

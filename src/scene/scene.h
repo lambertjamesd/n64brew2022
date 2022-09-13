@@ -9,6 +9,7 @@
 #include "point_light.h"
 #include "camera.h"
 #include "player.h"
+#include "item_slot.h"
 
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
@@ -29,6 +30,8 @@ struct Scene {
     struct Camera camera;
     struct PointLight pointLight;
     struct Player players[MAX_PLAYERS];
+    struct ItemSlot* itemSlots;
+    u8 itemSlotCount;
     u8 playerCount;
 };
 

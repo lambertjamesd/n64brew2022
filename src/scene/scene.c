@@ -14,6 +14,7 @@
 #include "../level/level.h"
 #include "../graphics/render_scene.h"
 #include "../graphics/pallete_operations.h"
+#include "../util/memory.h"
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
@@ -26,10 +27,6 @@
 #define RENDER_SCENE_CAPACITY   256
 
 Lights1 gLights = gdSPDefLights1(0x10, 0, 0, 0xE0, 0xE0, 0xE0, 90, 90, 0);
-
-struct Vector3 gCameraFocus = {0.0f, 0.0f, 0.0f};
-struct Vector3 gCameraStart = {0.0f, 2.0f, 5.0f};
-float gCameraDistance = 0.0f;
 
 #define OBJECT_COUNT    3
 
@@ -65,14 +62,17 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 #define GROUND_LERP  TEXEL0, 0, ENVIRONMENT, PRIMITIVE, 0, 0, 0, ENVIRONMENT
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
-    cameraInit(&scene->camera, 90.0f, 0.5f * SCENE_SCALE, 30.0f * SCENE_SCALE);
+    cameraInit(&scene->camera, definition->cameraDefinition.verticalFov, 0.5f * SCENE_SCALE, 30.0f * SCENE_SCALE);
 
-    gCameraDistance = sqrtf(vector3DistSqrd(&gCameraFocus, &gCameraStart));
+    scene->camera.transform.position = definition->cameraDefinition.position;
+    scene->camera.transform.rotation = definition->cameraDefinition.rotation;
 
-    scene->camera.transform.position = gCameraStart;
-    struct Vector3 offset;
-    vector3Sub(&gCameraFocus, &gCameraStart, &offset);
-    quatLook(&offset, &gUp, &scene->camera.transform.rotation);
+    // struct Quaternion rotateAmount;
+    // quatAxisAngle(&gUp, 3.1415f, &rotateAmount);
+
+    // struct Quaternion finalRotation;
+    // quatMultiply(&definition->cameraDefinition.rotation, &rotateAmount, &finalRotation);
+    // scene->camera.transform.rotation = finalRotation;
 
     pointLightInit(&scene->pointLight, &gLightOrbitCenter, &gColorWhite, 15.0f);
 
@@ -81,38 +81,18 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     for (int i = 0; i < playerCount; ++i) {
         playerInit(&scene->players[i], &definition->playerStart[i]);
     }
+
+    scene->itemSlotCount = definition->itemSlotCount;
+    scene->itemSlots = malloc(sizeof(struct ItemSlot) * scene->itemSlotCount);
+
+    for (int i = 0; i < scene->itemSlotCount; ++i) {
+        itemSlotInit(&scene->itemSlots[i], &definition->itemSlots[i]);
+    }
 }
 
 unsigned ignoreInputFrames = 10;
 
 void sceneUpdate(struct Scene* scene) {
-    OSContPad* input = controllersGetControllerData(0);
-
-    struct Quaternion rotate;
-    quatAxisAngle(&gUp, (ROTATE_PER_SECOND * (1.0f / 80.0f)) * FIXED_DELTA_TIME * input->stick_x, &rotate);
-    struct Quaternion finalRotation;
-    quatMultiply(&rotate, &scene->camera.transform.rotation, &finalRotation);
-    scene->camera.transform.rotation = finalRotation;
-
-    quatAxisAngle(&gRight, -(ROTATE_PER_SECOND * (1.0f / 80.0f)) * FIXED_DELTA_TIME * input->stick_y, &rotate);
-    quatMultiply(&scene->camera.transform.rotation, &rotate, &finalRotation);
-    scene->camera.transform.rotation = finalRotation;
-
-    if (!ignoreInputFrames && controllerGetButton(0, A_BUTTON)) {
-        gCameraDistance -= MOVE_PER_SECOND * FIXED_DELTA_TIME;
-    }
-
-    if (!ignoreInputFrames && controllerGetButton(0, B_BUTTON)) {
-        gCameraDistance += MOVE_PER_SECOND * FIXED_DELTA_TIME;
-    }
-
-    gCameraDistance = MAX(MIN_DISTANCE, gCameraDistance);
-    gCameraDistance = MIN(MAX_DISTANCE, gCameraDistance);
-
-    struct Vector3 offset;
-    quatMultVector(&scene->camera.transform.rotation, &gForward, &offset);
-    vector3AddScaled(&gCameraFocus, &offset, gCameraDistance, &scene->camera.transform.position);
-
     float angle = gTimePassed * 2.0f * M_PI / LIGHT_ORBIT_PERIOD;
 
     scene->pointLight.position.x = cosf(angle) * LIGHT_ORBIT_RADIUS + gLightOrbitCenter.x;

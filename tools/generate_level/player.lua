@@ -17,13 +17,10 @@ for i=1,4 do
     local currentOutput = {}
 
     if (current) then
-        local fullTransform = settings.model_transform * current.node.full_transformation
-        local scale, rotation, position = fullTransform:decompose()
+        local scale, rotation, position = current.node.full_transformation:decompose()
         currentOutput.position = position
-        currentOutput.rotation = rotation
     else 
         currentOutput.position = vector3(0, 0, 0)
-        currentOutput.rotation = quaternion(0, 0, 0, 1)
     end
 
     table.insert(playerOutput, currentOutput)
