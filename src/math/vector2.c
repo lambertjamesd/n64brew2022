@@ -85,22 +85,24 @@ float vector2DistSqr(struct Vector2* a, struct Vector2* b) {
     return dx * dx + dy * dy;
 }
 
-void vector2Normalize(struct Vector2* a, struct Vector2* out) {
+int vector2Normalize(struct Vector2* a, struct Vector2* out) {
     if (a->x == 0.0f && a->y == 0.0f) {
         *out = *a;
-        return;
+        return 0;
     }
 
     float denom = sqrtf(a->x * a->x + a->y * a->y);
 
     if (denom < 0.0000001f) {
         *out = *a;
-        return;
+        return 0;
     }
 
     float scale = 1.0f / denom;
     out->x = a->x * scale;
     out->y = a->y * scale;
+
+    return 1;
 }
 
 void vector2Negate(struct Vector2* a, struct Vector2* out) {

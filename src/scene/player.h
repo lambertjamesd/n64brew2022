@@ -2,6 +2,7 @@
 #define _SCENE_PLAYER_H_
 
 #include "../math/transform.h"
+#include "../math/vector2.h"
 
 #include "../level/level_definition.h"
 
@@ -15,6 +16,7 @@ struct Player {
     short playerIndex;
 
     struct Vector3 velocity;
+    struct Vector2 lookDir;
 };
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index);

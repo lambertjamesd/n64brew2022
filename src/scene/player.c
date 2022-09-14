@@ -11,6 +11,10 @@
 #define PLAYER_MOVE_SPEED   2.0f
 #define PLAYER_ACCELERATION 10.0f
 
+#define PLAYER_ROTATE_RATE  (M_PI * 2.0f)
+
+struct Vector2 gMaxRotateVector;
+
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index) {
     player->transform.position = startLocation->position;
     quatIdent(&player->transform.rotation);
@@ -25,6 +29,26 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
         player_bone_parent, 
         PLAYER_ATTACHMENT_COUNT
     );
+
+    gMaxRotateVector.x = cosf(PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
+    gMaxRotateVector.y = sinf(PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
+
+    player->lookDir.x = 1.0f;
+    player->lookDir.y = 0.0f;
+}
+
+void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
+    struct Vector2 rotateTowards;
+    rotateTowards.x = moveDir->z;
+    rotateTowards.y = moveDir->x;
+
+    if (!vector2Normalize(&rotateTowards, &rotateTowards)) {
+        return;
+    }
+
+    vector2RotateTowards(&player->lookDir, &rotateTowards, &gMaxRotateVector, &player->lookDir);
+
+    quatAxisComplex(&gUp, &player->lookDir, &player->transform.rotation);
 }
 
 void playerUpdate(struct Player* player) {
@@ -46,6 +70,10 @@ void playerUpdate(struct Player* player) {
     vector3MoveTowards(&player->velocity, &moveDir, PLAYER_ACCELERATION * FIXED_DELTA_TIME, &player->velocity);
 
     vector3AddScaled(&player->transform.position, &player->velocity, FIXED_DELTA_TIME, &player->transform.position);
+
+    if (magSqrd > 0.0f) {
+        playerHandleRotation(player, &moveDir);
+    }
 }
 
 void playerRender(struct Player* player, struct RenderScene* renderScene) {

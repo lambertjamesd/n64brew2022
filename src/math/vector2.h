@@ -21,7 +21,7 @@ float vector2MagSqr(struct Vector2* a);
 float vector2DistSqr(struct Vector2* a, struct Vector2* b);
 void vector2Add(struct Vector2* a, struct Vector2* b, struct Vector2* out);
 void vector2Scale(struct Vector2* a, float scale, struct Vector2* out);
-void vector2Normalize(struct Vector2* a, struct Vector2* out);
+int vector2Normalize(struct Vector2* a, struct Vector2* out);
 void vector2Sub(struct Vector2* a, struct Vector2* b, struct Vector2* out);
 void vector2Negate(struct Vector2* a, struct Vector2* out);
 
