@@ -62,23 +62,16 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 #define GROUND_LERP  TEXEL0, 0, ENVIRONMENT, PRIMITIVE, 0, 0, 0, ENVIRONMENT
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
-    cameraInit(&scene->camera, definition->cameraDefinition.verticalFov, 0.5f * SCENE_SCALE, 30.0f * SCENE_SCALE);
+    cameraInit(&scene->camera, definition->cameraDefinition.verticalFov, 5.0f * SCENE_SCALE, 20.0f * SCENE_SCALE);
 
     scene->camera.transform.position = definition->cameraDefinition.position;
     scene->camera.transform.rotation = definition->cameraDefinition.rotation;
-
-    // struct Quaternion rotateAmount;
-    // quatAxisAngle(&gUp, 3.1415f, &rotateAmount);
-
-    // struct Quaternion finalRotation;
-    // quatMultiply(&definition->cameraDefinition.rotation, &rotateAmount, &finalRotation);
-    // scene->camera.transform.rotation = finalRotation;
 
     pointLightInit(&scene->pointLight, &gLightOrbitCenter, &gColorWhite, 15.0f);
 
     scene->playerCount = (u8)playerCount;
     for (int i = 0; i < playerCount; ++i) {
-        playerInit(&scene->players[i], &definition->playerStart[i]);
+        playerInit(&scene->players[i], &definition->playerStart[i], i);
     }
 
     scene->itemSlotCount = definition->itemSlotCount;

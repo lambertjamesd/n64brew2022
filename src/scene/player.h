@@ -12,9 +12,12 @@
 struct Player {
     struct Transform transform;
     struct SKArmature armature;
+    short playerIndex;
+
+    struct Vector3 velocity;
 };
 
-void playerInit(struct Player* player, struct PlayerStartLocation* startLocation);
+void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index);
 
 void playerUpdate(struct Player* player);
 
