@@ -26,12 +26,24 @@ struct CameraDefinition {
     float verticalFov;
 };
 
+struct SpotLightDefinition {
+    struct Vector3 position;
+    struct Quaternion rotation;
+    float angle;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
 
+    struct StaticContentElement* groundContent;
+    short groundContentCount;
+
     struct ItemSlotDefinition* itemSlots;
     short itemSlotCount;
+
+    struct SpotLightDefinition* spotLights;
+    short spotLightCount;
 
     struct PlayerStartLocation playerStart[MAX_PLAYERS];
     struct CameraDefinition cameraDefinition;

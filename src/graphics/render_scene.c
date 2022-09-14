@@ -5,7 +5,7 @@
 #include "sk64/skelatool_defs.h"
 #include "../level/level.h"
 
-struct RenderScene* renderSceneNew(struct Transform* cameraTransform, struct RenderState *renderState, int capacity, u64 visibleRooms) {
+struct RenderScene* renderSceneNew(struct Transform* cameraTransform, struct RenderState *renderState, int capacity, u64 visibleRooms, Gfx* defaultMaterial) {
     struct RenderScene* result = stackMalloc(sizeof(struct RenderScene));
 
     struct Vector3 cameraForward;
@@ -26,6 +26,8 @@ struct RenderScene* renderSceneNew(struct Transform* cameraTransform, struct Ren
     result->visibleRooms = visibleRooms;
 
     result->renderState = renderState;
+
+    result->defaultMaterial = defaultMaterial;
 
     return result;
 }
@@ -116,7 +118,9 @@ void renderSceneGenerate(struct RenderScene* renderScene, struct RenderState* re
 
     int prevMaterial = -1;
 
-    gSPDisplayList(renderState->dl++, levelMaterialDefault());
+    if (renderScene->defaultMaterial) {
+        gSPDisplayList(renderState->dl++, renderScene->defaultMaterial);
+    }
     
     for (int i = 0; i < renderScene->currentRenderPart; ++i) {
         int renderIndex = renderScene->renderOrder[i];

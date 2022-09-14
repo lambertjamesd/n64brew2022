@@ -44,3 +44,35 @@ materials:
     gSPGeometryMode:
       set: [G_CULL_BACK, G_ZBUFFER]
       clear: [G_CULL_FRONT, G_TEXTURE_GEN, G_TEXTURE_GEN_LINEAR]
+
+  additive_light:
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", "ENVIRONMENT"]
+      alpha: ["0", "0", "0", "ENVIRONMENT"]
+    gDPSetEnvColor:
+      r: 2
+      g: 255
+      b: 255
+      alpha: 255
+      bypassEffects: true
+    gDPSetFogColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 255
+    gDPSetRenderMode:
+      flags:
+        - Z_CMP
+        - Z_UPD
+        - IM_RD
+        - CVG_DST_SAVE
+        - FORCE_BL
+        - ZMODE_OPA
+      blend:
+        - G_BL_CLR_IN
+        - G_BL_A_FOG
+        - G_BL_CLR_MEM
+        - G_BL_1
+    gSPGeometryMode:
+      set: [G_ZBUFFER]
+      clear: [G_LIGHTING, G_SHADE, G_CULL_BACK, G_CULL_FRONT]

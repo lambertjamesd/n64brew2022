@@ -77,16 +77,20 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     pointLightInit(&scene->pointLight, &gLightOrbitCenter, &gColorWhite, 15.0f);
 
     scene->playerCount = (u8)playerCount;
-
     for (int i = 0; i < playerCount; ++i) {
         playerInit(&scene->players[i], &definition->playerStart[i]);
     }
 
     scene->itemSlotCount = definition->itemSlotCount;
     scene->itemSlots = malloc(sizeof(struct ItemSlot) * scene->itemSlotCount);
-
     for (int i = 0; i < scene->itemSlotCount; ++i) {
         itemSlotInit(&scene->itemSlots[i], &definition->itemSlots[i]);
+    }
+
+    scene->spotLightCount = definition->spotLightCount;
+    scene->spotLights = malloc(sizeof(struct SpotLight) * scene->spotLightCount);
+    for (int i = 0; i < scene->spotLightCount; ++i) {
+        spotLightInit(&scene->spotLights[i], &definition->spotLights[i]);
     }
 }
 
@@ -129,8 +133,6 @@ struct Coloru8 gShadowColor = {100, 100, 100, 255};
 struct Coloru8 gLightColor = {255, 255, 255, 255};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
-    struct RenderScene* renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0);
-
     gDPPipeSync(renderState->dl++);
     gDPSetColorImage(renderState->dl++, G_IM_FMT_CI, G_IM_SIZ_8b, SCREEN_WD, indexColorBuffer);
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
@@ -138,14 +140,38 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPFillRectangle(renderState->dl++, 0, 0, SCREEN_WD-1, SCREEN_HT-1);
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_1CYCLE);
-    gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
     struct FrustrumCullingInformation cullingInformation;
 
     cameraSetupMatrices(&scene->camera, renderState, (float)SCREEN_WD / (float)SCREEN_HT, &fullscreenViewport, &cullingInformation);
     
     gSPSetLights1(renderState->dl++, gLights);
+    gDPSetRenderMode(renderState->dl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
+    gSPClearGeometryMode(renderState->dl++, G_ZBUFFER);
+
+    struct RenderScene* renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, 0);
+
+    for (unsigned i = 0; i < gCurrentLevel->groundContentCount; ++i) {
+        renderSceneAdd(renderScene, gCurrentLevel->groundContent[i].displayList, NULL, gCurrentLevel->groundContent[i].materialIndex, &gZeroVec, NULL);
+    }
+
+    renderSceneGenerate(renderScene, renderState);
+    renderSceneFree(renderScene);
+
+    gDPPipeSync(renderState->dl++);
+    gSPDisplayList(renderState->dl++, levelMaterial(ADDITIVE_LIGHT_INDEX));
+
+    for (unsigned i = 0; i < scene->spotLightCount; ++i) {
+        spotLightRenderProjection(&scene->spotLights[i], renderState);
+    }
+
+    gDPPipeSync(renderState->dl++);
+    gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
+    gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
     
+    
+    renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, levelMaterialDefault());
+
     for (unsigned i = 0; i < gCurrentLevel->staticContentCount; ++i) {
         renderSceneAdd(renderScene, gCurrentLevel->staticContent[i].displayList, NULL, gCurrentLevel->staticContent[i].materialIndex, &gZeroVec, NULL);
     }
@@ -155,6 +181,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     renderSceneGenerate(renderScene, renderState);
+    renderSceneFree(renderScene);
 
     for (unsigned i = 0; i < OBJECT_COUNT; ++i) {
         sceneRenderObject(
@@ -197,6 +224,4 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gSPDisplayList(renderState->dl++, gCopyCB);
 
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
-
-    renderSceneFree(renderScene);
 }

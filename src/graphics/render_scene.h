@@ -23,9 +23,10 @@ struct RenderScene {
     int currentRenderPart;
     int maxRenderParts;
     struct RenderState *renderState;
+    Gfx* defaultMaterial;
 };
 
-struct RenderScene* renderSceneNew(struct Transform* cameraTransform, struct RenderState *renderState, int capacity, u64 visibleRooms);
+struct RenderScene* renderSceneNew(struct Transform* cameraTransform, struct RenderState *renderState, int capacity, u64 visibleRooms, Gfx* defaultMaterial);
 void renderSceneFree(struct RenderScene* renderScene);
 void renderSceneAdd(struct RenderScene* renderScene, Gfx* geometry, Mtx* matrix, int materialIndex, struct Vector3* at, Mtx* armature);
 void renderSceneGenerate(struct RenderScene* renderScene, struct RenderState* renderState);

@@ -17,8 +17,6 @@ if (#scene.cameras > 0) then
 
     local vericalFov = math.atan(tanAngle / camera.aspect_ratio) * 2
 
-    print(rotation)
-
     cameraOutput.position = position
     cameraOutput.rotation = rotation
     cameraOutput.verticalFov = vericalFov * 180 / math.pi
