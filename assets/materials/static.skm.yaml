@@ -50,9 +50,9 @@ materials:
       color: ["0", "0", "0", "ENVIRONMENT"]
       alpha: ["0", "0", "0", "ENVIRONMENT"]
     gDPSetEnvColor:
-      r: 2
-      g: 255
-      b: 255
+      r: 3
+      g: 3
+      b: 3
       alpha: 255
       bypassEffects: true
     gDPSetFogColor:
@@ -60,12 +60,13 @@ materials:
       g: 255
       b: 255
       a: 255
+      bypassEffects: true
     gDPSetRenderMode:
       flags:
         - Z_CMP
         - Z_UPD
         - IM_RD
-        - CVG_DST_SAVE
+        - CVG_DST_FULL
         - FORCE_BL
         - ZMODE_OPA
       blend:

@@ -24,6 +24,8 @@ struct CameraDefinition {
     struct Vector3 position;
     struct Quaternion rotation;
     float verticalFov;
+    float nearPlane;
+    float farPlane;
 };
 
 struct SpotLightDefinition {

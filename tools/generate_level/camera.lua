@@ -20,10 +20,14 @@ if (#scene.cameras > 0) then
     cameraOutput.position = position
     cameraOutput.rotation = rotation
     cameraOutput.verticalFov = vericalFov * 180 / math.pi
+    cameraOutput.nearPlane = camera.near_plane * settings.model_scale
+    cameraOutput.farPlane = camera.far_plane * settings.model_scale
 else
     cameraOutput.position = vector3(0, 0, 0)
     cameraOutput.rotation = quaternion(0, 0, 0, 1)
     cameraOutput.verticalFov = 90
+    cameraOutput.nearPlane = 5
+    cameraOutput.farPlane = 20
 end
 
 return cameraOutput

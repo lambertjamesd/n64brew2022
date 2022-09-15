@@ -62,7 +62,12 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 #define GROUND_LERP  TEXEL0, 0, ENVIRONMENT, PRIMITIVE, 0, 0, 0, ENVIRONMENT
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
-    cameraInit(&scene->camera, definition->cameraDefinition.verticalFov, 5.0f * SCENE_SCALE, 20.0f * SCENE_SCALE);
+    cameraInit(
+        &scene->camera, 
+        definition->cameraDefinition.verticalFov, 
+        definition->cameraDefinition.nearPlane * SCENE_SCALE,
+        definition->cameraDefinition.farPlane * SCENE_SCALE
+    );
 
     scene->camera.transform.position = definition->cameraDefinition.position;
     scene->camera.transform.rotation = definition->cameraDefinition.rotation;
