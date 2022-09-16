@@ -4,6 +4,6 @@
 #include "./renderstate.h"
 #include "./color.h"
 
-u16* palleteGenerateLit(struct Coloru8* colors, struct Coloru8 ambientLight, struct Coloru8 lightColor, struct RenderState* renderState);
+u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, struct RenderState* renderState);
 
 #endif

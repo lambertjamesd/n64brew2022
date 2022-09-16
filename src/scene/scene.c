@@ -127,8 +127,9 @@ void sceneRenderObject(struct Scene* scene, struct RenderState* renderState, Gfx
     gSPPopMatrix(renderState->dl++, G_MTX_MODELVIEW);
 }
 
-struct Coloru8 gShadowColor = {100, 100, 100, 255};
-struct Coloru8 gLightColor = {255, 255, 255, 255};
+struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
+struct Colorf32 gAmbientScale = {0.5f, 0.5f, 0.5f, 255};
+struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     gDPPipeSync(renderState->dl++);
@@ -215,7 +216,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(task->framebuffer));
     gSPSegment(renderState->dl++, SOURCE_CB_SEGMENT, indexColorBuffer);
 
-    u16* pallete = palleteGenerateLit((struct Coloru8*)pallete_half_pallete_rgba_32b, gShadowColor, gLightColor, renderState);
+    u16* pallete = palleteGenerateLit((struct Coloru8*)pallete_half_pallete_rgba_32b, &gAmbientLight, &gAmbientScale, &gLightColor, renderState);
 
     gDPLoadTLUT_pal256(renderState->dl++, pallete);
 

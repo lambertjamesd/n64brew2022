@@ -50,9 +50,9 @@ materials:
       color: ["0", "0", "0", "ENVIRONMENT"]
       alpha: ["0", "0", "0", "ENVIRONMENT"]
     gDPSetEnvColor:
-      r: 3
-      g: 3
-      b: 3
+      r: 2
+      g: 2
+      b: 2
       alpha: 255
       bypassEffects: true
     gDPSetFogColor:

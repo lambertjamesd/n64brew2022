@@ -8,6 +8,13 @@ struct Coloru8 {
     unsigned char a;
 };
 
+struct Colorf32 {
+    float r;
+    float g;
+    float b;
+    float a;
+};
+
 extern struct Coloru8 gColorBlack;
 extern struct Coloru8 gColorWhite;
 extern struct Coloru8 gHalfTransparentBlack;

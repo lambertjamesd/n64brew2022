@@ -94,7 +94,7 @@ LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 
 build/assets/materials/pallete.png: assets/materials/half_pallete.png
 	@mkdir -p $(@D)
-	convert assets/materials/half_pallete.png -sample 16x16\! build/assets/materials/pallete.png
+	convert assets/materials/half_pallete.png -sample 48x5\! build/assets/materials/pallete.png
 
 GENERATED_IMAGES = build/assets/materials/pallete.png
 
@@ -118,7 +118,8 @@ build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/
 ## Models
 ####################
 
-MODEL_LIST = assets/models/player.blend
+MODEL_LIST = assets/models/player.blend \
+	assets/models/pumpkin.blend
 
 MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
 MODEL_OBJECTS = $(MODEL_LIST:%.blend=build/%_geo.o)
