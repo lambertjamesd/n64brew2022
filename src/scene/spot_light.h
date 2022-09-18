@@ -49,4 +49,6 @@ int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct
 
 void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3* target, struct RenderState* renderState);
 
+int spotLightsGetPosition(struct LightConfiguration* lightConfig, struct Vector3* position);
+
 #endif

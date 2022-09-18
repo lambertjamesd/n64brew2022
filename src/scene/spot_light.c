@@ -277,7 +277,9 @@ int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct
 }
 
 void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3* target, struct RenderState* renderState) {
-    if (!lightConfig->primaryLight) {
+    struct Vector3 lightSource;
+
+    if (!spotLightsGetPosition(lightConfig, &lightSource)) {
         Light* light = renderStateRequestLights(renderState, 1);
         light->l.col[0] = 0;
         light->l.col[1] = 0;
@@ -291,19 +293,6 @@ void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3
         light->l.pad3 = 0;
         gSPLight(renderState->dl++, light, 1);
         return;
-    }
-
-    struct Vector3 lightSource;
-
-    if (lightConfig->secondaryLight) {
-        vector3Lerp(
-            &lightConfig->primaryLight->transform.position, 
-            &lightConfig->secondaryLight->transform.position, 
-            lightConfig->blendWeight,
-            &lightSource
-        );
-    } else {
-        lightSource = lightConfig->primaryLight->transform.position;
     }
 
     struct Vector3 offset;
@@ -322,4 +311,23 @@ void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3
     vector3ToVector3u8(&offset, (struct Vector3u8*)light->l.dir);
     light->l.pad3 = 0;
     gSPLight(renderState->dl++, light, 1);
+}
+
+int spotLightsGetPosition(struct LightConfiguration* lightConfig, struct Vector3* position) {
+    if (!lightConfig->primaryLight) {
+        return 0;
+    }
+
+    if (lightConfig->secondaryLight) {
+        vector3Lerp(
+            &lightConfig->primaryLight->transform.position, 
+            &lightConfig->secondaryLight->transform.position, 
+            lightConfig->blendWeight,
+            position
+        );
+    } else {
+        *position = lightConfig->primaryLight->transform.position;
+    }
+
+    return 1;
 }

@@ -10,6 +10,8 @@
 
 #include "../sk64/skelatool_armature.h"
 
+#include "shadow_map.h"
+
 struct Player {
     struct Transform transform;
     struct SKArmature armature;
@@ -17,9 +19,11 @@ struct Player {
 
     struct Vector3 velocity;
     struct Vector2 lookDir;
+
+    struct ShadowMap shadowMap;
 };
 
-void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index);
+void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer);
 
 void playerUpdate(struct Player* player);
 

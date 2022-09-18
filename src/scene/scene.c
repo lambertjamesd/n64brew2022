@@ -28,6 +28,8 @@
 
 Lights1 gLights = gdSPDefLights1(0x10, 0, 0, 0xE0, 0xE0, 0xE0, 90, 90, 0);
 
+u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WIDTH * SHADOW_MAP_HEIGHT];
+
 #define OBJECT_COUNT    3
 
 struct Transform gObjectPos[OBJECT_COUNT] = {
@@ -76,7 +78,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 
     scene->playerCount = (u8)playerCount;
     for (int i = 0; i < playerCount; ++i) {
-        playerInit(&scene->players[i], &definition->playerStart[i], i);
+        playerInit(&scene->players[i], &definition->playerStart[i], i, gPlayerShadowBuffers[i]);
     }
 
     scene->itemSlotCount = definition->itemSlotCount;
@@ -136,6 +138,30 @@ struct Colorf32 gAmbientScale = {0.5f, 0.5f, 0.5f, 255};
 struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
+    struct LightConfiguration playerLightConfig[scene->playerCount];
+
+    struct Plane groundPlane;
+    groundPlane.normal = gUp;
+    groundPlane.d = 0.0f;
+
+    for (int i = 0; i < scene->playerCount; ++i) {
+        spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &playerLightConfig[i]);
+
+        struct Vector3 lightPosition;
+
+        if (spotLightsGetPosition(&playerLightConfig[i], &lightPosition)) {  
+            shadowMapRender(
+                &scene->players[i].shadowMap, 
+                renderState, 
+                task, 
+                &lightPosition, 
+                &scene->players[i].transform, 
+                sphere_model_gfx, 
+                &groundPlane
+            );
+        }
+    }
+
     gDPPipeSync(renderState->dl++);
     gDPSetColorImage(renderState->dl++, G_IM_FMT_CI, G_IM_SIZ_8b, SCREEN_WD, indexColorBuffer);
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
@@ -180,11 +206,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     for (unsigned i = 0; i < scene->playerCount; ++i) {
-        struct LightConfiguration lightConfig;
-
-        spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &lightConfig);
-
-        spotLightsSetupLight(&lightConfig, &scene->players[i].transform.position, renderState);
+        spotLightsSetupLight(&playerLightConfig[i], &scene->players[i].transform.position, renderState);
         
         playerRender(&scene->players[i], renderScene);
     }

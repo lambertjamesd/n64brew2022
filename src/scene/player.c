@@ -15,7 +15,7 @@
 
 struct Vector2 gMaxRotateVector;
 
-void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index) {
+void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer) {
     player->transform.position = startLocation->position;
     quatIdent(&player->transform.rotation);
     player->transform.scale = gOneVec;
@@ -35,6 +35,8 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
 
     player->lookDir.x = 1.0f;
     player->lookDir.y = 0.0f;
+
+    shadowMapInit(&player->shadowMap, 1.0f, buffer);
 }
 
 void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
