@@ -88,7 +88,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     scene->spotLightCount = definition->spotLightCount;
     scene->spotLights = malloc(sizeof(struct SpotLight) * scene->spotLightCount);
     for (int i = 0; i < scene->spotLightCount; ++i) {
-        spotLightInit(&scene->spotLights[i], &definition->spotLights[i]);
+        spotLightInit(&scene->spotLights[i], &definition->spotLights[i], &scene->camera.transform.position);
     }
 }
 
@@ -107,6 +107,10 @@ void sceneUpdate(struct Scene* scene) {
 
     for (int i = 0; i < scene->playerCount; ++i) {
         playerUpdate(&scene->players[i]);
+    }
+
+    for (int i = 0; i < scene->spotLightCount; ++i) {
+        spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
     }
 }
 
@@ -176,6 +180,12 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     for (unsigned i = 0; i < scene->playerCount; ++i) {
+        struct LightConfiguration lightConfig;
+
+        spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &lightConfig);
+
+        spotLightsSetupLight(&lightConfig, &scene->players[i].transform.position, renderState);
+        
         playerRender(&scene->players[i], renderScene);
     }
 

@@ -127,7 +127,7 @@ MODEL_OBJECTS = $(MODEL_LIST:%.blend=build/%_geo.o)
 ANIM_LIST = build/assets/models/player_anim.o
 
 build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c: build/assets/models/%.fbx assets/models/%.flags assets/materials/static.skm.yaml $(ALL_IMAGES) $(SKELATOOL64)
-	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
+	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) -m $< $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
 
 
 build/src/scene/player.o: build/assets/models/player.h
