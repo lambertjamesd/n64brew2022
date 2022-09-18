@@ -11,14 +11,21 @@
 #define SHADOW_MAP_WIDTH    64
 #define SHADOW_MAP_HEIGHT   64
 
+#define SHADOW_MAP_ENABLED  (1 << 0)
+
 struct ShadowMap {
+    struct Transform lightPovTransform;
     float subjectRadius;
+    float nearPlane;
+    float projOffset;
     u16* buffer;
+    u32 flags;
 };
 
 void shadowMapInit(struct ShadowMap* shadowMap, float radius, u16* buffer);
-void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderState, struct GraphicsTask* gfxTask, struct Vector3* from, struct Transform* subjectTransform, Gfx* subject, struct Plane* onto);
+void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderState, struct GraphicsTask* gfxTask, struct Vector3* from, struct Transform* subjectTransform, Gfx* subject);
 void shadowMapRenderDebug(struct RenderState* renderState, u16* buffer);
+void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* renderState, struct Plane* ontoPlane);
 
 
 #endif

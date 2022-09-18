@@ -17,32 +17,17 @@ static Vp shadowMapViewport = {
 
 #define SHADOW_PROJECTION_COMBINE_MODE 0, 0, 0, ENVIRONMENT, 0, 0, 0, TEXEL0
 
-Vtx shadowMapVtxData[] = {
+#define	RM_UPDATE_Z(clk)		\
+    Z_CMP | Z_UPD | IM_RD | CVG_DST_WRAP | CLR_ON_CVG |	\
+	FORCE_BL | ZMODE_XLU |                          \
+	GBL_c##clk(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_MEM, G_BL_1MA)
+
+Vtx gShadowMapVtxDataTemplate[] = {
     {{{100, 0, 100}, 0, {SHADOW_MAP_WIDTH << 5, 0}, {255, 255, 255, 255}}},
     {{{-100, 0, 100}, 0, {0, 0}, {255, 255, 255, 255}}},
     {{{-100, 0, -100}, 0, {0, SHADOW_MAP_HEIGHT << 5}, {255, 255, 255, 255}}},
     {{{100, 0, -100}, 0, {SHADOW_MAP_WIDTH << 5, SHADOW_MAP_HEIGHT << 5}, {255, 255, 255, 255}}},
-
-    {{{100, 0, 100}, 0, {SHADOW_MAP_WIDTH << 5, 0}, {255, 255, 255, 255}}},
-    {{{-100, 0, 100}, 0, {0, 0}, {255, 255, 255, 255}}},
-    {{{-100, 0, -100}, 0, {0, SHADOW_MAP_HEIGHT << 5}, {255, 255, 255, 255}}},
-    {{{100, 0, -100}, 0, {SHADOW_MAP_WIDTH << 5, SHADOW_MAP_HEIGHT << 5}, {255, 255, 255, 255}}},
 };
-
-Gfx shadowMapGfx0[] = {
-    gsSPVertex(shadowMapVtxData, 4, 0),
-    gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
-    gsSPEndDisplayList(),
-};
-
-Gfx shadowMapGfx1[] = {
-    gsSPVertex(shadowMapVtxData + 4, 4, 0),
-    gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
-    gsSPEndDisplayList(),
-};
-
-Gfx* shadowMapGfx[] = {shadowMapGfx0, shadowMapGfx1};
-Vtx* shadowMapVtx[] = {shadowMapVtxData, &shadowMapVtxData[4]};
 
 struct Vector3 shadowCornerConfig[] = {
     {1.0f, 1.0f, 1.0f},
@@ -54,37 +39,45 @@ struct Vector3 shadowCornerConfig[] = {
 Gfx shadowMapMaterial[] = {
     gsDPPipeSync(),
     gsDPSetEnvColor(255, 255, 255, 255),
+    gsDPSetRenderMode(G_RM_OPA_SURF, G_RM_OPA_SURF2),
     gsDPSetCombineMode(SHADOW_MAP_COMBINE_MODE, SHADOW_MAP_COMBINE_MODE),
-    gsSPClearGeometryMode(G_LIGHTING | G_ZBUFFER),
+    gsSPGeometryMode(G_LIGHTING | G_SHADE | G_ZBUFFER, 0),
     gsSPEndDisplayList(),
 };
 
-void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* renderState, struct Transform* lightPovTransform, float nearPlane, float projOffset, struct Plane* ontoPlane, unsigned taskIndex) {
-    Vtx* currVtx = shadowMapVtx[taskIndex];
+void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* renderState, struct Plane* ontoPlane) {
+    if (!(shadowMap->flags & SHADOW_MAP_ENABLED)) {
+        return;
+    }
+
+    Vtx* vertices = renderStateRequestVertices(renderState, 4);
+    Vtx* currVtx = vertices;
 
     for (unsigned i = 0; i < 4; ++i) {
+        *currVtx = gShadowMapVtxDataTemplate[i];
+
         struct Vector3 localSpace;
-        localSpace.x = projOffset;
-        localSpace.y = projOffset;
-        localSpace.z = -nearPlane;
+        localSpace.x = shadowMap->projOffset;
+        localSpace.y = shadowMap->projOffset;
+        localSpace.z = -shadowMap->nearPlane;
         vector3Multiply(&localSpace, &shadowCornerConfig[i], &localSpace);
-        transformPoint(lightPovTransform, &localSpace, &localSpace);
+        transformPoint(&shadowMap->lightPovTransform, &localSpace, &localSpace);
         struct Vector3 rayDir;
-        vector3Sub(&localSpace, &lightPovTransform->position, &rayDir);
+        vector3Sub(&localSpace, &shadowMap->lightPovTransform.position, &rayDir);
         vector3Normalize(&rayDir, &rayDir);
 
         float rayDistance = 0.0f;
 
-        if (!planeRayIntersection(ontoPlane, &lightPovTransform->position, &rayDir, &rayDistance)) {
+        if (!planeRayIntersection(ontoPlane, &shadowMap->lightPovTransform.position, &rayDir, &rayDistance)) {
             return;
         }
 
         struct Vector3 intersectPoint;
-        vector3AddScaled(&lightPovTransform->position, &rayDir, rayDistance, &intersectPoint);
+        vector3AddScaled(&shadowMap->lightPovTransform.position, &rayDir, rayDistance, &intersectPoint);
 
-        currVtx->v.ob[0] = (short)intersectPoint.x;
-        currVtx->v.ob[1] = (short)intersectPoint.y;
-        currVtx->v.ob[2] = (short)intersectPoint.z;
+        currVtx->v.ob[0] = (short)(intersectPoint.x * SCENE_SCALE);
+        currVtx->v.ob[1] = (short)(intersectPoint.y * SCENE_SCALE);
+        currVtx->v.ob[2] = (short)(intersectPoint.z * SCENE_SCALE);
 
         ++currVtx;
     }
@@ -92,9 +85,12 @@ void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* r
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_1CYCLE);
     gDPSetTextureLUT(renderState->dl++, G_TT_NONE);
-    gDPSetRenderMode(renderState->dl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+    gDPSetRenderMode(renderState->dl++, RM_UPDATE_Z(1), RM_UPDATE_Z(2));
+    gSPGeometryMode(renderState->dl++, G_LIGHTING | G_SHADE | G_ZBUFFER, 0);
+    gDPSetAlphaCompare(renderState->dl++, G_AC_THRESHOLD);
     gDPSetCombineMode(renderState->dl++, SHADOW_PROJECTION_COMBINE_MODE, SHADOW_PROJECTION_COMBINE_MODE);
-    gDPSetEnvColor(renderState->dl++, 255, 255, 255, 255);
+    gDPSetEnvColor(renderState->dl++, 0, 0, 0, 255);
+    gDPSetBlendColor(renderState->dl++, 128, 128, 128, 128);
     gDPTileSync(renderState->dl++);
     gDPLoadTextureTile(
         renderState->dl++,
@@ -109,10 +105,17 @@ void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* r
         0, 0
     );
 
-    gSPDisplayList(renderState->dl++, shadowMapGfx[taskIndex]);
+    Gfx* shadowMapGfx = renderStateAllocateDLChunk(renderState, 3);
+    Gfx* dl = shadowMapGfx;
+
+    gSPVertex(dl++, vertices, 4, 0);
+    gSP2Triangles(dl++, 0, 1, 2, 0, 0, 2, 3, 0);
+    gSPEndDisplayList(dl++);
+
+    gSPDisplayList(renderState->dl++, shadowMapGfx);
 }
 
-void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderState, struct GraphicsTask* gfxTask, struct Vector3* from, struct Transform* subjectTransform, Gfx* subject, struct Plane* onto) {
+void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderState, struct GraphicsTask* gfxTask, struct Vector3* from, struct Transform* subjectTransform, Gfx* subject) {
     struct Vector3 offset;
     vector3Sub(&subjectTransform->position, from, &offset);
 
@@ -126,7 +129,7 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
         return;
     }
     
-    float projOffset = nearPlane * subjectRadius / sqrtf(distance * distance - subjectRadius * subjectRadius);
+    float projOffset = SCENE_SCALE * nearPlane * subjectRadius / sqrtf(distance * distance - subjectRadius * subjectRadius);
 
     if (projOffset < 0.00001f) {
         return;
@@ -134,15 +137,14 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
 
     float projMatrix[4][4];
     u16 perspNorm;
-    matrixPerspective(projMatrix, &perspNorm, -projOffset, projOffset, projOffset, -projOffset, nearPlane, distance + subjectRadius);
+    matrixPerspective(projMatrix, &perspNorm, -projOffset, projOffset, projOffset, -projOffset, nearPlane * SCENE_SCALE, (distance + subjectRadius) * SCENE_SCALE);
 
-    struct Transform lightPovTransform;
-    lightPovTransform.position = *from;
-    lightPovTransform.scale = gOneVec;
-    quatLook(&offset, &gUp, &lightPovTransform.rotation);
+    shadowMap->lightPovTransform.position = *from;
+    shadowMap->lightPovTransform.scale = gOneVec;
+    quatLook(&offset, &gUp, &shadowMap->lightPovTransform.rotation);
 
     struct Transform povInverse;
-    transformInvert(&lightPovTransform, &povInverse);
+    transformInvert(&shadowMap->lightPovTransform, &povInverse);
     float cameraView[4][4];
     transformToMatrix(&povInverse, cameraView, SCENE_SCALE);
     float viewProj[4][4];
@@ -153,9 +155,12 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
     guMtxCatF(subjectMatrix, viewProj, projMatrix);
 
     Mtx* lightMtx = renderStateRequestMatrices(renderState, 1);
+    Mtx* identity = renderStateRequestMatrices(renderState, 1);
+    guMtxIdent(identity);
 
     guMtxF2L(projMatrix, lightMtx);
-    gSPForceMatrix(renderState->dl++, lightMtx);
+    gSPMatrix(renderState->dl++, lightMtx, G_MTX_PROJECTION | G_MTX_NOPUSH | G_MTX_LOAD);
+    gSPMatrix(renderState->dl++, identity, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_LOAD);
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
     gDPSetColorImage(renderState->dl++, G_IM_FMT_CI, G_IM_SIZ_8b, SHADOW_MAP_WIDTH, osVirtualToPhysical(shadowMap->buffer));
@@ -166,7 +171,6 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_1CYCLE);
 
-    gDPSetRenderMode(renderState->dl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
     gSPDisplayList(renderState->dl++, shadowMapMaterial);
     gSPDisplayList(renderState->dl++, subject);
 
@@ -175,14 +179,10 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
     gSPViewport(renderState->dl++, &fullscreenViewport);
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
 
-    gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(gfxTask->framebuffer));
+    // gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(gfxTask->framebuffer));
 
-    Mtx* identity = renderStateRequestMatrices(renderState, 1);
-
-    guMtxIdent(identity);
-    gSPMatrix(renderState->dl++, identity, G_MTX_LOAD | G_MTX_MODELVIEW | G_MTX_NOPUSH);
-
-    shadowMapRenderOntoPlane(shadowMap, renderState, &lightPovTransform, nearPlane, projOffset, onto, gfxTask->taskIndex);
+    shadowMap->nearPlane = nearPlane * SCENE_SCALE;
+    shadowMap->projOffset = projOffset;
 }
 
 #define DEBUG_X 32
@@ -221,4 +221,5 @@ void shadowMapRenderDebug(struct RenderState* renderState, u16* buffer) {
 void shadowMapInit(struct ShadowMap* shadowMap, float radius, u16* buffer) {
     shadowMap->buffer = buffer;
     shadowMap->subjectRadius = radius;
+    shadowMap->flags = 0;
 }

@@ -137,12 +137,14 @@ struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
 struct Colorf32 gAmbientScale = {0.5f, 0.5f, 0.5f, 255};
 struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 
+struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.1f};
+
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     struct LightConfiguration playerLightConfig[scene->playerCount];
 
-    struct Plane groundPlane;
-    groundPlane.normal = gUp;
-    groundPlane.d = 0.0f;
+    // struct Plane groundPlane;
+    // groundPlane.normal = gUp;
+    // groundPlane.d = 0.0f;
 
     for (int i = 0; i < scene->playerCount; ++i) {
         spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &playerLightConfig[i]);
@@ -156,11 +158,18 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
                 task, 
                 &lightPosition, 
                 &scene->players[i].transform, 
-                sphere_model_gfx, 
-                &groundPlane
+                suzanne_model_gfx
             );
+
+            scene->players[i].shadowMap.flags |= SHADOW_MAP_ENABLED;
+        } else {
+            scene->players[i].shadowMap.flags &= ~SHADOW_MAP_ENABLED;
         }
     }
+
+    Mtx* identity = renderStateRequestMatrices(renderState, 1);
+    guMtxIdent(identity);
+    gSPMatrix(renderState->dl++, identity, G_MTX_LOAD | G_MTX_NOPUSH | G_MTX_MODELVIEW);
 
     gDPPipeSync(renderState->dl++);
     gDPSetColorImage(renderState->dl++, G_IM_FMT_CI, G_IM_SIZ_8b, SCREEN_WD, indexColorBuffer);
@@ -188,13 +197,6 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     renderSceneFree(renderScene);
 
     gDPPipeSync(renderState->dl++);
-    gSPDisplayList(renderState->dl++, levelMaterial(ADDITIVE_LIGHT_INDEX));
-
-    for (unsigned i = 0; i < scene->spotLightCount; ++i) {
-        spotLightRenderProjection(&scene->spotLights[i], renderState);
-    }
-
-    gDPPipeSync(renderState->dl++);
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
     
@@ -213,6 +215,21 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     renderSceneGenerate(renderScene, renderState);
     renderSceneFree(renderScene);
+
+    for (unsigned i = 0; i < scene->playerCount; ++i) {
+        shadowMapRenderOntoPlane(&scene->players[i].shadowMap, renderState, &gGroundPlane);
+    }
+
+    gDPPipeSync(renderState->dl++);
+    gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
+    gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
+    gDPSetAlphaCompare(renderState->dl++, G_AC_NONE);
+    gDPSetBlendColor(renderState->dl++, 255, 255, 255, 255);
+    gSPDisplayList(renderState->dl++, levelMaterial(ADDITIVE_LIGHT_INDEX));
+
+    for (unsigned i = 0; i < scene->spotLightCount; ++i) {
+        spotLightRenderProjection(&scene->spotLights[i], renderState);
+    }
 
     for (unsigned i = 0; i < OBJECT_COUNT; ++i) {
         sceneRenderObject(
@@ -255,4 +272,6 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gSPDisplayList(renderState->dl++, gCopyCB);
 
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
+
+    shadowMapRenderDebug(renderState, scene->players[0].shadowMap.buffer);
 }
