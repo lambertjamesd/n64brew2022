@@ -224,7 +224,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
     gDPSetAlphaCompare(renderState->dl++, G_AC_NONE);
-    gDPSetBlendColor(renderState->dl++, 255, 255, 255, 255);
+    gDPSetBlendColor(renderState->dl++, 0, 0, 0, 0);
     gSPDisplayList(renderState->dl++, levelMaterial(ADDITIVE_LIGHT_INDEX));
 
     for (unsigned i = 0; i < scene->spotLightCount; ++i) {
