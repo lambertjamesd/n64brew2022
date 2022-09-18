@@ -16,12 +16,6 @@ static Vp shadowMapViewport = {
 #define SHADOW_MAP_COMBINE_MODE        0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT
 
 #define SHADOW_PROJECTION_COMBINE_MODE 0, 0, 0, 0, 0, 0, 0, TEXEL0
-/*
-#define	RM_UPDATE_Z(clk)		\
-    Z_CMP | Z_UPD | IM_RD | CVG_DST_WRAP | CLR_ON_CVG |	\
-	FORCE_BL | ZMODE_OPA |                          \
-	GBL_c##clk(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_MEM, G_BL_1MA)
-*/
 
 #define	RM_UPDATE_Z(clk)					\
 	Z_CMP | Z_UPD | IM_RD | CVG_DST_FULL |		\

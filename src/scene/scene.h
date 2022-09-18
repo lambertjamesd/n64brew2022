@@ -29,7 +29,6 @@ struct RenderModeData {
 
 struct Scene {
     struct Camera camera;
-    struct PointLight pointLight;
     struct Player players[MAX_PLAYERS];
     struct ItemSlot* itemSlots;
     struct SpotLight* spotLights;

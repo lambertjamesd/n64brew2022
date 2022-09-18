@@ -30,22 +30,6 @@ Lights1 gLights = gdSPDefLights1(0x10, 0, 0, 0xE0, 0xE0, 0xE0, 90, 90, 0);
 
 u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WIDTH * SHADOW_MAP_HEIGHT];
 
-#define OBJECT_COUNT    3
-
-struct Transform gObjectPos[OBJECT_COUNT] = {
-    {{-1.5f, 0.0f, -2.5f}, {0.707f, 0.0f, 0.0f, 0.707f}, {1.0f, 1.0f, 1.0f}},
-    {{2.5f, 0.0f, -2.0f}, {0.707f, 0.0f, 0.0f, 0.707f}, {1.0f, 1.0f, 1.0f}},
-    {{0.0f, 0.0f * 0.75f, 1.5f}, {-0.923879533f, 0.0f, 0.0f, 0.382683432f}, {1.0f, 1.0f, 1.0f}},
-};
-
-Gfx* gObjectGfx[OBJECT_COUNT] = {
-    sphere_model_gfx,
-    cylinder_model_gfx,
-    suzanne_model_gfx,
-};
-
-struct Vector3 gLightOrbitCenter = {0.0f, 5.0f, 0.0f};
-
 #define LIGHT_ORBIT_RADIUS  (5.0f)
 #define LIGHT_ORBIT_PERIOD  3.0f
 
@@ -74,8 +58,6 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     scene->camera.transform.position = definition->cameraDefinition.position;
     scene->camera.transform.rotation = definition->cameraDefinition.rotation;
 
-    pointLightInit(&scene->pointLight, &gLightOrbitCenter, &gColorWhite, 15.0f);
-
     scene->playerCount = (u8)playerCount;
     for (int i = 0; i < playerCount; ++i) {
         playerInit(&scene->players[i], &definition->playerStart[i], i, gPlayerShadowBuffers[i]);
@@ -97,12 +79,6 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 unsigned ignoreInputFrames = 10;
 
 void sceneUpdate(struct Scene* scene) {
-    float angle = gTimePassed * 2.0f * M_PI / LIGHT_ORBIT_PERIOD;
-
-    scene->pointLight.position.x = cosf(angle) * LIGHT_ORBIT_RADIUS + gLightOrbitCenter.x;
-    scene->pointLight.position.y = cosf(angle * 3.0f) + gLightOrbitCenter.y;
-    scene->pointLight.position.z = sinf(angle) * LIGHT_ORBIT_RADIUS + gLightOrbitCenter.z;
-
     if (ignoreInputFrames) {
         --ignoreInputFrames;
     }
@@ -114,23 +90,6 @@ void sceneUpdate(struct Scene* scene) {
     for (int i = 0; i < scene->spotLightCount; ++i) {
         spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
     }
-}
-
-void sceneRenderObject(struct Scene* scene, struct RenderState* renderState, Gfx* model, struct Transform* transform, int objectIndex) {
-    Mtx* mtxTransform = renderStateRequestMatrices(renderState, 1);
-
-    Light* light = renderStateRequestLights(renderState, 1);
-
-    pointLightCalculateLightDirOnly(&scene->pointLight, &transform->position, light);
-
-    gSPLight(renderState->dl++, light, 1);
-
-    transformToMatrixL(transform, mtxTransform, SCENE_SCALE);
-    materialSetToon(renderState, objectIndex);
-    gSPMatrix(renderState->dl++, mtxTransform, G_MTX_MODELVIEW | G_MTX_PUSH | G_MTX_MUL);
-    gSPDisplayList(renderState->dl++, model);
-
-    gSPPopMatrix(renderState->dl++, G_MTX_MODELVIEW);
 }
 
 struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
@@ -231,34 +190,11 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         spotLightRenderProjection(&scene->spotLights[i], renderState);
     }
 
-    for (unsigned i = 0; i < OBJECT_COUNT; ++i) {
-        sceneRenderObject(
-            scene, 
-            renderState, 
-            gObjectGfx[i], 
-            &gObjectPos[i], 
-            i
-        );
-    }
-
     gSPGeometryMode(renderState->dl++, G_CULL_FRONT, G_CULL_BACK);
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
     struct Transform transform;
     transformInitIdentity(&transform);
-
-    gSPDisplayList(renderState->dl++, point_light_mat);
-
-    Mtx* lightMtx = renderStateRequestMatrices(renderState, 1);
-    transform.position = scene->pointLight.position;
-    vector3Scale(&gOneVec, &transform.scale, 0.25f);
-    transformToMatrixL(&transform, lightMtx, SCENE_SCALE);
-
-    gDPSetEnvColor(renderState->dl++, 255, 255, 255, 255);
-    gDPSetCombineLERP(renderState->dl++, 0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT);
-    gSPMatrix(renderState->dl++, lightMtx, G_MTX_MODELVIEW | G_MTX_PUSH | G_MTX_MUL);
-    gSPDisplayList(renderState->dl++, sphere_model_gfx);
-    gSPPopMatrix(renderState->dl++, G_MTX_MODELVIEW);
 
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_1CYCLE);
