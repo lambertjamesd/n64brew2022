@@ -85,12 +85,13 @@ void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* r
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_1CYCLE);
     gDPSetTextureLUT(renderState->dl++, G_TT_NONE);
+    // gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
     gDPSetRenderMode(renderState->dl++, RM_UPDATE_Z(1), RM_UPDATE_Z(2));
-    gSPGeometryMode(renderState->dl++, G_LIGHTING | G_SHADE | G_ZBUFFER, 0);
+    gSPGeometryMode(renderState->dl++, G_LIGHTING | G_SHADE, G_ZBUFFER);
     gDPSetAlphaCompare(renderState->dl++, G_AC_THRESHOLD);
     gDPSetCombineMode(renderState->dl++, SHADOW_PROJECTION_COMBINE_MODE, SHADOW_PROJECTION_COMBINE_MODE);
     gDPSetEnvColor(renderState->dl++, 0, 0, 0, 255);
-    gDPSetBlendColor(renderState->dl++, 128, 128, 128, 128);
+    gDPSetBlendColor(renderState->dl++, 0, 0, 0, 128);
     gDPTileSync(renderState->dl++);
     gDPLoadTextureTile(
         renderState->dl++,
@@ -122,14 +123,8 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
     float distance = sqrtf(vector3MagSqrd(&offset));
 
     float subjectRadius = shadowMap->subjectRadius * subjectTransform->scale.x;
-
-    float nearPlane = distance - subjectRadius;
-
-    if (nearPlane < 0.00001f) {
-        return;
-    }
     
-    float projOffset = SCENE_SCALE * nearPlane * subjectRadius / sqrtf(distance * distance - subjectRadius * subjectRadius);
+    float projOffset = shadowMap->nearPlane * subjectRadius / sqrtf(distance * distance - subjectRadius * subjectRadius);
 
     if (projOffset < 0.00001f) {
         return;
@@ -137,7 +132,7 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
 
     float projMatrix[4][4];
     u16 perspNorm;
-    matrixPerspective(projMatrix, &perspNorm, -projOffset, projOffset, projOffset, -projOffset, nearPlane * SCENE_SCALE, (distance + subjectRadius) * SCENE_SCALE);
+    matrixPerspective(projMatrix, &perspNorm, -projOffset, projOffset, projOffset, -projOffset, shadowMap->nearPlane, shadowMap->farPlane);
 
     shadowMap->lightPovTransform.position = *from;
     shadowMap->lightPovTransform.scale = gOneVec;
@@ -181,7 +176,6 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
 
     // gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(gfxTask->framebuffer));
 
-    shadowMap->nearPlane = nearPlane * SCENE_SCALE;
     shadowMap->projOffset = projOffset;
 }
 
@@ -218,8 +212,10 @@ void shadowMapRenderDebug(struct RenderState* renderState, u16* buffer) {
     );
 }
 
-void shadowMapInit(struct ShadowMap* shadowMap, float radius, u16* buffer) {
+void shadowMapInit(struct ShadowMap* shadowMap, float radius, float nearPlane, float farPlane, u16* buffer) {
     shadowMap->buffer = buffer;
     shadowMap->subjectRadius = radius;
     shadowMap->flags = 0;
+    shadowMap->nearPlane = nearPlane * SCENE_SCALE;
+    shadowMap->farPlane = farPlane * SCENE_SCALE;
 }

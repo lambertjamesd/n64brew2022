@@ -21,12 +21,17 @@ struct Player {
     struct Vector2 lookDir;
 
     struct ShadowMap shadowMap;
+
+    Mtx* mtxTransform;
+    Mtx* mtxArmature;
 };
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer);
 
 void playerUpdate(struct Player* player);
-
+void playerSetupTransforms(struct Player* player, struct RenderState* renderState);
 void playerRender(struct Player* player, struct RenderScene* renderScene);
+
+Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState);
 
 #endif

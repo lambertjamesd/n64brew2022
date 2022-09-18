@@ -101,9 +101,9 @@ struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.1f};
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     struct LightConfiguration playerLightConfig[scene->playerCount];
 
-    // struct Plane groundPlane;
-    // groundPlane.normal = gUp;
-    // groundPlane.d = 0.0f;
+    for (int i = 0; i < scene->playerCount; ++i) {
+        playerSetupTransforms(&scene->players[i], renderState);
+    }
 
     for (int i = 0; i < scene->playerCount; ++i) {
         spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &playerLightConfig[i]);
@@ -111,13 +111,15 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         struct Vector3 lightPosition;
 
         if (spotLightsGetPosition(&playerLightConfig[i], &lightPosition)) {  
+            Gfx* playerShadowGfx = playerGenerateShadowMapGfx(&scene->players[i], renderState);
+
             shadowMapRender(
                 &scene->players[i].shadowMap, 
                 renderState, 
                 task, 
                 &lightPosition, 
                 &scene->players[i].transform, 
-                suzanne_model_gfx
+                playerShadowGfx
             );
 
             scene->players[i].shadowMap.flags |= SHADOW_MAP_ENABLED;

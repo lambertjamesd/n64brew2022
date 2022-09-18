@@ -36,7 +36,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     player->lookDir.x = 1.0f;
     player->lookDir.y = 0.0f;
 
-    shadowMapInit(&player->shadowMap, 1.0f, buffer);
+    shadowMapInit(&player->shadowMap, 1.0f, 0.5f, 10.0f, buffer);
 }
 
 void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
@@ -78,14 +78,19 @@ void playerUpdate(struct Player* player) {
     }
 }
 
-void playerRender(struct Player* player, struct RenderScene* renderScene) {
-    Mtx* transform = renderStateRequestMatrices(renderScene->renderState, 1);
-    Mtx* armature = renderStateRequestMatrices(renderScene->renderState, PLAYER_DEFAULT_BONES_COUNT);
+void playerSetupTransforms(struct Player* player, struct RenderState* renderState) {
+    Mtx* transform = renderStateRequestMatrices(renderState, 1);
+    Mtx* armature = renderStateRequestMatrices(renderState, PLAYER_DEFAULT_BONES_COUNT);
 
     transformToMatrixL(&player->transform, transform, SCENE_SCALE);
 
     skCalculateTransforms(&player->armature, armature);
 
+    player->mtxTransform = transform;
+    player->mtxArmature = armature;
+}
+
+void playerRender(struct Player* player, struct RenderScene* renderScene) {
     Gfx* attachments = skBuildAttachments(&player->armature, NULL, renderScene->renderState);
 
     Gfx* objectRender = renderStateAllocateDLChunk(renderScene->renderState, 3);
@@ -100,9 +105,21 @@ void playerRender(struct Player* player, struct RenderScene* renderScene) {
     renderSceneAdd(
         renderScene, 
         objectRender, 
-        transform, 
+        player->mtxTransform, 
         PLAYER_0_INDEX, 
         &player->transform.position, 
-        armature
+        player->mtxArmature
     );
+}
+
+Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState) {
+    Gfx* result = renderStateAllocateDLChunk(renderState, 4);
+    Gfx* dl = result;
+
+    gSPSegment(dl++, MATRIX_TRANSFORM_SEGMENT,  osVirtualToPhysical(player->mtxArmature));
+    gSPSegment(dl++, BONE_ATTACHMENT_SEGMENT,  skBuildAttachments(&player->armature, NULL, renderState));
+    gSPDisplayList(dl++, player->armature.displayList);
+    gSPEndDisplayList(dl++);
+
+    return result;
 }
