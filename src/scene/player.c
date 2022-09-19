@@ -15,6 +15,8 @@
 
 struct Vector2 gMaxRotateVector;
 
+struct Vector3 gPlayerCenter = {0.0f, 0.8f, 0.0f};
+
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer) {
     player->transform.position = startLocation->position;
     quatIdent(&player->transform.rotation);
@@ -30,13 +32,22 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
         PLAYER_ATTACHMENT_COUNT
     );
 
+    skAnimatorInit(
+        &player->animator,
+        PLAYER_DEFAULT_BONES_COUNT,
+        NULL,
+        NULL
+    );
+
     gMaxRotateVector.x = cosf(PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
     gMaxRotateVector.y = sinf(PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
 
     player->lookDir.x = 1.0f;
     player->lookDir.y = 0.0f;
 
-    shadowMapInit(&player->shadowMap, 1.0f, 0.5f, 10.0f, buffer);
+    shadowMapInit(&player->shadowMap, &gPlayerCenter, 0.5f, 0.5f, 10.0f, buffer);
+
+    skAnimatorRunClip(&player->animator, &player_animations[PLAYER_PLAYER__PLAYER_0_WALK_INDEX], SKAnimatorFlagsLoop);
 }
 
 void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
@@ -54,6 +65,8 @@ void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
 }
 
 void playerUpdate(struct Player* player) {
+    skAnimatorUpdate(&player->animator, player->armature.boneTransforms, 1.0f);
+
     OSContPad* input = controllersGetControllerData(player->playerIndex);
 
     struct Vector3 moveDir;

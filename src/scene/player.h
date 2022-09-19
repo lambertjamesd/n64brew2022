@@ -9,12 +9,15 @@
 #include "../graphics/render_scene.h"
 
 #include "../sk64/skelatool_armature.h"
+#include "../sk64/skelatool_animator.h"
 
 #include "shadow_map.h"
 
 struct Player {
     struct Transform transform;
     struct SKArmature armature;
+    struct SKAnimator animator;
+
     short playerIndex;
 
     struct Vector3 velocity;

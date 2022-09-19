@@ -96,7 +96,7 @@ struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
 struct Colorf32 gAmbientScale = {0.5f, 0.5f, 0.5f, 255};
 struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 
-struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.1f};
+struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     struct LightConfiguration playerLightConfig[scene->playerCount];

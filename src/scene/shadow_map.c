@@ -118,7 +118,9 @@ void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* r
 
 void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderState, struct GraphicsTask* gfxTask, struct Vector3* from, struct Transform* subjectTransform, Gfx* subject) {
     struct Vector3 offset;
-    vector3Sub(&subjectTransform->position, from, &offset);
+    struct Vector3 modelCenter;
+    transformPoint(subjectTransform, &shadowMap->offset, &modelCenter);
+    vector3Sub(&modelCenter, from, &offset);
 
     float distance = sqrtf(vector3MagSqrd(&offset));
 
@@ -212,7 +214,8 @@ void shadowMapRenderDebug(struct RenderState* renderState, u16* buffer) {
     );
 }
 
-void shadowMapInit(struct ShadowMap* shadowMap, float radius, float nearPlane, float farPlane, u16* buffer) {
+void shadowMapInit(struct ShadowMap* shadowMap, struct Vector3* offset, float radius, float nearPlane, float farPlane, u16* buffer) {
+    shadowMap->offset = *offset;
     shadowMap->buffer = buffer;
     shadowMap->subjectRadius = radius;
     shadowMap->flags = 0;

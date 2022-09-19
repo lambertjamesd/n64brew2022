@@ -15,6 +15,7 @@
 
 struct ShadowMap {
     struct Transform lightPovTransform;
+    struct Vector3 offset;
     float subjectRadius;
     float nearPlane;
     float farPlane;
@@ -23,7 +24,7 @@ struct ShadowMap {
     u32 flags;
 };
 
-void shadowMapInit(struct ShadowMap* shadowMap, float radius, float nearPlane, float farPlane, u16* buffer);
+void shadowMapInit(struct ShadowMap* shadowMap, struct Vector3* offset, float radius, float nearPlane, float farPlane, u16* buffer);
 void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderState, struct GraphicsTask* gfxTask, struct Vector3* from, struct Transform* subjectTransform, Gfx* subject);
 void shadowMapRenderDebug(struct RenderState* renderState, u16* buffer);
 void shadowMapRenderOntoPlane(struct ShadowMap* shadowMap, struct RenderState* renderState, struct Plane* ontoPlane);

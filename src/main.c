@@ -8,6 +8,8 @@
 #include "scene/scene.h"
 #include "controls/controller.h"
 #include "level/level.h"
+#include "sk64/skelatool_animator.h"
+#include "sk64/skelatool_defs.h"
 
 #ifdef WITH_DEBUGGER
 #include "../debugger/debugger.h"
@@ -81,6 +83,8 @@ extern OSMesgQueue dmaMessageQ;
 
 extern char _heapStart[];
 
+extern char _animation_segmentSegmentRomStart[];
+
 struct Scene gScene;
 
 void gameProc(void *arg) {
@@ -125,10 +129,13 @@ void gameProc(void *arg) {
     heapInit(_heapStart, memoryEnd);
     romInit();
 
+    skInitDataPool(gPiHandle);
+    skSetSegmentLocation(CHARACTER_ANIMATION_SEGMENT, (unsigned)_animation_segmentSegmentRomStart);
+    
     loadLevel(0);
 
-    sceneInit(&gScene, gCurrentLevel, 1);
     controllersInit();
+    sceneInit(&gScene, gCurrentLevel, 1);
 
 #ifdef WITH_DEBUGGER
     OSThread* debugThreads[2];
@@ -153,6 +160,7 @@ void gameProc(void *arg) {
                 }
 
                 controllersTriggerRead();
+                skReadMessages();
                 sceneUpdate(&gScene);
                 timeUpdateDelta();
 
