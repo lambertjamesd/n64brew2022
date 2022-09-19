@@ -211,5 +211,5 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
-    shadowMapRenderDebug(renderState, scene->players[0].shadowMap.buffer);
+    // shadowMapRenderDebug(renderState, scene->players[0].shadowMap.buffer);
 }

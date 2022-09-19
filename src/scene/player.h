@@ -27,6 +27,8 @@ struct Player {
 
     Mtx* mtxTransform;
     Mtx* mtxArmature;
+
+    float animationSpeed;
 };
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer);
