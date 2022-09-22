@@ -171,7 +171,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     struct RenderScene* renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, 0);
 
     for (unsigned i = 0; i < gCurrentLevel->groundContentCount; ++i) {
-        renderSceneAdd(renderScene, gCurrentLevel->groundContent[i].displayList, NULL, gCurrentLevel->groundContent[i].materialIndex, &gZeroVec, NULL);
+        renderSceneAdd(renderScene, gCurrentLevel->groundContent[i].displayList, NULL, gCurrentLevel->groundContent[i].materialIndex, &gZeroVec, NULL, NULL);
     }
 
     renderSceneGenerate(renderScene, renderState);
@@ -185,13 +185,13 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, levelMaterialDefault());
 
     for (unsigned i = 0; i < gCurrentLevel->staticContentCount; ++i) {
-        renderSceneAdd(renderScene, gCurrentLevel->staticContent[i].displayList, NULL, gCurrentLevel->staticContent[i].materialIndex, &gZeroVec, NULL);
+        renderSceneAdd(renderScene, gCurrentLevel->staticContent[i].displayList, NULL, gCurrentLevel->staticContent[i].materialIndex, &gZeroVec, NULL, NULL);
     }
 
     for (unsigned i = 0; i < scene->playerCount; ++i) {
-        spotLightsSetupLight(&playerLightConfig[i], &scene->players[i].transform.position, renderState);
+        Light* light = spotLightsSetupLight(&playerLightConfig[i], &scene->players[i].transform.position, renderState);
         
-        playerRender(&scene->players[i], renderScene);
+        playerRender(&scene->players[i], light, renderScene);
     }
 
     itemPoolRender(&scene->itemPool, scene->spotLights, scene->spotLightCount, renderScene);

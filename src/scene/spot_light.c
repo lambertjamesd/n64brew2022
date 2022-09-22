@@ -276,7 +276,7 @@ int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct
     return 2;
 }
 
-void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3* target, struct RenderState* renderState) {
+Light* spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3* target, struct RenderState* renderState) {
     struct Vector3 lightSource;
 
     if (!spotLightsGetPosition(lightConfig, &lightSource)) {
@@ -291,8 +291,7 @@ void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3
         light->l.pad1 = 0;
         vector3ToVector3u8(&gRight, (struct Vector3u8*)light->l.dir);
         light->l.pad3 = 0;
-        gSPLight(renderState->dl++, light, 1);
-        return;
+        return light;
     }
 
     struct Vector3 offset;
@@ -310,7 +309,7 @@ void spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3
     light->l.pad1 = 0;
     vector3ToVector3u8(&offset, (struct Vector3u8*)light->l.dir);
     light->l.pad3 = 0;
-    gSPLight(renderState->dl++, light, 1);
+    return light;
 }
 
 int spotLightsGetPosition(struct LightConfiguration* lightConfig, struct Vector3* position) {

@@ -128,7 +128,7 @@ void playerSetupTransforms(struct Player* player, struct RenderState* renderStat
     player->mtxArmature = armature;
 }
 
-void playerRender(struct Player* player, struct RenderScene* renderScene) {
+void playerRender(struct Player* player, Light* light, struct RenderScene* renderScene) {
     Gfx* attachments = skBuildAttachments(&player->armature, NULL, renderScene->renderState);
 
     Gfx* objectRender = renderStateAllocateDLChunk(renderScene->renderState, 3);
@@ -146,7 +146,8 @@ void playerRender(struct Player* player, struct RenderScene* renderScene) {
         player->mtxTransform, 
         PLAYER_0_INDEX, 
         &player->transform.position, 
-        player->mtxArmature
+        player->mtxArmature,
+        light
     );
 }
 

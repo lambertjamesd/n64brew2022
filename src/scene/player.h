@@ -38,7 +38,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
 
 void playerUpdate(struct Player* player);
 void playerSetupTransforms(struct Player* player, struct RenderState* renderState);
-void playerRender(struct Player* player, struct RenderScene* renderScene);
+void playerRender(struct Player* player, Light* light, struct RenderScene* renderScene);
 
 Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState);
 

@@ -13,7 +13,7 @@
 
 #define START_BELT_OFFSET   3.0f
 
-struct Vector3 gBeltEnd = {0.0f, 0.3f, 0.7f};
+struct Vector3 gBeltEnd = {0.0f, 0.7f, 0.3f};
 
 void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definition) {
     conveyor->transform.position = definition->position;
@@ -33,7 +33,7 @@ void conveyorUpdate(struct Conveyor* conveyor) {
         }
 
         struct Vector3 beltOffset = gBeltEnd;
-        beltOffset.z -= conveyor->beltOffset[i];
+        beltOffset.y -= conveyor->beltOffset[i];
 
         transformPoint(&conveyor->transform, &beltOffset, &transform.position);
 
@@ -51,7 +51,7 @@ void conveyorRender(struct Conveyor* conveyor, struct RenderScene* renderScene) 
     Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
     transformToMatrixL(&conveyor->transform, mtx, SCENE_SCALE);
 
-    renderSceneAdd(renderScene, conveyor_model_gfx, mtx, FURNITURE_WAREHOUSE_INDEX, &conveyor->transform.position, NULL);
+    renderSceneAdd(renderScene, conveyor_model_gfx, mtx, FURNITURE_WAREHOUSE_INDEX, &conveyor->transform.position, NULL, NULL);
 }
 
 int conveyorCanAcceptItem(struct Conveyor* conveyor) {
@@ -67,7 +67,7 @@ void conveyorAcceptItem(struct Conveyor* conveyor, struct Item* item) {
     quatIdent(&item->transform.rotation);
     item->transform.scale = gOneVec;
     struct Vector3 beltOffset = gBeltEnd;
-    beltOffset.z -= START_BELT_OFFSET;
+    beltOffset.y -= START_BELT_OFFSET;
     transformPoint(&conveyor->transform, &beltOffset, &item->transform.position);
     item->flags = ITEM_FLAGS_ATTACHED;
 }

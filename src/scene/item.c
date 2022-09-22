@@ -63,17 +63,12 @@ void itemUpdate(struct Item* item) {
     }
 }
 
-void itemRender(struct Item* item, struct RenderScene* renderScene) {
+void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene) {
     struct ItemTypeDefinition* definition = &gItemDefinitions[item->type];
 
     Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
 
-    struct Transform transform;
-    transform.position = gZeroVec;
-    quatIdent(&transform.rotation);
-    transform.scale = gOneVec;
-
-    transformToMatrixL(&transform, mtx, SCENE_SCALE);
+    transformToMatrixL(&item->transform, mtx, SCENE_SCALE);
 
     Mtx* armature = NULL;
 
@@ -82,7 +77,7 @@ void itemRender(struct Item* item, struct RenderScene* renderScene) {
         skCalculateTransforms(&item->armature, armature);
     }
 
-    renderSceneAdd(renderScene, definition->dl, mtx, definition->materialIndex, &item->transform.position, armature);
+    renderSceneAdd(renderScene, definition->dl, mtx, definition->materialIndex, &item->transform.position, armature, light);
 }
 
 void itemUpdateTarget(struct Item* item, struct Transform* transform) {
@@ -160,8 +155,8 @@ void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int
 
     while (current != NULL) {
         spotLightsFindConfiguration(spotLights, spotLightCount, &current->transform.position, NULL, currentConfiguration);
-        spotLightsSetupLight(currentConfiguration, &current->transform.position, renderScene->renderState);
-        itemRender(current, renderScene);
+        Light* light = spotLightsSetupLight(currentConfiguration, &current->transform.position, renderScene->renderState);
+        itemRender(current, light, renderScene);
 
         current = current->next;
         ++currentConfiguration;

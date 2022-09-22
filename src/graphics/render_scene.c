@@ -47,7 +47,7 @@ int renderSceneSortKey(int materialIndex, float distance) {
     return (materialIndex << 23) | (distanceScaled & 0x7FFFFF);
 }
 
-void renderSceneAdd(struct RenderScene* renderScene, Gfx* geometry, Mtx* matrix, int materialIndex, struct Vector3* at, Mtx* armature) {
+void renderSceneAdd(struct RenderScene* renderScene, Gfx* geometry, Mtx* matrix, int materialIndex, struct Vector3* at, Mtx* armature, Light* light) {
     if (renderScene->currentRenderPart == renderScene->maxRenderParts) {
         return;
     }
@@ -56,6 +56,7 @@ void renderSceneAdd(struct RenderScene* renderScene, Gfx* geometry, Mtx* matrix,
     part->geometry = geometry;
     part->matrix = matrix;
     part->armature = armature;
+    part->light = light;
     renderScene->materials[renderScene->currentRenderPart] = materialIndex;
     renderScene->sortKeys[renderScene->currentRenderPart] = renderSceneSortKey(materialIndex, planePointDistance(&renderScene->forwardPlane, at));
 
@@ -145,6 +146,10 @@ void renderSceneGenerate(struct RenderScene* renderScene, struct RenderState* re
 
         if (renderPart->armature) {
             gSPSegment(renderState->dl++, MATRIX_TRANSFORM_SEGMENT, renderPart->armature);
+        }
+
+        if (renderPart->light) {
+            gSPLight(renderState->dl++, renderPart->light, 1);
         }
 
         gSPDisplayList(renderState->dl++, renderPart->geometry);

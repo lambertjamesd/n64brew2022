@@ -44,7 +44,7 @@ void itemInit(struct Item* item, enum ItemType itemType, struct Transform* initi
 
 void itemUpdate(struct Item* item);
 
-void itemRender(struct Item* item, struct RenderScene* renderScene);
+void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene);
 
 void itemUpdateTarget(struct Item* item, struct Transform* transform);
 
