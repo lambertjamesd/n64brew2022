@@ -12,6 +12,7 @@
 #include "../sk64/skelatool_animator.h"
 
 #include "shadow_map.h"
+#include "item.h"
 
 struct Player {
     struct Transform transform;
@@ -29,6 +30,8 @@ struct Player {
     Mtx* mtxArmature;
 
     float animationSpeed;
+
+    struct Item* holdingItem;
 };
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer);

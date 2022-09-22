@@ -88,6 +88,14 @@ LEVEL_LIST_FBX = $(LEVEL_LIST:%.blend=build/%.fbx)
 LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
 LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 
+MODEL_LIST = assets/models/conveyor.blend \
+	assets/models/player.blend \
+	assets/models/pumpkin.blend
+
+MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
+MODEL_FBX = $(MODEL_LIST:%.blend=build/%.fbx)
+MODEL_OBJECTS = $(MODEL_LIST:%.blend=build/%_geo.o)
+
 ####################
 ## Materials
 ####################
@@ -102,9 +110,9 @@ IMAGE_LIST = $(shell find assets/ -type f -name '*.png')
 
 ALL_IMAGES = $(GENERATED_IMAGES) $(IMAGE_LIST)
 
-build/assets/materials/static.h: assets/materials/static.skm.yaml $(LEVEL_LIST_FBX) $(SKELATOOL64) $(ALL_IMAGES)
+build/assets/materials/static.h: assets/materials/static.skm.yaml $(LEVEL_LIST_FBX) $(MODEL_FBX) $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
-	$(SKELATOOL64) --name static --ci-buffer -m $< $(LEVEL_LIST_FBX:%=-m %) --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
+	$(SKELATOOL64) --name static --ci-buffer -m $< $(LEVEL_LIST_FBX:%=-m %) $(MODEL_FBX:%=-m %) --pallete build/assets/materials/pallete.png --material-output -o build/assets/materials/static.h
 
 build/assets/materials/pallete.h: assets/materials/pallete.skm.yaml assets/materials/half_pallete.png
 	@mkdir -p $(@D)
@@ -118,19 +126,16 @@ build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/
 ## Models
 ####################
 
-MODEL_LIST = assets/models/player.blend \
-	assets/models/pumpkin.blend
-
-MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
-MODEL_OBJECTS = $(MODEL_LIST:%.blend=build/%_geo.o)
-
 ANIM_LIST = build/assets/models/player_anim.o
 
 build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c: build/assets/models/%.fbx assets/models/%.flags assets/materials/static.skm.yaml $(ALL_IMAGES) $(SKELATOOL64)
 	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) -m $< $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
 
 
-build/src/scene/player.o: build/assets/models/player.h
+build/src/scene/player.o: build/assets/models/player.h build/assets/materials/static.h
+build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h
+
+build/src/scene/item.o: build/assets/materials/static.h build/assets/models/pumpkin.h
 
 build/anims.ld: $(ANIM_LIST) tools/generate_animation_ld.js
 	@mkdir -p $(@D)

@@ -11,6 +11,8 @@
 #include "player.h"
 #include "item_slot.h"
 #include "spot_light.h"
+#include "conveyor.h"
+#include "item.h"
 
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
@@ -32,9 +34,12 @@ struct Scene {
     struct Player players[MAX_PLAYERS];
     struct ItemSlot* itemSlots;
     struct SpotLight* spotLights;
+    struct Conveyor* conveyors;
+    struct ItemPool itemPool;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;
+    u8 conveyorCount;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);

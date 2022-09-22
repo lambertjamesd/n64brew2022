@@ -42,6 +42,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     player->transform.scale = gOneVec;
     player->playerIndex = index;
     player->animationSpeed = 0.0f;
+    player->holdingItem = NULL;
 
     skArmatureInit(
         &player->armature, 

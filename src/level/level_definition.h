@@ -34,6 +34,11 @@ struct SpotLightDefinition {
     float angle;
 };
 
+struct ConveyorDefinition {
+    struct Vector3 position;
+    struct Quaternion rotation;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
@@ -46,6 +51,9 @@ struct LevelDefinition {
 
     struct SpotLightDefinition* spotLights;
     short spotLightCount;
+
+    struct ConveyorDefinition* conveyors;
+    short conveyorCount;
 
     struct PlayerStartLocation playerStart[MAX_PLAYERS];
     struct CameraDefinition cameraDefinition;

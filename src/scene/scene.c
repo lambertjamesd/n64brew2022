@@ -15,6 +15,7 @@
 #include "../graphics/render_scene.h"
 #include "../graphics/pallete_operations.h"
 #include "../util/memory.h"
+#include "../math/mathf.h"
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
@@ -48,6 +49,8 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 #define GROUND_LERP  TEXEL0, 0, ENVIRONMENT, PRIMITIVE, 0, 0, 0, ENVIRONMENT
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
+    itemPoolInit(&scene->itemPool);
+
     cameraInit(
         &scene->camera, 
         definition->cameraDefinition.verticalFov, 
@@ -74,6 +77,12 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     for (int i = 0; i < scene->spotLightCount; ++i) {
         spotLightInit(&scene->spotLights[i], &definition->spotLights[i], &scene->camera.transform.position);
     }
+
+    scene->conveyorCount = definition->conveyorCount;
+    scene->conveyors = malloc(sizeof(struct Conveyor) * scene->conveyorCount);
+    for (int i = 0; i < scene->conveyorCount; ++i) {
+        conveyorInit(&scene->conveyors[i], &definition->conveyors[i]);
+    }
 }
 
 unsigned ignoreInputFrames = 10;
@@ -86,6 +95,17 @@ void sceneUpdate(struct Scene* scene) {
     for (int i = 0; i < scene->playerCount; ++i) {
         playerUpdate(&scene->players[i]);
     }
+
+    for (int i = 0; i < scene->conveyorCount; ++i) {
+        if (conveyorCanAcceptItem(&scene->conveyors[i])) {
+            struct Item* newItem = itemPoolNew(&scene->itemPool, ItemTypePumpkin, &scene->conveyors[i].transform);
+            conveyorAcceptItem(&scene->conveyors[i], newItem);
+        }
+
+        conveyorUpdate(&scene->conveyors[i]);
+    }
+
+    itemPoolUpdate(&scene->itemPool);
 
     for (int i = 0; i < scene->spotLightCount; ++i) {
         spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
@@ -172,6 +192,12 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         spotLightsSetupLight(&playerLightConfig[i], &scene->players[i].transform.position, renderState);
         
         playerRender(&scene->players[i], renderScene);
+    }
+
+    itemPoolRender(&scene->itemPool, scene->spotLights, scene->spotLightCount, renderScene);
+
+    for (unsigned i = 0; i < scene->conveyorCount; ++i) {
+        conveyorRender(&scene->conveyors[i], renderScene);
     }
 
     renderSceneGenerate(renderScene, renderState);
