@@ -23,4 +23,6 @@ void conveyorAcceptItem(struct Conveyor* conveyor, struct Item* item);
 
 struct Item* conveyorReleaseItem(struct Conveyor* conveyor);
 
+struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabPosition);
+
 #endif

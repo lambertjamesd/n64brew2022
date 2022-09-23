@@ -89,3 +89,19 @@ struct Item* conveyorReleaseItem(struct Conveyor* conveyor) {
 
     return result;
 }
+
+struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabPosition) {
+    if (!conveyor->pendingItems[0]) {
+        return NULL;
+    }
+
+    struct Vector3 offset;
+    vector3Sub(grabPosition, &conveyor->pendingItems[0]->transform.position, &offset);
+    offset.y = 0.0f;
+
+    if (vector3MagSqrd(&offset) > ITEM_PICKUP_RADIUS) {
+        return NULL;
+    }
+
+    return conveyorReleaseItem(conveyor);
+}

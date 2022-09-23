@@ -25,8 +25,11 @@ struct ItemTypeDefinition {
     unsigned short* boneParent;
 };
 
-#define ITEM_FLAGS_ATTACHED (1 << 0)
-#define ITEM_FLAGS_HAS_ARMATURE (1 << 1)
+#define ITEM_FLAGS_ATTACHED         (1 << 0)
+#define ITEM_FLAGS_HAS_ARMATURE     (1 << 1)
+#define ITEM_FLAGS_DROPPED          (1 << 2)
+
+#define ITEM_PICKUP_RADIUS  0.5f
 
 struct Item {
     struct Item* next;

@@ -94,6 +94,16 @@ void sceneUpdate(struct Scene* scene) {
 
     for (int i = 0; i < scene->playerCount; ++i) {
         playerUpdate(&scene->players[i]);
+
+        struct Vector3 grabFrom;
+
+        if (controllerGetButtonDown(i, A_BUTTON) && playerCanGrab(&scene->players[i], &grabFrom)) {
+            struct Item* item = scenePickupItem(scene, &grabFrom);
+
+            if (item) {
+                playerHandObject(&scene->players[i], item);
+            }
+        }
     }
 
     for (int i = 0; i < scene->conveyorCount; ++i) {
@@ -238,4 +248,17 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
     // shadowMapRenderDebug(renderState, scene->players[0].shadowMap.buffer);
+}
+
+struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
+    for (int i = 0; i < scene->conveyorCount; ++i) {
+        struct Item* result = conveyorPickupItem(&scene->conveyors[i], grabFrom);
+
+        if (result) {
+            return result;
+        }
+    }
+    
+
+    return NULL;
 }

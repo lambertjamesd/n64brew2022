@@ -21,5 +21,7 @@ void skRenderObject(struct SKArmature* object, Gfx** attachements, struct Render
 void skCalculateTransforms(struct SKArmature* object, Mtx* into);
 void skCleanupObject(struct SKArmature* object);
 void skCalculateBonePosition(struct SKArmature* object, unsigned short boneIndex, struct Vector3* bonePosition, struct Vector3* out);
+void skCalculateBoneRotation(struct SKArmature* object, unsigned short boneIndex, struct Quaternion* localBoneRotation, struct Quaternion* out);
+void skCalculateBoneTransform(struct SKArmature* object, unsigned short boneIndex, struct Transform* out);
 
 #endif

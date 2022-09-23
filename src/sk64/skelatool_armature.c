@@ -94,3 +94,32 @@ void skCalculateBonePosition(struct SKArmature* object, unsigned short boneIndex
         boneIndex = object->boneParentIndex[boneIndex];
     }
 }
+
+void skCalculateBoneRotation(struct SKArmature* object, unsigned short boneIndex, struct Quaternion* localBoneRotation, struct Quaternion* out) {
+    if (!object->boneParentIndex) {
+        return;
+    }
+    *out = *localBoneRotation;
+
+    while (boneIndex < object->numberOfBones) {
+        struct Quaternion nextOut;
+        quatMultiply(&object->boneTransforms[boneIndex].rotation, out, &nextOut);
+        *out = nextOut;
+        boneIndex = object->boneParentIndex[boneIndex];
+    }
+}
+
+void skCalculateBoneTransform(struct SKArmature* object, unsigned short boneIndex, struct Transform* out) {
+    if (!object->boneParentIndex) {
+        return;
+    }
+
+    transformInitIdentity(out);
+
+    while (boneIndex < object->numberOfBones) {
+        struct Transform nextOut;
+        transformConcat(&object->boneTransforms[boneIndex], out, &nextOut);
+        *out = nextOut;
+        boneIndex = object->boneParentIndex[boneIndex];
+    }
+}

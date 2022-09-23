@@ -21,6 +21,11 @@ struct Vector2 gMaxRotateVector;
 
 struct Vector3 gPlayerCenter = {0.0f, 0.8f, 0.0f};
 
+struct Vector3 gPlayerGrabFrom = {0.0f, 0.0f, 0.4f};
+
+struct Vector3 gAttachmentPosition = {0.0f, 0.0f, 0.0f};
+struct Quaternion gAttachementRotation = {0.0f, 0.0f, 0.0f, 1.0f};
+
 struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float* playbackSpeed) {
     float speedSqrd = sqrtf(vector3MagSqrd(&player->velocity));
 
@@ -29,9 +34,19 @@ struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float*
         return NULL;
     } else if (speedSqrd < PLAYER_MAX_WALK_SPEED) {
         *playbackSpeed = speedSqrd * (1.0f / PLAYER_MAX_WALK_SPEED);
+
+        if (player->holdingItem) {
+            return &player_animations[PLAYER_PLAYER__PLAYER_0_WALK_W_ITEM_INDEX];
+        }
+
         return &player_animations[PLAYER_PLAYER__PLAYER_0_WALK_INDEX];
     } else {
         *playbackSpeed = speedSqrd * (1.0f / PLAYER_MAX_SPRINT_SPEED);
+
+        if (player->holdingItem) {
+            return &player_animations[PLAYER_PLAYER__PLAYER_0_SPRINT_W_ITEM_INDEX];
+        }
+
         return &player_animations[PLAYER_PLAYER__PLAYER_0_SPRINT_INDEX];
     }
 }
@@ -114,6 +129,23 @@ void playerUpdate(struct Player* player) {
     if (nextAnimation != player->animator.currentAnimation && nextAnimation) {
         skAnimatorRunClip(&player->animator, nextAnimation, SKAnimatorFlagsLoop);
     }
+
+    if (player->holdingItem) {
+        struct Transform targetTransform;
+        skCalculateBoneTransform(
+            &player->armature, 
+            PLAYER_ATTACHEMENT_RIGHTHAND_BONE, 
+            &targetTransform
+        );
+
+        struct Transform combined;
+
+        transformConcat(&player->transform, &targetTransform, &combined);
+
+        vector3Scale(&combined.position, &combined.position, 1.0f / SCENE_SCALE);
+        
+        itemUpdateTarget(player->holdingItem, &combined);
+    }
 }
 
 void playerSetupTransforms(struct Player* player, struct RenderState* renderState) {
@@ -149,6 +181,24 @@ void playerRender(struct Player* player, Light* light, struct RenderScene* rende
         player->mtxArmature,
         light
     );
+}
+
+
+int playerCanGrab(struct Player* player, struct Vector3* grabFrom) {
+    if (player->holdingItem) {
+        return 0;
+    }
+
+    transformPoint(&player->transform, &gPlayerGrabFrom, grabFrom);
+    return 1;
+}
+
+void playerHandObject(struct Player* player, struct Item* holdingItem) {
+    if (player->holdingItem) {
+        player->holdingItem->flags |= ITEM_FLAGS_DROPPED;
+    }
+
+    player->holdingItem = holdingItem;
 }
 
 Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState) {

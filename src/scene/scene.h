@@ -46,4 +46,6 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 void sceneUpdate(struct Scene* scene);
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task);
 
+struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom);
+
 #endif
