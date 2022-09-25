@@ -3,10 +3,9 @@
 
 ## TODO
 
-* Pick nearest spotlight
-* Calculate light direction
-* Render shadow map
 * Table shadow volume
-* Item Spawner
-* Pick up item
+* table to drop item on
 * drop item
+* collision detection
+* item void requester
+* swinging lights

@@ -83,6 +83,12 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     for (int i = 0; i < scene->conveyorCount; ++i) {
         conveyorInit(&scene->conveyors[i], &definition->conveyors[i]);
     }
+
+    scene->tableCount = definition->tableCount;
+    scene->tables = malloc(sizeof(struct Table) * scene->tableCount);
+    for (int i = 0; i < scene->tableCount; ++i) {
+        tableInit(&scene->tables[i], &definition->tables[i]);
+    }
 }
 
 unsigned ignoreInputFrames = 10;
@@ -93,16 +99,26 @@ void sceneUpdate(struct Scene* scene) {
     }
 
     for (int i = 0; i < scene->playerCount; ++i) {
-        playerUpdate(&scene->players[i]);
+        struct Player* player = &scene->players[i];
+
+        playerUpdate(player);
 
         struct Vector3 grabFrom;
+        playerGrabPoint(player, &grabFrom);
 
-        if (controllerGetButtonDown(i, A_BUTTON) && playerCanGrab(&scene->players[i], &grabFrom)) {
+        if (playerCanGrab(player) && controllerGetButtonDown(i, A_BUTTON)) {
             struct Item* item = scenePickupItem(scene, &grabFrom);
 
             if (item) {
-                playerHandObject(&scene->players[i], item);
+                playerHandObject(player, item);
             }
+        }
+
+        if (controllerGetButtonDown(i, B_BUTTON) && player->holdingItem) {
+            if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
+                itemDrop(player->holdingItem);
+            }
+            player->holdingItem = NULL;
         }
     }
 
@@ -210,6 +226,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         conveyorRender(&scene->conveyors[i], renderScene);
     }
 
+    for (unsigned i = 0; i < scene->tableCount; ++i) {
+        tableRender(&scene->tables[i], renderScene);
+    }
+
     renderSceneGenerate(renderScene, renderState);
     renderSceneFree(renderScene);
 
@@ -258,7 +278,25 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
             return result;
         }
     }
+
+    for (int i = 0; i < scene->tableCount; ++i) {
+        struct Item* result = tablePickupItem(&scene->tables[i], grabFrom);
+
+        if (result) {
+            return result;
+        }
+    }
     
 
     return NULL;
+}
+
+int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt) {
+    for (int i = 0; i < scene->tableCount; ++i) {
+        if (tableDropItem(&scene->tables[i], item, dropAt)) {
+            return 1;
+        }
+    }
+
+    return 0;
 }

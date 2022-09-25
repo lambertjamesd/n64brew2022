@@ -140,10 +140,10 @@ void playerUpdate(struct Player* player) {
 
         struct Transform combined;
 
+        vector3Scale(&targetTransform.position, &targetTransform.position, 1.0f / SCENE_SCALE);
+
         transformConcat(&player->transform, &targetTransform, &combined);
 
-        vector3Scale(&combined.position, &combined.position, 1.0f / SCENE_SCALE);
-        
         itemUpdateTarget(player->holdingItem, &combined);
     }
 }
@@ -184,18 +184,18 @@ void playerRender(struct Player* player, Light* light, struct RenderScene* rende
 }
 
 
-int playerCanGrab(struct Player* player, struct Vector3* grabFrom) {
-    if (player->holdingItem) {
-        return 0;
-    }
+int playerCanGrab(struct Player* player) {
+    return !player->holdingItem;
+}
 
-    transformPoint(&player->transform, &gPlayerGrabFrom, grabFrom);
-    return 1;
+void playerGrabPoint(struct Player* player, struct Vector3* grabFrom) {
+    return transformPoint(&player->transform, &gPlayerGrabFrom, grabFrom);
 }
 
 void playerHandObject(struct Player* player, struct Item* holdingItem) {
     if (player->holdingItem) {
-        player->holdingItem->flags |= ITEM_FLAGS_DROPPED;
+        itemDrop(player->holdingItem);
+        player->holdingItem = NULL;
     }
 
     player->holdingItem = holdingItem;

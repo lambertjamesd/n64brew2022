@@ -41,6 +41,8 @@ materials:
     gDPSetTexturePersp: G_TP_PERSP
     gDPSetCycleType: G_CYC_1CYCLE
     gDPSetAlphaCompare: G_AC_THRESHOLD
+    gDPSetColorDither: G_CD_DISABLE
+    gDPSetAlphaDither: G_AD_DISABLE
     gSPGeometryMode:
       set: [G_CULL_BACK, G_ZBUFFER]
       clear: [G_CULL_FRONT, G_TEXTURE_GEN, G_TEXTURE_GEN_LINEAR]
@@ -77,3 +79,30 @@ materials:
     gSPGeometryMode:
       set: [G_ZBUFFER]
       clear: [G_LIGHTING, G_SHADE, G_CULL_BACK, G_CULL_FRONT]
+
+  white_smoke:
+    gDPSetCombineMode:
+      color: ["SHADE", "0", "ENVIRONMENT", "PRIMITIVE"]
+      alpha: ["0", "0", "0", "PRIMITIVE"]
+    gDPSetAlphaCompare: G_AC_DITHER
+    gDPSetColorDither: G_CD_BAYER
+    gDPSetAlphaDither: G_AD_PATTERN
+    gDPSetRenderMode: G_RM_OPA_SURF
+    gDPSetBlendColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 128
+    gDPSetEnvColor:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+      bypassEffects: true
+    gSPGeometryMode:
+      set: [G_SHADE, G_LIGHTING]
+    gDPSetPrimColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 128

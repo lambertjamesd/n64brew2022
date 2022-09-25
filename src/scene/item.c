@@ -10,6 +10,12 @@
 
 #define MAX_SNAP_SPEED      4.0f
 
+#define DROP_GRAVITY        -9.8f
+
+#define POOF_TIME           0.5f
+#define POOF_DAMPING        0.95f
+#define POOF_SCALING        1.05f
+
 struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
     [ItemTypePumpkin] = {
         pumpkin_model_gfx,
@@ -47,11 +53,39 @@ void itemInit(struct Item* item, enum ItemType itemType, struct Transform* initi
 }
 
 void itemUpdate(struct Item* item) {
+    if (item->flags & ITEM_FLAGS_GONE) {
+        return;
+    }
+
     if (item->flags & ITEM_FLAGS_HAS_ARMATURE) {
         skAnimatorUpdate(&item->animator, item->armature.boneTransforms, 1.0f);
     }
 
-    if (item->flags & ITEM_FLAGS_ATTACHED) {
+    if (item->flags & ITEM_FLAGS_POOFED) {
+        vector3Scale(&item->dropInfo.velocity, &item->dropInfo.velocity, POOF_DAMPING);
+        vector3AddScaled(&item->transform.position, &item->dropInfo.velocity, FIXED_DELTA_TIME, &item->transform.position);
+        vector3Scale(&item->transform.scale, &item->transform.scale, POOF_SCALING);
+
+        item->dropInfo.pooftimer -= FIXED_DELTA_TIME;
+
+        if (item->dropInfo.pooftimer < 0.0f) {
+            item->flags |= ITEM_FLAGS_GONE;
+        }
+
+    } else if (item->flags & ITEM_FLAGS_DROPPED) {
+        item->dropInfo.velocity.y += DROP_GRAVITY * FIXED_DELTA_TIME;
+
+        vector3AddScaled(&item->transform.position, &item->dropInfo.velocity, FIXED_DELTA_TIME, &item->transform.position);
+
+        if (item->transform.position.y < 0.0f) {
+            item->transform.position.y = 0.0f;
+            item->dropInfo.velocity.x = 0.0f;
+            item->dropInfo.velocity.y = -item->dropInfo.velocity.y;
+            item->dropInfo.velocity.z = 0.0f;
+            item->flags |= ITEM_FLAGS_POOFED;
+            item->dropInfo.pooftimer = POOF_TIME;
+        }
+    } else if (item->flags & ITEM_FLAGS_ATTACHED) {
         item->transform = item->target;
     } else {
         if (vector3MoveTowards(&item->transform.position, &item->target.position, MAX_SNAP_SPEED * FIXED_DELTA_TIME, &item->transform.position)) {
@@ -77,7 +111,24 @@ void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene
         skCalculateTransforms(&item->armature, armature);
     }
 
-    renderSceneAdd(renderScene, definition->dl, mtx, definition->materialIndex, &item->transform.position, armature, light);
+    Gfx* gfx = definition->dl;
+    int material = definition->materialIndex;
+
+    if (item->flags & ITEM_FLAGS_POOFED) {
+        material = WHITE_SMOKE_INDEX;
+
+        Gfx* gfx = renderStateAllocateDLChunk(renderScene->renderState, 4);
+        Gfx* dl = gfx;
+
+        float lerp = item->dropInfo.pooftimer * (1.0f / POOF_TIME);
+
+        gDPSetBlendColor(dl++, 255, 255, 255, 255 * lerp);
+        gDPSetPrimColor(dl++, 255, 255, 255, 255, 255, 255 * lerp);
+        gSPDisplayList(dl++, definition->dl);
+        gSPEndDisplayList(dl++);
+    }
+
+    renderSceneAdd(renderScene, gfx, mtx, material, &item->transform.position, armature, light);
 }
 
 void itemUpdateTarget(struct Item* item, struct Transform* transform) {
@@ -86,6 +137,13 @@ void itemUpdateTarget(struct Item* item, struct Transform* transform) {
 
 void itemMarkNewTarget(struct Item* item) {
     item->flags &= ~ITEM_FLAGS_ATTACHED;
+}
+
+void itemDrop(struct Item* item) {
+    item->flags |= ITEM_FLAGS_DROPPED;
+
+    item->dropInfo.velocity = gZeroVec;
+    item->dropInfo.pooftimer = 0.0f;
 }
 
 void itemPoolInit(struct ItemPool* itemPool) {
@@ -139,11 +197,23 @@ void itemPoolFree(struct ItemPool* itemPool, struct Item* item) {
 
 void itemPoolUpdate(struct ItemPool* itemPool) {
     struct Item* current = itemPool->itemHead;
+    struct Item* prev = NULL;
 
     while (current != NULL) {
         itemUpdate(current);
 
-        current = current->next;
+        struct Item* next = current->next;
+
+        if (current->flags & ITEM_FLAGS_GONE) {
+            prev->next = next;
+
+            current->next = itemPool->unusedHead;
+            itemPool->unusedHead = current;
+        } else {
+            prev = current;
+        }
+
+        current = next;
     }
 }
 

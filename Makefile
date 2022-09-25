@@ -89,6 +89,7 @@ LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
 LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 
 MODEL_LIST = assets/models/conveyor.blend \
+	assets/models/table.blend \
 	assets/models/player.blend \
 	assets/models/pumpkin.blend
 
@@ -134,6 +135,7 @@ build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c
 
 build/src/scene/player.o: build/assets/models/player.h build/assets/materials/static.h
 build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h
+build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h
 
 build/src/scene/item.o: build/assets/materials/static.h build/assets/models/pumpkin.h
 

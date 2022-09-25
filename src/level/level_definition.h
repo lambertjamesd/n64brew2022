@@ -39,6 +39,11 @@ struct ConveyorDefinition {
     struct Quaternion rotation;
 };
 
+struct TableDefinition {
+    struct Vector3 position;
+    short tableType;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
@@ -54,6 +59,9 @@ struct LevelDefinition {
 
     struct ConveyorDefinition* conveyors;
     short conveyorCount;
+
+    struct TableDefinition* tables;
+    short tableCount;
 
     struct PlayerStartLocation playerStart[MAX_PLAYERS];
     struct CameraDefinition cameraDefinition;

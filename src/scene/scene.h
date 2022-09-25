@@ -13,6 +13,7 @@
 #include "spot_light.h"
 #include "conveyor.h"
 #include "item.h"
+#include "table.h"
 
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
@@ -35,11 +36,13 @@ struct Scene {
     struct ItemSlot* itemSlots;
     struct SpotLight* spotLights;
     struct Conveyor* conveyors;
+    struct Table* tables;
     struct ItemPool itemPool;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;
     u8 conveyorCount;
+    u8 tableCount;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);
@@ -47,5 +50,7 @@ void sceneUpdate(struct Scene* scene);
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task);
 
 struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom);
+
+int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt);
 
 #endif

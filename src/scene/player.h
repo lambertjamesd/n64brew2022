@@ -40,7 +40,9 @@ void playerUpdate(struct Player* player);
 void playerSetupTransforms(struct Player* player, struct RenderState* renderState);
 void playerRender(struct Player* player, Light* light, struct RenderScene* renderScene);
 
-int playerCanGrab(struct Player* player, struct Vector3* grabFrom);
+int playerCanGrab(struct Player* player);
+
+void playerGrabPoint(struct Player* player, struct Vector3* grabFrom);
 
 void playerHandObject(struct Player* player, struct Item* holdingItem);
 
