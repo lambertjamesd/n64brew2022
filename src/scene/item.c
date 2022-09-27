@@ -162,10 +162,12 @@ struct Item* itemPoolNew(struct ItemPool* itemPool, enum ItemType itemType, stru
         result = malloc(sizeof(struct Item));
     }
 
+    ++itemPool->itemCount;
+    
+    itemInit(result, itemType, initialPose);
+
     result->next = itemPool->itemHead;
     itemPool->itemHead = result;
-
-    ++itemPool->itemCount;
 
     return result;
 }

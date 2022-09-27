@@ -18,7 +18,10 @@ struct Vector3 gBeltEnd = {0.0f, 0.7f, 0.3f};
 void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definition) {
     conveyor->transform.position = definition->position;
     conveyor->transform.rotation = definition->rotation;
-    conveyor->transform.scale = gOneVec;   
+    conveyor->transform.scale = gOneVec; 
+
+    conveyor->pendingItems[0] = NULL;
+    conveyor->pendingItems[1] = NULL;  
 }
 
 void conveyorUpdate(struct Conveyor* conveyor) {
