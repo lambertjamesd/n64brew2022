@@ -124,7 +124,7 @@ void sceneUpdate(struct Scene* scene) {
 
     for (int i = 0; i < scene->conveyorCount; ++i) {
         if (conveyorCanAcceptItem(&scene->conveyors[i])) {
-            struct Item* newItem = itemPoolNew(&scene->itemPool, ItemTypePumpkin, &scene->conveyors[i].transform);
+            struct Item* newItem = itemPoolNew(&scene->itemPool, randomInRange(0, ItemTypeCount), &scene->conveyors[i].transform);
             conveyorAcceptItem(&scene->conveyors[i], newItem);
         }
 

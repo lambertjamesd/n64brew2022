@@ -13,8 +13,6 @@ SFZ2N64:=tools/sfz2n64
 SKELATOOL64:=tools/skeletool64
 BLENDER_2_9:=tools/blender/blender
 
-WITH_GFX_VALIDATOR:=1
-
 OPTIMIZER		:= -O0
 LCDEFS			:= -DDEBUG -g -Isrc/ -I/usr/include/n64/nustd -Werror -Wall
 N64LIB			:= -lultra_rom -lnustd
@@ -91,7 +89,19 @@ LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 MODEL_LIST = assets/models/conveyor.blend \
 	assets/models/table.blend \
 	assets/models/player.blend \
-	assets/models/pumpkin.blend
+	assets/models/pumpkin.blend \
+	assets/models/hat.blend \
+	assets/models/brain.blend \
+	assets/models/broom.blend \
+	assets/models/candle.blend \
+	assets/models/cat.blend \
+	assets/models/cobweb.blend \
+	assets/models/crow.blend \
+	assets/models/hand.blend \
+	assets/models/rat.blend \
+	assets/models/scarecrow.blend \
+	assets/models/skull.blend \
+	assets/models/spider.blend
 
 MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
 MODEL_FBX = $(MODEL_LIST:%.blend=build/%.fbx)
@@ -127,7 +137,12 @@ build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/
 ## Models
 ####################
 
-ANIM_LIST = build/assets/models/player_anim.o
+ANIM_LIST = build/assets/models/player_anim.o \
+	build/assets/models/cat_anim.o \
+	build/assets/models/crow_anim.o \
+	build/assets/models/hand_anim.o \
+	build/assets/models/rat_anim.o \
+	build/assets/models/spider_anim.o
 
 build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c: build/assets/models/%.fbx assets/models/%.flags assets/materials/static.skm.yaml $(ALL_IMAGES) $(SKELATOOL64)
 	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) -m $< $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
@@ -137,7 +152,20 @@ build/src/scene/player.o: build/assets/models/player.h build/assets/materials/st
 build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h
 build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h
 
-build/src/scene/item.o: build/assets/materials/static.h build/assets/models/pumpkin.h
+build/src/scene/item.o: build/assets/materials/static.h \
+	build/assets/models/pumpkin.h \
+	build/assets/models/hat.h \
+	build/assets/models/brain.h \
+	build/assets/models/broom.h \
+	build/assets/models/candle.h  \
+	build/assets/models/cat.h \
+	build/assets/models/cobweb.h \
+	build/assets/models/crow.h \
+	build/assets/models/hand.h \
+	build/assets/models/rat.h \
+	build/assets/models/scarecrow.h \
+	build/assets/models/skull.h \
+	build/assets/models/spider.h 
 
 build/anims.ld: $(ANIM_LIST) tools/generate_animation_ld.js
 	@mkdir -p $(@D)

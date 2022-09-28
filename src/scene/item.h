@@ -12,6 +12,18 @@
 
 enum ItemType {
     ItemTypePumpkin,
+    ItemTypeHat,
+    ItemTypeBrain,
+    ItemTypeBroom,
+    ItemTypeCandle,
+    ItemTypeCat,
+    ItemTypeCobweb,
+    ItemTypeCrow,
+    ItemTypeHand,
+    ItemTypeRat,
+    ItemTypeScarecrow,
+    ItemTypeSkull,
+    ItemTypeSpider,
 
     ItemTypeCount,
 };

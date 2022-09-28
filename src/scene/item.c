@@ -5,6 +5,18 @@
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/models/pumpkin.h"
+#include "../build/assets/models/hat.h"
+#include "../build/assets/models/brain.h"
+#include "../build/assets/models/broom.h"
+#include "../build/assets/models/candle.h"
+#include "../build/assets/models/cat.h"
+#include "../build/assets/models/cobweb.h"
+#include "../build/assets/models/crow.h"
+#include "../build/assets/models/hand.h"
+#include "../build/assets/models/rat.h"
+#include "../build/assets/models/scarecrow.h"
+#include "../build/assets/models/skull.h"
+#include "../build/assets/models/spider.h"
 #include "../build/assets/models/conveyor.h"
 #include "../defs.h"
 
@@ -24,6 +36,102 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+    },
+    [ItemTypeHat] = {
+        hat_model_gfx,
+        ITEMS_DOUBLE_SIDED_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeBrain] = {
+        brain_model_gfx,
+        ITEMS_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeBroom] = {
+        broom_model_gfx,
+        ITEMS_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeCandle] = {
+        candle_model_gfx,
+        ITEMS_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeCat] = {
+        cat_model_gfx,
+        ANIMAL_GREY_INDEX,
+        CAT_DEFAULT_BONES_COUNT,
+        CAT_ATTACHMENT_COUNT,
+        cat_default_bones,
+        cat_bone_parent,
+    },
+    [ItemTypeCobweb] = {
+        cobweb_model_gfx,
+        ITEMS_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeCrow] = {
+        crow_model_gfx,
+        ITEMS_INDEX,
+        CROW_DEFAULT_BONES_COUNT,
+        CROW_ATTACHMENT_COUNT,
+        crow_default_bones,
+        crow_bone_parent,
+    },
+    [ItemTypeHand] = {
+        hand_model_gfx,
+        ITEMS_INDEX,
+        HAND_DEFAULT_BONES_COUNT,
+        HAND_ATTACHMENT_COUNT,
+        hand_default_bones,
+        hand_bone_parent,
+    },
+    [ItemTypeRat] = {
+        rat_model_gfx,
+        ITEMS_INDEX,
+        RAT_DEFAULT_BONES_COUNT,
+        RAT_ATTACHMENT_COUNT,
+        rat_default_bones,
+        rat_bone_parent,
+    },
+    [ItemTypeScarecrow] = {
+        scarecrow_model_gfx,
+        ITEMS_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeSkull] = {
+        skull_model_gfx,
+        ITEMS_INDEX,
+        0,
+        0,
+        NULL,
+        NULL,
+    },
+    [ItemTypeSpider] = {
+        spider_model_gfx,
+        ITEMS_INDEX,
+        SPIDER_DEFAULT_BONES_COUNT,
+        SPIDER_ATTACHMENT_COUNT,
+        spider_default_bones,
+        spider_bone_parent,
     },
 };
 

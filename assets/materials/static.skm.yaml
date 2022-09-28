@@ -106,3 +106,18 @@ materials:
       g: 255
       b: 255
       a: 128
+
+  items_double_sided:
+    gDPSetTile:
+      filename: "./items/items_01.png"
+    gDPSetCombineMode:
+      color: ["SHADE", "0", "ENVIRONMENT", "TEXEL0"]
+    gDPSetEnvColor:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+      bypassEffects: true
+    gSPGeometryMode:
+      set: [G_SHADE, G_LIGHTING]
+      clear: [G_CULL_BACK, G_CULL_FRONT]
