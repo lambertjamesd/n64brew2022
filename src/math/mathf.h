@@ -2,6 +2,7 @@
 #ifndef _MATH_MATHF_H
 #define _MATH_MATHF_H
 
+void randomSeed(int seed);
 int randomInt();
 int randomInRange(int min, int maxPlusOne);
 float randomInRangef(float min, float maxPlusOne);
