@@ -6,6 +6,7 @@ local cameraOutput = require('tools.generate_level/camera')
 local spotLightOutput = require('tools.generate_level/spot_light')
 local conveyorOutput = require('tools.generate_level.conveyor')
 local tableOutput = require('tools.generate_level.table')
+local itemRequesterOutput = require('tools.generate_level.item_requester')
 
 add_definition("level", "struct LevelDefinition", "_geo", {
     staticContent = reference_to(staticContentOutput.staticContent[1]),
@@ -25,6 +26,9 @@ add_definition("level", "struct LevelDefinition", "_geo", {
 
     tables = reference_to(tableOutput.tables[1]),
     tableCount = #tableOutput.tables,
+
+    itemRequesters = reference_to(itemRequesterOutput.itemRequesters[1]),
+    itemRequesterCount = #itemRequesterOutput.itemRequesters,
 
     playerStart = playerOutput,
 

@@ -44,6 +44,11 @@ struct TableDefinition {
     short tableType;
 };
 
+struct ItemRequesterDefinition {
+    struct Vector3 position;
+    struct Quaternion rotation;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
@@ -62,6 +67,9 @@ struct LevelDefinition {
 
     struct TableDefinition* tables;
     short tableCount;
+
+    struct ItemRequesterDefinition* itemRequesters;
+    short itemRequesterCount;
 
     struct PlayerStartLocation playerStart[MAX_PLAYERS];
     struct CameraDefinition cameraDefinition;

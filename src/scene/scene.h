@@ -14,6 +14,7 @@
 #include "conveyor.h"
 #include "item.h"
 #include "table.h"
+#include "item_requester.h"
 
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
@@ -37,12 +38,14 @@ struct Scene {
     struct SpotLight* spotLights;
     struct Conveyor* conveyors;
     struct Table* tables;
+    struct ItemRequester* itemRequesters;
     struct ItemPool itemPool;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;
     u8 conveyorCount;
     u8 tableCount;
+    u8 itemRequesterCount;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);

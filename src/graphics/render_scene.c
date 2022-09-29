@@ -13,6 +13,8 @@ struct RenderScene* renderSceneNew(struct Transform* cameraTransform, struct Ren
     vector3Negate(&cameraForward, &cameraForward);
     planeInitWithNormalAndPoint(&result->forwardPlane, &cameraForward, &cameraTransform->position);
     
+    result->cameraTransform = *cameraTransform;
+
     result->currentRenderPart = 0;
     result->maxRenderParts = capacity;
 

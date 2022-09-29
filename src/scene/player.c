@@ -31,7 +31,7 @@ struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float*
 
     if (speedSqrd < 0.00001f) {
         *playbackSpeed = 0.0f;
-        return NULL;
+        return &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERIDLE_INDEX];
     } else if (speedSqrd < PLAYER_MAX_WALK_SPEED) {
         *playbackSpeed = speedSqrd * (1.0f / PLAYER_MAX_WALK_SPEED);
 

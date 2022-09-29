@@ -12,6 +12,7 @@ struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int point
     result->spotLights = ADJUST_POINTER_POS(result->spotLights, pointerOffset);
     result->conveyors = ADJUST_POINTER_POS(result->conveyors, pointerOffset);
     result->tables = ADJUST_POINTER_POS(result->tables, pointerOffset);
+    result->itemRequesters = ADJUST_POINTER_POS(result->itemRequesters, pointerOffset);
 
     return result;
 }

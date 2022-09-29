@@ -89,6 +89,12 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     for (int i = 0; i < scene->tableCount; ++i) {
         tableInit(&scene->tables[i], &definition->tables[i]);
     }
+
+    scene->itemRequesterCount = definition->itemRequesterCount;
+    scene->itemRequesters = malloc(sizeof(struct ItemRequester) * scene->itemRequesterCount);
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        itemRequesterInit(&scene->itemRequesters[i], &definition->itemRequesters[i]);
+    }
 }
 
 unsigned ignoreInputFrames = 10;
@@ -135,6 +141,10 @@ void sceneUpdate(struct Scene* scene) {
 
     for (int i = 0; i < scene->spotLightCount; ++i) {
         spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
+    }
+
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        itemRequesterUpdate(&scene->itemRequesters[i]);
     }
 }
 
@@ -228,6 +238,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     for (unsigned i = 0; i < scene->tableCount; ++i) {
         tableRender(&scene->tables[i], renderScene);
+    }
+
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        itemRequesterRender(&scene->itemRequesters[i], renderScene);
     }
 
     renderSceneGenerate(renderScene, renderState);

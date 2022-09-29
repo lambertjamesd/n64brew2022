@@ -160,6 +160,10 @@ void itemInit(struct Item* item, enum ItemType itemType, struct Transform* initi
     }
 }
 
+void itemDestroy(struct Item* item) {
+    skAnimatorCleanup(&item->animator);
+}
+
 void itemUpdate(struct Item* item) {
     if (item->flags & ITEM_FLAGS_GONE) {
         return;
@@ -298,6 +302,8 @@ void itemPoolFree(struct ItemPool* itemPool, struct Item* item) {
     } else {
         itemPool->itemHead = current->next;
     }
+
+    itemDestroy(item);
 
     item->next = itemPool->unusedHead;
     itemPool->unusedHead = item;

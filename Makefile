@@ -101,7 +101,8 @@ MODEL_LIST = assets/models/conveyor.blend \
 	assets/models/rat.blend \
 	assets/models/scarecrow.blend \
 	assets/models/skull.blend \
-	assets/models/spider.blend
+	assets/models/spider.blend \
+	assets/models/ui/item_prompt.blend
 
 MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
 MODEL_FBX = $(MODEL_LIST:%.blend=build/%.fbx)
@@ -151,6 +152,7 @@ build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c
 build/src/scene/player.o: build/assets/models/player.h build/assets/materials/static.h
 build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h
 build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h
+build/src/scene/item_requester.o: build/assets/models/ui/item_prompt.h build/assets/materials/static.h
 
 build/src/scene/item.o: build/assets/materials/static.h \
 	build/assets/models/pumpkin.h \
@@ -165,7 +167,7 @@ build/src/scene/item.o: build/assets/materials/static.h \
 	build/assets/models/rat.h \
 	build/assets/models/scarecrow.h \
 	build/assets/models/skull.h \
-	build/assets/models/spider.h 
+	build/assets/models/spider.h
 
 build/anims.ld: $(ANIM_LIST) tools/generate_animation_ld.js
 	@mkdir -p $(@D)

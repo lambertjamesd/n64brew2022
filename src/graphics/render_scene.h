@@ -15,6 +15,7 @@ struct RenderPart {
 
 struct RenderScene {
     u64 visibleRooms;
+    struct Transform cameraTransform;
     struct Plane forwardPlane;
     struct RenderPart* renderParts;
     short* materials;
