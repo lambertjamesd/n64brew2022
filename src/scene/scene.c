@@ -34,6 +34,9 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 #define LIGHT_ORBIT_RADIUS  (5.0f)
 #define LIGHT_ORBIT_PERIOD  3.0f
 
+#define DROPS_PER_FULL_BAR          5
+#define TIME_TO_DECAY_FULL_BAR      120
+
 void materialSetBasicLit(struct RenderState* renderState, int objectIndex) {
     gSPDisplayList(renderState->dl++, gBasicLitMaterial);
 }
@@ -95,6 +98,10 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         itemRequesterInit(&scene->itemRequesters[i], &definition->itemRequesters[i]);
     }
+
+    scene->dropPenalty = 0.0f;
+
+    bezosInit(&scene->bezos);
 }
 
 unsigned ignoreInputFrames = 10;
@@ -122,11 +129,25 @@ void sceneUpdate(struct Scene* scene) {
 
         if (controllerGetButtonDown(i, B_BUTTON) && player->holdingItem) {
             if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
+                struct Item* item = player->holdingItem;
+
                 itemDrop(player->holdingItem);
+
+                scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
+
+                if (scene->dropPenalty > 1.0f) {
+                    scene->dropPenalty = 1.0f;
+                }
+
+                if (mathfRandomFloat() < scene->dropPenalty) {
+                    bezosActivate(&scene->bezos, &item->transform.position);
+                }
             }
             player->holdingItem = NULL;
         }
     }
+
+    bezosUpdate(&scene->bezos);
 
     for (int i = 0; i < scene->conveyorCount; ++i) {
         if (conveyorCanAcceptItem(&scene->conveyors[i])) {
@@ -145,6 +166,15 @@ void sceneUpdate(struct Scene* scene) {
 
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         itemRequesterUpdate(&scene->itemRequesters[i]);
+    }
+
+    if (scene->dropPenalty > 0.0f) {
+        scene->dropPenalty -= FIXED_DELTA_TIME / TIME_TO_DECAY_FULL_BAR;
+
+        if (scene->dropPenalty <= 0.0f) {
+            scene->dropPenalty = 0.0f;
+            bezosDeactivate(&scene->bezos);
+        }
     }
 }
 
@@ -230,6 +260,8 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         playerRender(&scene->players[i], light, renderScene);
     }
 
+    bezosRender(&scene->bezos, scene->spotLights, scene->spotLightCount, renderScene);
+
     itemPoolRender(&scene->itemPool, scene->spotLights, scene->spotLightCount, renderScene);
 
     for (unsigned i = 0; i < scene->conveyorCount; ++i) {
@@ -273,7 +305,20 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(task->framebuffer));
     gSPSegment(renderState->dl++, SOURCE_CB_SEGMENT, indexColorBuffer);
 
-    u16* pallete = palleteGenerateLit((struct Coloru8*)pallete_half_pallete_rgba_32b, &gAmbientLight, &gAmbientScale, &gLightColor, renderState);
+    enum PalleteEffects effects = 0;
+
+    if (scene->bezos.flags & BezosFlagsActive) {
+        effects |= PalleteEffectsGrayscaleRed;
+    }
+
+    u16* pallete = palleteGenerateLit(
+        (struct Coloru8*)pallete_half_pallete_rgba_32b, 
+        &gAmbientLight,
+        &gAmbientScale, 
+        &gLightColor, 
+        effects,
+        renderState
+    );
 
     gDPLoadTLUT_pal256(renderState->dl++, pallete);
 

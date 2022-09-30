@@ -15,6 +15,7 @@
 #include "item.h"
 #include "table.h"
 #include "item_requester.h"
+#include "bezos.h"
 
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
@@ -40,12 +41,15 @@ struct Scene {
     struct Table* tables;
     struct ItemRequester* itemRequesters;
     struct ItemPool itemPool;
+    struct Bezos bezos;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;
     u8 conveyorCount;
     u8 tableCount;
     u8 itemRequesterCount;
+
+    float dropPenalty;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);

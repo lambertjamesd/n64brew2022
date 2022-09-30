@@ -21,7 +21,21 @@ struct Coloru8 palleteProcessColor(struct Coloru8 input, struct Colorf32* preAdd
     return result;
 } 
 
-u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, struct RenderState* renderState) {
+struct Coloru8 palleteApplyEffects(struct Coloru8 color, enum PalleteEffects effects, int srcIndex) {
+    if (effects & PalleteEffectsGrayscaleRed) {
+        if (srcIndex % 12 != 4) {
+            int grayscale = (54 * color.r + 182 * color.g + 18) >> 8;
+
+            color.r = grayscale;
+            color.g = grayscale;
+            color.b = grayscale;
+        }
+    }
+
+    return color;
+}
+
+u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, enum PalleteEffects effects, struct RenderState* renderState) {
     u16* result = renderStateRequestMemory(renderState, sizeof(u16) * 256);
 
     u16* output = result;
@@ -39,12 +53,12 @@ u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, s
     lightScale.a = 1.0f;
 
     for (unsigned i = 0; i < 80; ++i) {
-        struct Coloru8 colorOut = palleteProcessColor(*colors, ambientLight, ambientScale);
+        struct Coloru8 colorOut = palleteApplyEffects(palleteProcessColor(*colors, ambientLight, ambientScale), effects, i);
 
         *output = GPACK_RGBA5551(colorOut.r, colorOut.g, colorOut.b, 1);
         ++output;
 
-        colorOut = palleteProcessColor(*colors, lightColor, &lightScale);
+        colorOut = palleteApplyEffects(palleteProcessColor(*colors, lightColor, &lightScale), effects, i);
 
         *output = GPACK_RGBA5551(colorOut.r, colorOut.g, colorOut.b, 1);
         ++output;

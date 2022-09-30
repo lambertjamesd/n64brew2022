@@ -102,7 +102,8 @@ MODEL_LIST = assets/models/conveyor.blend \
 	assets/models/scarecrow.blend \
 	assets/models/skull.blend \
 	assets/models/spider.blend \
-	assets/models/ui/item_prompt.blend
+	assets/models/ui/item_prompt.blend \
+	assets/models/ghostjeff.blend
 
 MODEL_HEADERS = $(MODEL_LIST:%.blend=build/%.h)
 MODEL_FBX = $(MODEL_LIST:%.blend=build/%.fbx)
@@ -143,7 +144,8 @@ ANIM_LIST = build/assets/models/player_anim.o \
 	build/assets/models/crow_anim.o \
 	build/assets/models/hand_anim.o \
 	build/assets/models/rat_anim.o \
-	build/assets/models/spider_anim.o
+	build/assets/models/spider_anim.o \
+	build/assets/models/ghostjeff_anim.o
 
 build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c: build/assets/models/%.fbx assets/models/%.flags assets/materials/static.skm.yaml $(ALL_IMAGES) $(SKELATOOL64)
 	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) -m $< $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
@@ -168,6 +170,8 @@ build/src/scene/item.o: build/assets/materials/static.h \
 	build/assets/models/scarecrow.h \
 	build/assets/models/skull.h \
 	build/assets/models/spider.h
+
+build/src/scene/bezos.o: build/assets/models/ghostjeff.h build/assets/materials/static.h
 
 build/anims.ld: $(ANIM_LIST) tools/generate_animation_ld.js
 	@mkdir -p $(@D)

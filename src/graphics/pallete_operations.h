@@ -4,6 +4,10 @@
 #include "./renderstate.h"
 #include "./color.h"
 
-u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, struct RenderState* renderState);
+enum PalleteEffects {
+    PalleteEffectsGrayscaleRed = (1 << 0),
+};
+
+u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, enum PalleteEffects effects, struct RenderState* renderState);
 
 #endif
