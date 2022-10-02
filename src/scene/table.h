@@ -8,11 +8,13 @@
 #include "item.h"
 #include "../level/level_definition.h"
 #include "table_type.h"
+#include "../collision/collision_object.h"
 
 struct Table {
     struct Vector3 position;
     struct TableType* tableType;
     struct Item** itemSlots;
+    struct CollisionObject collisionObject;
 };
 
 void tableInit(struct Table* table, struct TableDefinition* def);

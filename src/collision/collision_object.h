@@ -10,4 +10,17 @@ struct CollisionObject {
     void* data;
 };
 
+int collisionObjectBoundingBox(void* data, struct Vector3* direction, struct Vector3* output);
+
+struct CollisionCapsule {
+    struct CollisionObject collisionObject;
+    struct Vector3 center;
+    float halfHeight;
+    float radius;
+};
+
+void collisionCapsuleUpdateBB(struct CollisionCapsule* capsule);
+
+void collisionCapsuleInit(struct CollisionCapsule* capsule, float height, float radius);
+
 #endif

@@ -21,3 +21,15 @@ void box3DUnion(struct Box3D* a, struct Box3D* b, struct Box3D* out) {
     vector3Max(&a->max, &b->max, &out->max);
     vector3Min(&a->min, &b->min, &out->min);
 }
+
+void box3DRotate(struct Box3D* input, struct Quaternion* rotation, struct Box3D* out) {
+    struct Vector3 center;
+    vector3Lerp(&input->min, &input->max, 0.5f, &center);
+    struct Vector3 halfSize;
+    vector3Sub(&center, &input->min, &halfSize);
+
+    struct Vector3 rotatedHalfSize;
+    quatRotatedBoundingBoxSize(rotation, &halfSize, &rotatedHalfSize);
+    vector3Add(&center, &rotatedHalfSize, &out->max);
+    vector3Sub(&center, &rotatedHalfSize, &out->min);
+}

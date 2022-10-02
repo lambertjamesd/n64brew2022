@@ -11,6 +11,8 @@
 #include "../sk64/skelatool_armature.h"
 #include "../sk64/skelatool_animator.h"
 
+#include "../collision/collision_object.h"
+
 #include "shadow_map.h"
 #include "item.h"
 
@@ -32,6 +34,8 @@ struct Player {
     float animationSpeed;
 
     struct Item* holdingItem;
+
+    struct CollisionCapsule collider;
 };
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer);

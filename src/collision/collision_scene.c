@@ -10,6 +10,38 @@ struct ColliderEdge {
     int itemIndex;
 };
 
+
+struct CollisionScene gCollisionScene;
+
+void collisionSceneInit(struct CollisionScene* collisionScene, int capacity) {
+    collisionScene->colliders = malloc(sizeof(struct CollisionObject*) * capacity);
+    collisionScene->callbacks = malloc(sizeof(struct DynamicCallbackPair) * capacity);
+    collisionScene->colliderCapacity = capacity;
+    collisionScene->colliderCount = 0;
+}
+
+void collisionSceneAddStatic(struct CollisionScene* collisionScene, struct CollisionObject* object) {
+    if (collisionScene->colliderCount == collisionScene->colliderCapacity) {
+        return;
+    }    
+
+    collisionScene->colliders[collisionScene->colliderCount] = object;
+    collisionScene->callbacks[collisionScene->colliderCount].callback = NULL;
+    ++collisionScene->colliderCount;
+}
+
+void collisionSceneAddDynamic(struct CollisionScene* collisionScene, struct CollisionObject* object, DynamicCollisionCallback collisionCallback, void* data) {
+    if (collisionScene->colliderCount == collisionScene->colliderCapacity) {
+        return;
+    }    
+
+    collisionScene->colliders[collisionScene->colliderCount] = object;
+    collisionScene->callbacks[collisionScene->colliderCount].callback = collisionCallback;
+    collisionScene->callbacks[collisionScene->colliderCount].data = data;
+    ++collisionScene->colliderCount;
+}
+
+
 void colliderEdgeSort(struct ColliderEdge* edges, struct ColliderEdge* tmp, int min, int max) {
     if (min + 1 >= max) {
         return;
@@ -22,7 +54,7 @@ void colliderEdgeSort(struct ColliderEdge* edges, struct ColliderEdge* tmp, int 
         return;
     }
 
-    int mid = (min + max) >> 2;
+    int mid = (min + max) >> 1;
 
     int aSource = 0;
     int bSource = mid;
@@ -59,7 +91,7 @@ void collisionSceneWalkColliders(struct CollisionScene* collisionScene, struct C
             for (int i = 0; i < currentColliderCount; ++i) {
                 struct CollisionObject* other = collisionScene->colliders[currentColliders[i]];
 
-                if (!collisionScene->callbacks[currentColliders[i]] && !collisionScene->callbacks[edge->itemIndex]) {
+                if (!collisionScene->callbacks[currentColliders[i]].callback && !collisionScene->callbacks[edge->itemIndex].callback) {
                     continue;
                 }
 
@@ -93,15 +125,15 @@ void collisionSceneWalkColliders(struct CollisionScene* collisionScene, struct C
                     &overlap
                 );
 
-                if (collisionScene->callbacks[edge->itemIndex]) {
-                    DynamicCollisionCallback callback = collisionScene->callbacks[edge->itemIndex];
-                    callback(collisionObject->data, &overlap.normal, overlap.penetration);
+                if (collisionScene->callbacks[edge->itemIndex].callback) {
+                    struct DynamicCallbackPair callback = collisionScene->callbacks[edge->itemIndex];
+                    callback.callback(callback.data, &overlap.normal, overlap.penetration);
                 }
 
-                if (collisionScene->callbacks[currentColliders[i]]) {
+                if (collisionScene->callbacks[currentColliders[i]].callback) {
                     vector3Negate(&overlap.normal, &overlap.normal);
-                    DynamicCollisionCallback callback = collisionScene->callbacks[currentColliders[i]];
-                    callback(collisionObject->data, &overlap.normal, overlap.penetration);
+                    struct DynamicCallbackPair callback = collisionScene->callbacks[currentColliders[i]];
+                    callback.callback(callback.data, &overlap.normal, overlap.penetration);
                 }
             }
 

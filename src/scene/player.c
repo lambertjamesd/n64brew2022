@@ -8,6 +8,8 @@
 #include "../build/assets/models/player.h"
 #include "../build/assets/materials/static.h"
 
+#include "../collision/collision_scene.h"
+
 #define PLAYER_MOVE_SPEED   2.0f
 
 #define PLAYER_MAX_SPRINT_SPEED 4.0f
@@ -16,6 +18,9 @@
 #define PLAYER_ACCELERATION 10.0f
 
 #define PLAYER_ROTATE_RATE  (M_PI * 2.0f)
+
+#define COLLIDER_RADIUS     0.25f
+#define COLLIDER_HEIGHT     0.25f
 
 struct Vector2 gMaxRotateVector;
 
@@ -27,7 +32,7 @@ struct Vector3 gAttachmentPosition = {0.0f, 0.0f, 0.0f};
 struct Quaternion gAttachementRotation = {0.0f, 0.0f, 0.0f, 1.0f};
 
 struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float* playbackSpeed) {
-    float speedSqrd = sqrtf(vector3MagSqrd(&player->velocity));
+    float speedSqrd = sqrtf(player->velocity.x * player->velocity.x + player->velocity.z * player->velocity.z);
 
     if (speedSqrd < 0.00001f) {
         *playbackSpeed = 0.0f;
@@ -51,6 +56,21 @@ struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float*
     }
 }
 
+void playerUpdateColliderPos(struct Player* player) {
+    vector3AddScaled(&player->transform.position, &gUp, COLLIDER_HEIGHT * 0.5f + COLLIDER_RADIUS, &player->collider.center);
+    collisionCapsuleUpdateBB(&player->collider);
+}
+
+void playerColliderCallback(void* data, struct Vector3* normal, float depth) {
+    struct Player* player = (struct Player*)data;
+
+    vector3AddScaled(&player->transform.position, normal, depth * 0.25f, &player->transform.position);
+
+    if (vector3Dot(&player->velocity, normal) > 0.0f) {
+        vector3ProjectPlane(&player->velocity, normal, &player->velocity);
+    }
+}
+
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer) {
     player->transform.position = startLocation->position;
     quatIdent(&player->transform.rotation);
@@ -58,6 +78,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     player->playerIndex = index;
     player->animationSpeed = 0.0f;
     player->holdingItem = NULL;
+    player->velocity = gZeroVec;
 
     skArmatureInit(
         &player->armature, 
@@ -82,6 +103,11 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     player->lookDir.y = 0.0f;
 
     shadowMapInit(&player->shadowMap, &gPlayerCenter, 0.5f, 0.5f, 10.0f, buffer);
+
+    collisionCapsuleInit(&player->collider, COLLIDER_HEIGHT, COLLIDER_RADIUS);
+    playerUpdateColliderPos(player);
+
+    collisionSceneAddDynamic(&gCollisionScene, &player->collider.collisionObject, playerColliderCallback, player);
 }
 
 void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
@@ -116,12 +142,19 @@ void playerUpdate(struct Player* player) {
         vector3Scale(&moveDir, &moveDir, PLAYER_MOVE_SPEED);
     }
 
+    moveDir.y = -0.1f;
+
     vector3MoveTowards(&player->velocity, &moveDir, PLAYER_ACCELERATION * FIXED_DELTA_TIME, &player->velocity);
 
     vector3AddScaled(&player->transform.position, &player->velocity, FIXED_DELTA_TIME, &player->transform.position);
 
     if (magSqrd > 0.0f) {
         playerHandleRotation(player, &moveDir);
+    }
+
+    if (player->transform.position.y < 0.0f) {
+        player->transform.position.y = 0.0f;
+        player->velocity.y = 0.0f;
     }
 
     struct SKAnimationHeader* nextAnimation = playerDetermineAnimation(player, &player->animationSpeed);
@@ -146,6 +179,8 @@ void playerUpdate(struct Player* player) {
 
         itemUpdateTarget(player->holdingItem, &combined);
     }
+
+    playerUpdateColliderPos(player);
 }
 
 void playerSetupTransforms(struct Player* player, struct RenderState* renderState) {

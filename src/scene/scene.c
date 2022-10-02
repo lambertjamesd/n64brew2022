@@ -16,6 +16,7 @@
 #include "../graphics/pallete_operations.h"
 #include "../util/memory.h"
 #include "../math/mathf.h"
+#include "../collision/collision_scene.h"
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
@@ -53,6 +54,7 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     itemPoolInit(&scene->itemPool);
+    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount);
 
     cameraInit(
         &scene->camera, 
@@ -176,6 +178,8 @@ void sceneUpdate(struct Scene* scene) {
             bezosDeactivate(&scene->bezos);
         }
     }
+
+    collisionSceneCollide(&gCollisionScene);
 }
 
 struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};

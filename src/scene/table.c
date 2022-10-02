@@ -5,6 +5,8 @@
 #include "../build/assets/models/table.h"
 #include "../build/assets/materials/static.h"
 
+#include "../collision/collision_scene.h"
+
 #include "../defs.h"
 
 void tableInit(struct Table* table, struct TableDefinition* def) {
@@ -15,6 +17,23 @@ void tableInit(struct Table* table, struct TableDefinition* def) {
     for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
         table->itemSlots[i] = NULL;
     }
+
+    vector3Add(
+        &table->tableType->boundingBox.min, 
+        &table->position,
+        &table->collisionObject.boundingBox.min
+    );
+
+    vector3Add(
+        &table->tableType->boundingBox.max, 
+        &table->position,
+        &table->collisionObject.boundingBox.max
+    );
+
+    table->collisionObject.data = &table->collisionObject;
+    table->collisionObject.minkowskiSum = collisionObjectBoundingBox;
+
+    collisionSceneAddStatic(&gCollisionScene, &table->collisionObject);
 }
 
 void tableRender(struct Table* table, struct RenderScene* renderScene) {
