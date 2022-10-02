@@ -7,18 +7,9 @@
 
 #include "../defs.h"
 
-struct Vector3 gTable0Slots[] = {
-    {0.5f, 0.6f, 0.0f},
-    {-0.5f, 0.6f, 0.0f},
-};
-
-struct TableType gTableTypes[] = {
-    {table_model_gfx, gTable0Slots, sizeof(gTable0Slots) / sizeof(*gTable0Slots), FURNITURE_WAREHOUSE_INDEX},
-};
-
 void tableInit(struct Table* table, struct TableDefinition* def) {
     table->position = def->position;
-    table->tableType = &gTableTypes[def->tableType];
+    table->tableType = &table_definition;
     table->itemSlots = malloc(sizeof(struct Item*) * table->tableType->itemSlotCount);
 
     for (int i = 0; i < table->tableType->itemSlotCount; ++i) {

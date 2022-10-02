@@ -152,8 +152,8 @@ build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c
 
 
 build/src/scene/player.o: build/assets/models/player.h build/assets/materials/static.h
-build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h
-build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h
+build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h 
+build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h tools/table_export.lua
 build/src/scene/item_requester.o: build/assets/models/ui/item_prompt.h build/assets/materials/static.h
 
 build/src/scene/item.o: build/assets/materials/static.h \

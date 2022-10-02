@@ -3,8 +3,9 @@
 
 ## TODO
 
-* Table shadow volume
+* script for table export
 * collision detection
+* Table shadow volume
 * item void requester
 * item drop penalty
 * swinging lights

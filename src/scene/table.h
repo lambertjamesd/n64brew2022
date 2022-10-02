@@ -7,13 +7,7 @@
 #include "../math/vector3.h"
 #include "item.h"
 #include "../level/level_definition.h"
-
-struct TableType {
-    Gfx* displayList;
-    struct Vector3* itemSlots;
-    short itemSlotCount;
-    short materialIndex;
-};
+#include "table_type.h"
 
 struct Table {
     struct Vector3 position;

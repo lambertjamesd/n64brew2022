@@ -216,7 +216,7 @@ enum LightIntersection spotLightIsInside(struct SpotLight* spotLight, struct Col
             &simplex, 
             NULL, 
             spotLightFaceSum, 
-            COLLISION_OBJECT_DATA_POINTER(collisionObject), 
+            collisionObject->data, 
             collisionObject->minkowskiSum, 
             &spotLight->faceNormal[i]
         )) {
