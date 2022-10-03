@@ -34,7 +34,24 @@ for _, slot in pairs(nodes_for_type('@slot')) do
     table.insert(slotPositions, position)
 end
 
+local surface = nodes_for_type('@shadow_caster')[1]
+
+local surfaceMesh
+
+if (surface) then
+    local transformedMesh = surface.node.meshes[1]:transform(surface.node.full_transformation)
+    print(transformedMesh)
+    print(#transformedMesh.vertices)
+    print(transformedMesh.vertices[1])
+
+    surfaceMesh = {
+        vertices = transformedMesh.vertices,
+    }
+end
+
 add_definition("slots", "struct Vector3[]", "_geo", slotPositions)
+
+add_definition("surface", "struct SurfaceMesh", "_geo", surfaceMesh);
 
 add_definition("definition", "struct TableType", "_geo", {
     displayList = defaultExports.model,
@@ -42,4 +59,5 @@ add_definition("definition", "struct TableType", "_geo", {
     itemSlots = reference_to(slotPositions[1]),
     itemSlotCount = #slotPositions,
     materialIndex = defaultExports.material,
+    surfaceMesh = reference_to(surfaceMesh),
 })
