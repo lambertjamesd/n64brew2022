@@ -46,6 +46,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &hat_camera,
+        &hat_light,
     },
     [ItemTypeBrain] = {
         brain_model_gfx,
@@ -54,6 +56,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &brain_camera,
+        &brain_light,
     },
     [ItemTypeBroom] = {
         broom_model_gfx,
@@ -62,6 +66,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &broom_camera,
+        &broom_light,
     },
     [ItemTypeCandle] = {
         candle_model_gfx,
@@ -70,6 +76,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &candle_camera,
+        &candle_light,
     },
     [ItemTypeCat] = {
         cat_model_gfx,
@@ -78,6 +86,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         CAT_ATTACHMENT_COUNT,
         cat_default_bones,
         cat_bone_parent,
+        &cat_camera,
+        &cat_light,
     },
     [ItemTypeCobweb] = {
         cobweb_model_gfx,
@@ -86,6 +96,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &cobweb_camera,
+        &cobweb_light,
     },
     [ItemTypeCrow] = {
         crow_model_gfx,
@@ -94,6 +106,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         CROW_ATTACHMENT_COUNT,
         crow_default_bones,
         crow_bone_parent,
+        &crow_camera,
+        &crow_light,
     },
     [ItemTypeHand] = {
         hand_model_gfx,
@@ -102,6 +116,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         HAND_ATTACHMENT_COUNT,
         hand_default_bones,
         hand_bone_parent,
+        &hand_camera,
+        &hand_light,
     },
     [ItemTypeRat] = {
         rat_model_gfx,
@@ -110,6 +126,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         RAT_ATTACHMENT_COUNT,
         rat_default_bones,
         rat_bone_parent,
+        &rat_camera,
+        &rat_light,
     },
     [ItemTypeScarecrow] = {
         scarecrow_model_gfx,
@@ -118,6 +136,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &rat_camera,
+        &rat_light,
     },
     [ItemTypeSkull] = {
         skull_model_gfx,
@@ -126,6 +146,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &skull_camera,
+        &skull_light,
     },
     [ItemTypeSpider] = {
         spider_model_gfx,
@@ -134,6 +156,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         SPIDER_ATTACHMENT_COUNT,
         spider_default_bones,
         spider_bone_parent,
+        &spider_camera,
+        &spider_light,
     },
 };
 

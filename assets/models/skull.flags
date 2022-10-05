@@ -1,1 +1,1 @@
--r 0,0,0 -m assets/materials/static.skm.yaml --default-material items
+--script tools/item_export.lua -r 0,0,0 -m assets/materials/static.skm.yaml --default-material items

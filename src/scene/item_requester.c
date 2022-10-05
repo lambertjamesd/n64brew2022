@@ -44,7 +44,7 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* re
     signTransform.scale = gOneVec;
     transformToMatrixL(&signTransform, matrix, SCENE_SCALE);
 
-    Gfx* gfx = itemRenderUseImage(ItemTypePumpkin, renderScene->renderState, ui_item_prompt_model_gfx);
+    Gfx* gfx = itemRenderUseImage(ItemTypeSpider, renderScene->renderState, ui_item_prompt_model_gfx);
 
     renderSceneAdd(renderScene, gfx, matrix, ITEM_PROMPT_INDEX, &requester->transform.position, NULL, NULL);
 }
