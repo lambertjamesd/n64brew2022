@@ -171,11 +171,6 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
     gSPDisplayList(renderState->dl++, shadowMapMaterial);
     gSPDisplayList(renderState->dl++, subject);
 
-    gDPPipeSync(renderState->dl++);
-    gDPSetScissor(renderState->dl++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
-    gSPViewport(renderState->dl++, &fullscreenViewport);
-    gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
-
     // gDPSetColorImage(renderState->dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, osVirtualToPhysical(gfxTask->framebuffer));
 
     shadowMap->projOffset = projOffset;

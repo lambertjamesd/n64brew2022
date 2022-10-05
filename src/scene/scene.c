@@ -17,6 +17,7 @@
 #include "../util/memory.h"
 #include "../math/mathf.h"
 #include "../collision/collision_scene.h"
+#include "item_render.h"
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
@@ -189,6 +190,12 @@ struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
+    Mtx* identity = renderStateRequestMatrices(renderState, 1);
+    guMtxIdent(identity);
+    gSPMatrix(renderState->dl++, identity, G_MTX_LOAD | G_MTX_NOPUSH | G_MTX_MODELVIEW);
+
+    itemRenderGenerateAll(renderState);
+
     struct LightConfiguration playerLightConfig[scene->playerCount];
 
     for (int i = 0; i < scene->playerCount; ++i) {
@@ -218,8 +225,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         }
     }
 
-    Mtx* identity = renderStateRequestMatrices(renderState, 1);
-    guMtxIdent(identity);
+    gDPPipeSync(renderState->dl++);
+    gDPSetScissor(renderState->dl++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
+    gSPViewport(renderState->dl++, &fullscreenViewport);
+    gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
     gSPMatrix(renderState->dl++, identity, G_MTX_LOAD | G_MTX_NOPUSH | G_MTX_MODELVIEW);
 
     gDPPipeSync(renderState->dl++);
@@ -232,7 +241,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     struct FrustrumCullingInformation cullingInformation;
 
-    cameraSetupMatrices(&scene->camera, renderState, (float)SCREEN_WD / (float)SCREEN_HT, &fullscreenViewport, &cullingInformation);
+    cameraSetupMatrices(&scene->camera, renderState, (float)SCREEN_WD / (float)SCREEN_HT, &cullingInformation);
     
     gSPSetLights1(renderState->dl++, gLights);
     gDPSetRenderMode(renderState->dl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);

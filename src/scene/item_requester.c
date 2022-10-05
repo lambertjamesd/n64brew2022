@@ -7,6 +7,13 @@
 
 #include "../util/time.h"
 
+#include "../math/mathf.h"
+
+#include "item_render.h"
+
+#define OSCILATE_PERIOD     2.0f
+#define OSCILATE_HEIGHT     0.25f
+
 void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefinition* definition) {
     requester->transform.position = definition->position;
     requester->transform.rotation = definition->rotation;
@@ -32,9 +39,12 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* re
 
     struct Transform signTransform;
     signTransform.position = requester->transform.position;
+    signTransform.position.y += OSCILATE_HEIGHT * sinf(gTimePassed * (M_PI * 2.0f / OSCILATE_PERIOD));
     signTransform.rotation = renderScene->cameraTransform.rotation;
     signTransform.scale = gOneVec;
     transformToMatrixL(&signTransform, matrix, SCENE_SCALE);
 
-    renderSceneAdd(renderScene, ui_item_prompt_model_gfx, matrix, WHITE_SOLID_INDEX, &requester->transform.position, NULL, NULL);
+    Gfx* gfx = itemRenderUseImage(ItemTypePumpkin, renderScene->renderState, ui_item_prompt_model_gfx);
+
+    renderSceneAdd(renderScene, gfx, matrix, ITEM_PROMPT_INDEX, &requester->transform.position, NULL, NULL);
 }

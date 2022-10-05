@@ -36,6 +36,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
+        &pumpkin_camera,
+        &pumpkin_light,
     },
     [ItemTypeHat] = {
         hat_model_gfx,

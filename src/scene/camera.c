@@ -95,7 +95,7 @@ int cameraIsValidMatrix(float matrix[4][4]) {
     return fabsf(matrix[3][0]) <= 0x7fff && fabsf(matrix[3][1]) <= 0x7fff && fabsf(matrix[3][2]) <= 0x7fff;
 }
 
-Mtx* cameraSetupMatrices(struct Camera* camera, struct RenderState* renderState, float aspectRatio, Vp* viewport, struct FrustrumCullingInformation* clippingInfo) {
+Mtx* cameraSetupMatrices(struct Camera* camera, struct RenderState* renderState, float aspectRatio, struct FrustrumCullingInformation* clippingInfo) {
     Mtx* viewProjMatrix = renderStateRequestMatrices(renderState, 2);
     
     if (!viewProjMatrix) {
@@ -111,16 +111,8 @@ Mtx* cameraSetupMatrices(struct Camera* camera, struct RenderState* renderState,
     float persp[4][4];
     float combined[4][4];
 
-    float scaleX = viewport->vp.vscale[0] * (1.0f / (SCREEN_WD << 1));
-    float scaleY = viewport->vp.vscale[1] * (1.0f / (SCREEN_HT << 1));
-
-    float centerX = ((float)viewport->vp.vtrans[0] - (SCREEN_WD << 1)) * (1.0f / (SCREEN_WD << 1));
-    float centerY = ((SCREEN_HT << 1) - (float)viewport->vp.vtrans[1]) * (1.0f / (SCREEN_HT << 1));
-
-    guOrthoF(combined, centerX - scaleX, centerX + scaleX, centerY - scaleY, centerY + scaleY, 1.0f, -1.0f, 1.0f);
     u16 perspectiveNormalize;
-    cameraBuildProjectionMatrix(camera, view, &perspectiveNormalize, aspectRatio);
-    guMtxCatF(view, combined, persp);
+    cameraBuildProjectionMatrix(camera, persp, &perspectiveNormalize, aspectRatio);
 
     cameraBuildViewMatrix(camera, view);
     guMtxCatF(view, persp, combined);

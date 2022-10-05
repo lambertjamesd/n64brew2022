@@ -35,6 +35,8 @@ struct ItemTypeDefinition {
     unsigned short attachmentCount;
     struct Transform* defaultBones;
     unsigned short* boneParent;
+    struct CameraDefinition* cameraDefinition;
+    struct Vector3* lightDir;
 };
 
 #define ITEM_FLAGS_ATTACHED         (1 << 0)
@@ -44,6 +46,8 @@ struct ItemTypeDefinition {
 #define ITEM_FLAGS_GONE             (1 << 4)
 
 #define ITEM_PICKUP_RADIUS  0.5f
+
+extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
 
 struct Item {
     struct Item* next;
