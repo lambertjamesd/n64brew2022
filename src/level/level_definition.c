@@ -14,5 +14,12 @@ struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int point
     result->tables = ADJUST_POINTER_POS(result->tables, pointerOffset);
     result->itemRequesters = ADJUST_POINTER_POS(result->itemRequesters, pointerOffset);
 
+    result->script = ADJUST_POINTER_POS(result->script, pointerOffset);
+    result->script->steps = ADJUST_POINTER_POS(result->script->steps, pointerOffset);
+
+    for (int i = 0; i < result->script->stepCount; ++i) {
+        result->script->steps[i].itemPool = ADJUST_POINTER_POS(result->script->steps[i].itemPool, pointerOffset);
+    }
+
     return result;
 }

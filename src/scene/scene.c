@@ -53,9 +53,12 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 #define GROUND_LERP  TEXEL0, 0, ENVIRONMENT, PRIMITIVE, 0, 0, 0, ENVIRONMENT
 
+
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     itemPoolInit(&scene->itemPool);
     collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount);
+    
+    itemCoordinatorInit(&scene->itemCoordinator, definition->script);
 
     cameraInit(
         &scene->camera, 
@@ -154,8 +157,12 @@ void sceneUpdate(struct Scene* scene) {
 
     for (int i = 0; i < scene->conveyorCount; ++i) {
         if (conveyorCanAcceptItem(&scene->conveyors[i])) {
-            struct Item* newItem = itemPoolNew(&scene->itemPool, randomInRange(0, ItemTypeCount), &scene->conveyors[i].transform);
-            conveyorAcceptItem(&scene->conveyors[i], newItem);
+            enum ItemType newItemType = itemCoordinatorNextArrival(&scene->itemCoordinator);
+
+            if (newItemType < ItemTypeCount) {
+                struct Item* newItem = itemPoolNew(&scene->itemPool, newItemType, &scene->conveyors[i].transform);
+                conveyorAcceptItem(&scene->conveyors[i], newItem);
+            }
         }
 
         conveyorUpdate(&scene->conveyors[i]);
@@ -167,7 +174,24 @@ void sceneUpdate(struct Scene* scene) {
         spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
     }
 
+    int activeRequesterCount = 0;
+
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        if (itemRequesterIsActive(&scene->itemRequesters[i])) {
+            ++activeRequesterCount;
+        }
+    }
+
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        if (!itemRequesterIsActive(&scene->itemRequesters[i])) {
+            enum ItemType newItemType = itemCoordinatorNextRequest(&scene->itemCoordinator, activeRequesterCount);
+
+            if (newItemType < ItemTypeCount) {
+                itemRequesterRequestItem(&scene->itemRequesters[i], newItemType, 8.0f);
+                ++activeRequesterCount;
+            }
+        }
+        
         itemRequesterUpdate(&scene->itemRequesters[i]);
     }
 
@@ -179,6 +203,8 @@ void sceneUpdate(struct Scene* scene) {
             bezosDeactivate(&scene->bezos);
         }
     }
+
+    itemCoordinatorUpdate(&scene->itemCoordinator);
 
     collisionSceneCollide(&gCollisionScene);
 }
@@ -366,6 +392,17 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
 int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt) {
     for (int i = 0; i < scene->tableCount; ++i) {
         if (tableDropItem(&scene->tables[i], item, dropAt)) {
+            return 1;
+        }
+    }
+
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        enum ItemDropResult dropResult = itemRequesterDrop(&scene->itemRequesters[i], item, dropAt);
+        if (dropResult) {
+            if (dropResult == ItemDropResultSuccess) {
+                itemCoordinatorMarkSuccess(&scene->itemCoordinator);
+            }
+
             return 1;
         }
     }

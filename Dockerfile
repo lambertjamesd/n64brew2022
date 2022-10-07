@@ -37,7 +37,8 @@ RUN apt install -y binutils-mips-n64 \
     libtiff-dev \
     libassimp-dev \
     unzip \
-    build-essential
+    build-essential \
+    luarocks
 
 COPY Makefile Makefile
 COPY asm asm
@@ -45,5 +46,7 @@ COPY assets assets
 COPY src src
 COPY tools tools
 COPY game.ld game.ld
+
+RUN luarocks install --tree lua_modules lunajson
 
 CMD make

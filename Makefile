@@ -187,7 +187,7 @@ build/%.fbx: %.blend
 	@mkdir -p $(@D)
 	$(BLENDER_2_9) $< --background --python tools/export_fbx.py -- $@
 
-build/assets/levels/%.h build/assets/levels/%_geo.c: build/assets/levels/%.fbx assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
+build/assets/levels/%.h build/assets/levels/%_geo.c: build/assets/levels/%.fbx assets/levels/%.json assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --script tools/generate_level.lua --ci-buffer --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete build/assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
 

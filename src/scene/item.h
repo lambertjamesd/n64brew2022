@@ -10,24 +10,6 @@
 #include "../level/level_definition.h"
 #include "spot_light.h"
 
-enum ItemType {
-    ItemTypePumpkin,
-    ItemTypeHat,
-    ItemTypeBrain,
-    ItemTypeBroom,
-    ItemTypeCandle,
-    ItemTypeCat,
-    ItemTypeCobweb,
-    ItemTypeCrow,
-    ItemTypeHand,
-    ItemTypeRat,
-    ItemTypeScarecrow,
-    ItemTypeSkull,
-    ItemTypeSpider,
-
-    ItemTypeCount,
-};
-
 struct ItemTypeDefinition {
     Gfx* dl;
     unsigned short materialIndex;
@@ -44,6 +26,7 @@ struct ItemTypeDefinition {
 #define ITEM_FLAGS_DROPPED          (1 << 2)
 #define ITEM_FLAGS_POOFED           (1 << 3)
 #define ITEM_FLAGS_GONE             (1 << 4)
+#define ITEM_FLAGS_SUCCESS          (1 << 5)
 
 #define ITEM_PICKUP_RADIUS  0.5f
 
@@ -80,6 +63,7 @@ void itemUpdateTarget(struct Item* item, struct Transform* transform);
 void itemMarkNewTarget(struct Item* item);
 
 void itemDrop(struct Item* item);
+void itemSuccess(struct Item* item);
 
 struct ItemPool {
     struct Item* itemHead;

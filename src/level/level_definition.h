@@ -7,6 +7,24 @@
 
 #define MAX_PLAYERS     4
 
+enum ItemType {
+    ItemTypePumpkin,
+    ItemTypeHat,
+    ItemTypeBrain,
+    ItemTypeBroom,
+    ItemTypeCandle,
+    ItemTypeCat,
+    ItemTypeCobweb,
+    ItemTypeCrow,
+    ItemTypeHand,
+    ItemTypeRat,
+    ItemTypeScarecrow,
+    ItemTypeSkull,
+    ItemTypeSpider,
+
+    ItemTypeCount,
+};
+
 struct StaticContentElement {
     Gfx* displayList;
     u8 materialIndex;
@@ -49,6 +67,17 @@ struct ItemRequesterDefinition {
     struct Quaternion rotation;
 };
 
+struct ItemScriptStep {
+    u8 itemPoolSize;
+    u8 successCount;
+    u8* itemPool;
+};
+
+struct ItemScript {
+      struct ItemScriptStep* steps;
+      short stepCount;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
@@ -73,6 +102,8 @@ struct LevelDefinition {
 
     struct PlayerStartLocation playerStart[MAX_PLAYERS];
     struct CameraDefinition cameraDefinition;
+
+    struct ItemScript* script;
 };
 
 struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);

@@ -220,8 +220,13 @@ void itemUpdate(struct Item* item) {
             item->dropInfo.velocity.x = 0.0f;
             item->dropInfo.velocity.y = -item->dropInfo.velocity.y;
             item->dropInfo.velocity.z = 0.0f;
-            item->flags |= ITEM_FLAGS_POOFED;
-            item->dropInfo.pooftimer = POOF_TIME;
+
+            if (item->flags & ITEM_FLAGS_SUCCESS) {
+                item->flags |= ITEM_FLAGS_GONE;
+            } else {
+                item->flags |= ITEM_FLAGS_POOFED;
+                item->dropInfo.pooftimer = POOF_TIME;
+            }
         }
     } else if (item->flags & ITEM_FLAGS_ATTACHED) {
         item->transform = item->target;
@@ -280,6 +285,12 @@ void itemMarkNewTarget(struct Item* item) {
 void itemDrop(struct Item* item) {
     item->flags |= ITEM_FLAGS_DROPPED;
 
+    item->dropInfo.velocity = gZeroVec;
+    item->dropInfo.pooftimer = 0.0f;
+}
+
+void itemSuccess(struct Item* item) {
+    item->flags |= ITEM_FLAGS_DROPPED | ITEM_FLAGS_SUCCESS;
     item->dropInfo.velocity = gZeroVec;
     item->dropInfo.pooftimer = 0.0f;
 }
