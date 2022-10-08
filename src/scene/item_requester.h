@@ -6,11 +6,16 @@
 #include "../level/level_definition.h"
 #include "../graphics/render_scene.h"
 
+enum ItemRequesterFlags {
+    ItemRequesterFlagsHover = (1 << 0),
+};
+
 struct ItemRequester {
     struct Transform transform;
     enum ItemType requestedType;
     float timeLeft;
     float duration;
+    short flags;
 };
 
 enum ItemDropResult {
@@ -25,6 +30,8 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* sc
 
 void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType itemType, float duration);
 int itemRequesterIsActive(struct ItemRequester* requester);
+
+int itemRequesterHover(struct ItemRequester* requester, struct Item* item, struct Vector3* dropAt);
 
 enum ItemDropResult itemRequesterDrop(struct ItemRequester* requester, struct Item* item, struct Vector3* dropAt);
 

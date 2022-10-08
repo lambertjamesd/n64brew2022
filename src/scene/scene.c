@@ -125,15 +125,20 @@ void sceneUpdate(struct Scene* scene) {
         struct Vector3 grabFrom;
         playerGrabPoint(player, &grabFrom);
 
-        if (playerCanGrab(player) && controllerGetButtonDown(i, A_BUTTON)) {
-            struct Item* item = scenePickupItem(scene, &grabFrom);
+        sceneItemHover(scene, player->holdingItem, &grabFrom);
 
-            if (item) {
-                playerHandObject(player, item);
+        int didReplace = 0;
+
+        if (controllerGetButtonDown(i, B_BUTTON | A_BUTTON) && player->holdingItem) {
+            struct Item* replacement = NULL;
+            if (sceneSwapItem(scene, player->holdingItem, &grabFrom, &replacement)) {
+                player->holdingItem = NULL;
+                playerHandObject(player, replacement);
+                didReplace = 1;
             }
         }
 
-        if (controllerGetButtonDown(i, B_BUTTON) && player->holdingItem) {
+        if (!didReplace && controllerGetButtonDown(i, B_BUTTON) && player->holdingItem) {
             if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
                 struct Item* item = player->holdingItem;
 
@@ -149,7 +154,16 @@ void sceneUpdate(struct Scene* scene) {
                     bezosActivate(&scene->bezos, &item->transform.position);
                 }
             }
+
             player->holdingItem = NULL;
+        }
+
+        if (!didReplace && playerCanGrab(player) && controllerGetButtonDown(i, A_BUTTON)) {
+            struct Item* item = scenePickupItem(scene, &grabFrom);
+
+            if (item) {
+                playerHandObject(player, item);
+            }
         }
     }
 
@@ -408,4 +422,20 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
     }
 
     return 0;
+}
+
+int sceneSwapItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Item** replacement) {
+    for (int i = 0; i < scene->tableCount; ++i) {
+        if (tableSwapItem(&scene->tables[i], item, dropAt, replacement)) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropAt) {
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        itemRequesterHover(&scene->itemRequesters[i], item, dropAt);
+    }
 }

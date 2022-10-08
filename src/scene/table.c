@@ -80,7 +80,7 @@ int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt
         if (table->itemSlots[i]) {
             continue;
         }
-
+        
         struct Vector3 itemPosition;
         vector3Add(&table->position, &table->tableType->itemSlots[i], &itemPosition);
 
@@ -89,6 +89,47 @@ int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt
         offset.y = 0.0f;
 
         if (vector3MagSqrd(&offset) < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
+            if (table->itemSlots[i]) {
+                itemMarkNewTarget(table->itemSlots[i]);
+            }
+
+            table->itemSlots[i] = item;
+            itemMarkNewTarget(item);
+            struct Transform transform;
+            transform.position = itemPosition;
+            quatIdent(&transform.rotation);
+            transform.scale = gOneVec;
+
+            itemUpdateTarget(item, &transform);
+
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int tableSwapItem(struct Table* table, struct Item* item, struct Vector3* dropAt, struct Item** replacement) {
+    for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
+        if (!table->itemSlots[i]) {
+            continue;
+        }
+        
+        struct Vector3 itemPosition;
+        vector3Add(&table->position, &table->tableType->itemSlots[i], &itemPosition);
+
+        struct Vector3 offset;
+        vector3Sub(&itemPosition, dropAt, &offset);
+        offset.y = 0.0f;
+
+        if (vector3MagSqrd(&offset) < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
+            *replacement = table->itemSlots[i];
+            itemMarkNewTarget(table->itemSlots[i]);
+
+            if (table->itemSlots[i]) {
+                itemMarkNewTarget(table->itemSlots[i]);
+            }
+
             table->itemSlots[i] = item;
             itemMarkNewTarget(item);
             struct Transform transform;
