@@ -104,3 +104,58 @@ void tableSurfaceRenderLight(struct TableSurfaceMesh* surface, struct Vector3* o
         }
     }
 }
+
+void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* offset, struct SpotLight* spotLight, struct RenderState* renderState) {
+    int vertexCount = surface->vertexCount * 2;
+
+    struct Vector3 verticesAsFloat[vertexCount];
+
+    float lightHeight = -spotLight->transform.position.y;
+
+    for (int i = 0; i < surface->vertexCount; ++i) {
+        vector3Add(&surface->vertices[i], offset, &verticesAsFloat[i]);
+
+        struct Vector3 rayDirection;
+        vector3Sub(&verticesAsFloat[i], &spotLight->transform.position, &rayDirection);
+
+        vector3Scale(&rayDirection, &rayDirection, lightHeight / rayDirection.y);
+
+        vector3Add(&rayDirection, &spotLight->transform.position, &verticesAsFloat[i + surface->vertexCount]);
+    }
+
+    Vtx* vertices = renderStateRequestVertices(renderState, vertexCount);
+
+    for (int i = 0; i < vertexCount; ++i) {
+        Vtx* current = &vertices[i];
+
+        current->v.ob[0] = (short)(verticesAsFloat[i].x * SCENE_SCALE);
+        current->v.ob[1] = (short)(verticesAsFloat[i].y * SCENE_SCALE);
+        current->v.ob[2] = (short)(verticesAsFloat[i].z * SCENE_SCALE);
+
+        current->v.flag = 0;
+
+        current->v.tc[0] = 0;
+        current->v.tc[1] = 0;
+
+        current->v.cn[0] = 255;
+        current->v.cn[1] = 255;
+        current->v.cn[2] = 255;
+        current->v.cn[3] = 255;
+    }
+
+    gSPVertex(renderState->dl++, vertices, vertexCount, 0);
+
+    for (int i = 0; i < vertexCount; ++i) { 
+        int a = i;
+        int b = i + 1;
+
+        if (b == vertexCount) {
+            b = 0;
+        }
+
+        int c = a + vertexCount;
+        int d = b + vertexCount;
+
+        gSP2Triangles(renderState->dl++, a, b, d, 0, a, d, c, 0);
+    }
+}

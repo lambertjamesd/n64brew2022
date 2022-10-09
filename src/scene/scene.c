@@ -333,9 +333,33 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     renderSceneGenerate(renderScene, renderState);
     renderSceneFree(renderScene);
 
+    // render shadows
+
     for (unsigned i = 0; i < scene->playerCount; ++i) {
         shadowMapRenderOntoPlane(&scene->players[i].shadowMap, renderState, &gGroundPlane);
     }
+
+    gDPPipeSync(renderState->dl++);
+    gSPDisplayList(renderState->dl++, levelMaterial(SHADOW_INDEX));
+
+    for (unsigned tableIndex = 0; tableIndex < scene->tableCount; ++tableIndex) {
+        struct Box3D tableBB;
+
+        struct TableType* tableType = scene->tables[tableIndex].tableType;
+
+        vector3Add(&tableType->boundingBox.min, &scene->tables[tableIndex].position, &tableBB.min);
+        vector3Add(&tableType->boundingBox.max, &scene->tables[tableIndex].position, &tableBB.max);
+        
+        for (unsigned lightIndex = 0; lightIndex < scene->spotLightCount; ++lightIndex) {
+            if (!box3DHasOverlap(&tableBB, &scene->spotLights[lightIndex].boundingBox)) {
+                continue;
+            }
+
+            tableSurfaceRenderShadow(&tableType->surfaceMesh, &scene->tables[tableIndex].position, &scene->spotLights[lightIndex], renderState);
+        }
+    }
+
+    // render lights
 
     gDPPipeSync(renderState->dl++);
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
