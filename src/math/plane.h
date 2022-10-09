@@ -18,4 +18,5 @@ void planeProjectPoint(struct Plane* plane, struct Vector3* point, struct Vector
 void calculateBarycentricCoords(struct Vector3* a, struct Vector3* b, struct Vector3* c, struct Vector3* point, struct Vector3* output);
 void evaluateBarycentricCoords(struct Vector3* a, struct Vector3* b, struct Vector3* c, struct Vector3* bary, struct Vector3* output);
 
+
 #endif

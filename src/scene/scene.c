@@ -18,6 +18,7 @@
 #include "../math/mathf.h"
 #include "../collision/collision_scene.h"
 #include "item_render.h"
+#include "table_surface.h"
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
@@ -347,6 +348,28 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         spotLightRenderProjection(&scene->spotLights[i], renderState);
     }
 
+
+    gDPPipeSync(renderState->dl++);
+    gSPDisplayList(renderState->dl++, levelMaterial(ADDITIVE_LIGHT_DECAL_INDEX));
+
+    for (unsigned tableIndex = 0; tableIndex < scene->tableCount; ++tableIndex) {
+        struct Box3D tableBB;
+
+        struct TableType* tableType = scene->tables[tableIndex].tableType;
+
+        vector3Add(&tableType->boundingBox.min, &scene->tables[tableIndex].position, &tableBB.min);
+        vector3Add(&tableType->boundingBox.max, &scene->tables[tableIndex].position, &tableBB.max);
+        
+        for (unsigned lightIndex = 0; lightIndex < scene->spotLightCount; ++lightIndex) {
+            if (!box3DHasOverlap(&tableBB, &scene->spotLights[lightIndex].boundingBox)) {
+                continue;
+            }
+
+            tableSurfaceRenderLight(&tableType->surfaceMesh, &scene->tables[tableIndex].position, &scene->spotLights[lightIndex], renderState);
+        }
+    }
+
+    gDPPipeSync(renderState->dl++);
     gSPGeometryMode(renderState->dl++, G_CULL_FRONT, G_CULL_BACK);
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
