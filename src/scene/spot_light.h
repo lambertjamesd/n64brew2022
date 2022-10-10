@@ -4,7 +4,9 @@
 #include "../math/transform.h"
 #include "../level/level_definition.h"
 #include "../graphics/renderstate.h"
+#include "../graphics/render_scene.h"
 #include "../collision/collision_object.h"
+#include "../collision/rigid_body.h"
 #include "../math/box3d.h"
 
 #define LIGHT_CIRCLE_POINT_COUNT    8
@@ -17,10 +19,11 @@ enum LightIntersection {
 };
 
 struct SpotLight {
-    struct Transform transform;
+    struct RigidBody rigidBody;
     struct Vector3 lightOutline[LIGHT_CIRCLE_POINT_COUNT];
     struct Vector3 faceNormal[LIGHT_CIRCLE_POINT_COUNT];
     struct Vector3 centerDirection;
+    struct Vector3 worldAnchorPoint;
     float borderDot;
     struct Box3D boundingBox;
     int isBackFaceMask;
@@ -32,6 +35,8 @@ void spotLightSetAngle(struct SpotLight* spotLight, float angle);
 void spotLightInit(struct SpotLight* spotLight, struct SpotLightDefinition* spotLightDef, struct Vector3* cameraPos);
 
 void spotLightUpdate(struct SpotLight* spotLight, struct Vector3* cameraPos);
+
+void spotLightRender(struct SpotLight* spotLight, struct RenderScene* renderScene);
 
 void spotLightRenderProjection(struct SpotLight* spotLight, struct RenderState* renderState);
 

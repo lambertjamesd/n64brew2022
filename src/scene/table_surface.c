@@ -10,7 +10,7 @@ void tableSurfaceRenderLight(struct TableSurfaceMesh* surface, struct Vector3* o
 
     for (int i = 0; i < surface->vertexCount; ++i) {
         vector3Add(&surface->vertices[i], offset, &pointLoop[i]);
-        vector3Sub(&pointLoop[i], &spotLight->transform.position, &pointLoop[i]);
+        vector3Sub(&pointLoop[i], &spotLight->rigidBody.transform.position, &pointLoop[i]);
     }
 
     struct Vector3* src = pointLoop;
@@ -79,9 +79,9 @@ void tableSurfaceRenderLight(struct TableSurfaceMesh* surface, struct Vector3* o
     for (int i = 0; i < sourceCount; ++i) {
         Vtx* curr = &vertices[i];
 
-        curr->v.ob[0] = (short)((spotLight->transform.position.x + src[i].x) * SCENE_SCALE);
-        curr->v.ob[1] = (short)((spotLight->transform.position.y + src[i].y) * SCENE_SCALE);
-        curr->v.ob[2] = (short)((spotLight->transform.position.z + src[i].z) * SCENE_SCALE);
+        curr->v.ob[0] = (short)((spotLight->rigidBody.transform.position.x + src[i].x) * SCENE_SCALE);
+        curr->v.ob[1] = (short)((spotLight->rigidBody.transform.position.y + src[i].y) * SCENE_SCALE);
+        curr->v.ob[2] = (short)((spotLight->rigidBody.transform.position.z + src[i].z) * SCENE_SCALE);
 
         curr->v.flag = 0;
 

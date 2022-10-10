@@ -296,6 +296,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetRenderMode(renderState->dl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
     gSPClearGeometryMode(renderState->dl++, G_ZBUFFER);
 
+    // render ground
     struct RenderScene* renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, 0);
 
     for (unsigned i = 0; i < gCurrentLevel->groundContentCount; ++i) {
@@ -309,7 +310,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
     
-    
+    // render objects
     renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, levelMaterialDefault());
 
     for (unsigned i = 0; i < gCurrentLevel->staticContentCount; ++i) {
@@ -320,6 +321,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         Light* light = spotLightsSetupLight(&playerLightConfig[i], &scene->players[i].transform.position, renderState);
         
         playerRender(&scene->players[i], light, renderScene);
+    }
+
+    for (unsigned i = 0; i < scene->spotLightCount; ++i) {
+        spotLightRender(&scene->spotLights[i], renderScene);
     }
 
     bezosRender(&scene->bezos, scene->spotLights, scene->spotLightCount, renderScene);
@@ -369,13 +374,13 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
             }
 
             struct Vector3 boxPoint;
-            box3DNearestPoint(&tableBB, &spotLight->transform.position, &boxPoint);
+            box3DNearestPoint(&tableBB, &spotLight->rigidBody.transform.position, &boxPoint);
 
             float weight = spotLightClosenessWeight(spotLight, &boxPoint);
 
             if (weight > 0) {
                 totalWeight += weight;
-                vector3AddScaled(&weightedCenter, &spotLight->transform.position, weight, &weightedCenter);
+                vector3AddScaled(&weightedCenter, &spotLight->rigidBody.transform.position, weight, &weightedCenter);
             }
         }
 

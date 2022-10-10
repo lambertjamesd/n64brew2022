@@ -4,6 +4,11 @@
 
 #include "../math/plane.h"
 #include "../defs.h"
+#include "../util/time.h"
+
+#include "../build/assets/models/lantern.h"
+#include "../build/assets/models/table.h"
+#include "../build/assets/materials/static.h"
 
 struct Vector3 gLightCircle[LIGHT_CIRCLE_POINT_COUNT] = {
     {1.0f, 0.0f, -1.0f},
@@ -16,7 +21,19 @@ struct Vector3 gLightCircle[LIGHT_CIRCLE_POINT_COUNT] = {
     {0.707f, -0.707f, -1.0f},
 };
 
+struct Vector3 gRelativeAnchorPoint = {0.0f, 0.0f, 0.5};
+
 struct Vector3 gLightCenterDir = {0.0f, 0.0f, -1.0f};
+
+#define MASS                1.0f
+#define SPRING_CONSTANT     0.1f
+#define DAMPING             0.999f
+#define ANCHOR_OFFSET       3.2f
+
+#define WIND_SPEED          -2.0f
+#define WIND_PERIOD         10.0f
+#define WIND_STRENGTH       0.01f
+#define WIND_THRESHOLD      0.2f
 
 void spotLightSetAngle(struct SpotLight* spotLight, float angle) {
     float halfAngle = angle * 0.5f;
@@ -24,7 +41,28 @@ void spotLightSetAngle(struct SpotLight* spotLight, float angle) {
 }
 
 void spotLightUpdateGeometry(struct SpotLight* spotLight, struct Vector3* cameraPos) {
-    struct Vector3 origin = spotLight->transform.position;
+    rigidBodyUpdate(&spotLight->rigidBody);
+
+    struct Vector3 anchorPoint;
+    transformPoint(&spotLight->rigidBody.transform, &gRelativeAnchorPoint, &anchorPoint);
+
+    struct Vector3 offset;
+    vector3Sub(&spotLight->worldAnchorPoint, &anchorPoint, &offset);
+    vector3Scale(&offset, &offset, SPRING_CONSTANT);
+
+    rigidBodyAppyImpulse(&spotLight->rigidBody, &anchorPoint, &offset);
+
+    float strength = sinf(gTimePassed * (M_PI * 2.0f / WIND_PERIOD) + spotLight->rigidBody.transform.position.x * (2.0f * M_PI / WIND_SPEED));
+
+    if (strength > WIND_THRESHOLD) {
+        vector3Scale(&gRight, &offset, strength * WIND_STRENGTH);
+        rigidBodyAppyImpulse(&spotLight->rigidBody, &spotLight->rigidBody.transform.position, &offset);
+    }
+
+    vector3Scale(&spotLight->rigidBody.velocity, &spotLight->rigidBody.velocity, DAMPING);
+    vector3Scale(&spotLight->rigidBody.angularVelocity, &spotLight->rigidBody.angularVelocity, DAMPING);
+
+    struct Vector3 origin = spotLight->rigidBody.transform.position;
 
     struct Vector3 lightDirection[LIGHT_CIRCLE_POINT_COUNT];
 
@@ -40,7 +78,7 @@ void spotLightUpdateGeometry(struct SpotLight* spotLight, struct Vector3* camera
         rayDirection.z = gLightCircle[i].z;
 
         vector3Normalize(&rayDirection, &rayDirection);
-        quatMultVector(&spotLight->transform.rotation, &rayDirection, &rayDirection);
+        quatMultVector(&spotLight->rigidBody.transform.rotation, &rayDirection, &rayDirection);
 
         if (rayDirection.y > -0.1f) {
             return;
@@ -70,24 +108,35 @@ void spotLightUpdateGeometry(struct SpotLight* spotLight, struct Vector3* camera
 
     spotLight->isBackFaceMask = isBackFaceMask;
 
-    quatMultVector(&spotLight->transform.rotation, &gLightCenterDir, &spotLight->centerDirection);
+    quatMultVector(&spotLight->rigidBody.transform.rotation, &gLightCenterDir, &spotLight->centerDirection);
     spotLight->borderDot = vector3Dot(&spotLight->centerDirection, &lightDirection[0]);
 
     spotLight->boundingBox.min.y -= 0.5f;
 }
 
 void spotLightInit(struct SpotLight* spotLight, struct SpotLightDefinition* spotLightDef, struct Vector3* cameraPos) {
-    spotLight->transform.position = spotLightDef->position;
-    spotLight->transform.rotation = spotLightDef->rotation;
-    spotLight->transform.scale = gOneVec;
+    rigidBodyInit(&spotLight->rigidBody, MASS, 1.0f);
+    spotLight->rigidBody.transform.position = spotLightDef->position;
+    spotLight->rigidBody.transform.rotation = spotLightDef->rotation;
 
     spotLightSetAngle(spotLight, spotLightDef->angle);
+
+    transformPoint(&spotLight->rigidBody.transform, &gRelativeAnchorPoint, &spotLight->worldAnchorPoint);
+    spotLight->worldAnchorPoint.y += ANCHOR_OFFSET;
 
     spotLightUpdateGeometry(spotLight, cameraPos);
 }
 
 void spotLightUpdate(struct SpotLight* spotLight, struct Vector3* cameraPos) {
     spotLightUpdateGeometry(spotLight, cameraPos);
+}
+
+void spotLightRender(struct SpotLight* spotLight, struct RenderScene* renderScene) {
+    Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
+
+    transformToMatrixL(&spotLight->rigidBody.transform, mtx, SCENE_SCALE);
+
+    renderSceneAdd(renderScene, lantern_model_gfx, mtx, LIGHTS_WAREHOUSE_INDEX, &spotLight->rigidBody.transform.position, NULL, NULL);
 }
 
 void spotLightRenderProjection(struct SpotLight* spotLight, struct RenderState* renderState) {
@@ -131,7 +180,7 @@ int spotLightFaceSum(void* data, struct Vector3* direction, struct Vector3* outp
     struct SpotLightFace* face = (struct SpotLightFace*)data;
 
     int result = 0;
-    float dotCompare = vector3Dot(&face->spotLight->transform.position, direction);
+    float dotCompare = vector3Dot(&face->spotLight->rigidBody.transform.position, direction);
 
     struct Vector3* firstVertex = &face->spotLight->lightOutline[face->faceIndex];
     float test = vector3Dot(firstVertex, direction);
@@ -151,7 +200,7 @@ int spotLightFaceSum(void* data, struct Vector3* direction, struct Vector3* outp
     
     switch (result) {
         case 0: 
-            *output = face->spotLight->transform.position;
+            *output = face->spotLight->rigidBody.transform.position;
             break;
         case 1:
             *output = *firstVertex;
@@ -166,7 +215,7 @@ int spotLightFaceSum(void* data, struct Vector3* direction, struct Vector3* outp
 
 float spotLightClosenessWeight(struct SpotLight* spotLight, struct Vector3* point) {
     struct Vector3 offset;
-    vector3Sub(point, &spotLight->transform.position, &offset);
+    vector3Sub(point, &spotLight->rigidBody.transform.position, &offset);
     vector3Normalize(&offset, &offset);
 
     float weight = vector3Dot(&offset, &spotLight->centerDirection);
@@ -188,7 +237,7 @@ enum LightIntersection spotLightPointIsInside(struct SpotLight* spotLight, struc
 
     struct Vector3 offset;
 
-    vector3Sub(&spotLight->transform.position, point, &offset);
+    vector3Sub(&spotLight->rigidBody.transform.position, point, &offset);
 
     for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
         if (vector3Dot(&offset, &spotLight->faceNormal[i]) > 0.0f) {
@@ -319,13 +368,13 @@ int spotLightsGetPosition(struct LightConfiguration* lightConfig, struct Vector3
 
     if (lightConfig->secondaryLight) {
         vector3Lerp(
-            &lightConfig->primaryLight->transform.position, 
-            &lightConfig->secondaryLight->transform.position, 
+            &lightConfig->primaryLight->rigidBody.transform.position, 
+            &lightConfig->secondaryLight->rigidBody.transform.position, 
             lightConfig->blendWeight,
             position
         );
     } else {
-        *position = lightConfig->primaryLight->transform.position;
+        *position = lightConfig->primaryLight->rigidBody.transform.position;
     }
 
     return 1;
