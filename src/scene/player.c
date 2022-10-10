@@ -237,12 +237,19 @@ void playerHandObject(struct Player* player, struct Item* holdingItem) {
 }
 
 Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState) {
-    Gfx* result = renderStateAllocateDLChunk(renderState, 4);
+    Gfx* result = renderStateAllocateDLChunk(renderState, 7);
     Gfx* dl = result;
 
     gSPSegment(dl++, MATRIX_TRANSFORM_SEGMENT,  osVirtualToPhysical(player->mtxArmature));
     gSPSegment(dl++, BONE_ATTACHMENT_SEGMENT,  skBuildAttachments(&player->armature, NULL, renderState));
     gSPDisplayList(dl++, player->armature.displayList);
+
+    if (player->holdingItem) {
+        gSPMatrix(dl++, player->holdingItem->mtxTransform, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_LOAD);
+        gSPSegment(dl++, MATRIX_TRANSFORM_SEGMENT,  player->holdingItem->mtxArmature);
+        gSPDisplayList(dl++, gItemDefinitions[player->holdingItem->type].dl);
+    }
+
     gSPEndDisplayList(dl++);
 
     return result;

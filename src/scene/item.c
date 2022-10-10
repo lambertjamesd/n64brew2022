@@ -240,19 +240,22 @@ void itemUpdate(struct Item* item) {
     }
 }
 
-void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene) {
+void itemPreRender(struct Item* item, struct RenderState* renderState) {
     struct ItemTypeDefinition* definition = &gItemDefinitions[item->type];
 
-    Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
+    item->mtxTransform = renderStateRequestMatrices(renderState, 1);
+    transformToMatrixL(&item->transform, item->mtxTransform, SCENE_SCALE);
 
-    transformToMatrixL(&item->transform, mtx, SCENE_SCALE);
-
-    Mtx* armature = NULL;
+    item->mtxArmature = NULL;
 
     if (definition->boneCount) {
-        armature = renderStateRequestMatrices(renderScene->renderState, definition->boneCount);
-        skCalculateTransforms(&item->armature, armature);
+        item->mtxArmature = renderStateRequestMatrices(renderState, definition->boneCount);
+        skCalculateTransforms(&item->armature, item->mtxArmature);
     }
+}
+
+void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene) {
+    struct ItemTypeDefinition* definition = &gItemDefinitions[item->type];
 
     Gfx* gfx = definition->dl;
     int material = definition->materialIndex;
@@ -271,7 +274,7 @@ void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene
         gSPEndDisplayList(dl++);
     }
 
-    renderSceneAdd(renderScene, gfx, mtx, material, &item->transform.position, armature, light);
+    renderSceneAdd(renderScene, gfx, item->mtxTransform, material, &item->transform.position, item->mtxArmature, light);
 }
 
 void itemUpdateTarget(struct Item* item, struct Transform* transform) {

@@ -147,17 +147,13 @@ void shadowMapRender(struct ShadowMap* shadowMap, struct RenderState* renderStat
     float viewProj[4][4];
     guMtxCatF(cameraView, projMatrix, viewProj);
 
-    float subjectMatrix[4][4];
-    transformToMatrix(subjectTransform, subjectMatrix, SCENE_SCALE);
-    guMtxCatF(subjectMatrix, viewProj, projMatrix);
-
     Mtx* lightMtx = renderStateRequestMatrices(renderState, 1);
-    Mtx* identity = renderStateRequestMatrices(renderState, 1);
-    guMtxIdent(identity);
+    Mtx* modelMatrix = renderStateRequestMatrices(renderState, 1);
+    transformToMatrixL(subjectTransform, modelMatrix, SCENE_SCALE);
 
-    guMtxF2L(projMatrix, lightMtx);
+    guMtxF2L(viewProj, lightMtx);
     gSPMatrix(renderState->dl++, lightMtx, G_MTX_PROJECTION | G_MTX_NOPUSH | G_MTX_LOAD);
-    gSPMatrix(renderState->dl++, identity, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_LOAD);
+    gSPMatrix(renderState->dl++, modelMatrix, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_LOAD);
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
     gDPSetColorImage(renderState->dl++, G_IM_FMT_CI, G_IM_SIZ_8b, SHADOW_MAP_WIDTH, osVirtualToPhysical(shadowMap->buffer));

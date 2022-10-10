@@ -7,6 +7,6 @@
 
 void tableSurfaceRenderLight(struct TableSurfaceMesh* surface, struct Vector3* offset, struct SpotLight* spotLight, struct RenderState* renderState);
 
-void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* offset, struct SpotLight* spotLight, struct RenderState* renderState);
+void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* offset, struct Vector3* spotLightPos, struct RenderState* renderState);
 
 #endif

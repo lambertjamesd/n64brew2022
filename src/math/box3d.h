@@ -16,4 +16,8 @@ void box3DUnion(struct Box3D* a, struct Box3D* b, struct Box3D* out);
 
 void box3DRotate(struct Box3D* input, struct Quaternion* rotation, struct Box3D* out);
 
+void box3DNearestPoint(struct Box3D* input, struct Vector3* point, struct Vector3* output);
+
+void box3DOffset(struct Box3D* input, struct Vector3* offset, struct Box3D* ouput);
+
 #endif

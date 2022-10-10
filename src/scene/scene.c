@@ -243,6 +243,14 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         playerSetupTransforms(&scene->players[i], renderState);
     }
 
+    struct Item* currentItem = scene->itemPool.itemHead;
+
+    while (currentItem) {
+        itemPreRender(currentItem, renderState);
+
+        currentItem = currentItem->next;
+    }
+
     for (int i = 0; i < scene->playerCount; ++i) {
         spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &playerLightConfig[i]);
 
@@ -349,13 +357,31 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
         vector3Add(&tableType->boundingBox.min, &scene->tables[tableIndex].position, &tableBB.min);
         vector3Add(&tableType->boundingBox.max, &scene->tables[tableIndex].position, &tableBB.max);
+
+        struct Vector3 weightedCenter = gZeroVec;
+        float totalWeight = 0.0f;
         
         for (unsigned lightIndex = 0; lightIndex < scene->spotLightCount; ++lightIndex) {
-            if (!box3DHasOverlap(&tableBB, &scene->spotLights[lightIndex].boundingBox)) {
+            struct SpotLight* spotLight = &scene->spotLights[lightIndex];
+
+            if (!box3DHasOverlap(&tableBB, &spotLight->boundingBox)) {
                 continue;
             }
 
-            tableSurfaceRenderShadow(&tableType->surfaceMesh, &scene->tables[tableIndex].position, &scene->spotLights[lightIndex], renderState);
+            struct Vector3 boxPoint;
+            box3DNearestPoint(&tableBB, &spotLight->transform.position, &boxPoint);
+
+            float weight = spotLightClosenessWeight(spotLight, &boxPoint);
+
+            if (weight > 0) {
+                totalWeight += weight;
+                vector3AddScaled(&weightedCenter, &spotLight->transform.position, weight, &weightedCenter);
+            }
+        }
+
+        if (totalWeight > 0.0f) {
+            vector3Scale(&weightedCenter, &weightedCenter, 1.0f / totalWeight);
+            tableSurfaceRenderShadow(&tableType->surfaceMesh, &scene->tables[tableIndex].position, &weightedCenter, renderState);
         }
     }
 

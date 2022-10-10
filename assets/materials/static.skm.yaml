@@ -71,8 +71,8 @@ materials:
         - G_BL_CLR_MEM
         - G_BL_1
     gSPGeometryMode:
-      set: [G_ZBUFFER, G_CULL_BACK]
-      clear: [G_LIGHTING, G_SHADE, G_CULL_FRONT]
+      set: [G_ZBUFFER]
+      clear: [G_LIGHTING, G_SHADE, G_CULL_FRONT, G_CULL_BACK]
 
   additive_light:
     gDPSetCombineMode: 

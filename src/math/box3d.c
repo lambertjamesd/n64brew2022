@@ -33,3 +33,34 @@ void box3DRotate(struct Box3D* input, struct Quaternion* rotation, struct Box3D*
     vector3Add(&center, &rotatedHalfSize, &out->max);
     vector3Sub(&center, &rotatedHalfSize, &out->min);
 }
+
+void box3DNearestPoint(struct Box3D* input, struct Vector3* point, struct Vector3* output) {
+    if (point->x > input->max.x) {
+        output->x = input->max.x;
+    } else if (point->x < input->min.x) {
+        output->x = input->min.x;
+    } else {
+        output->x = point->x;
+    }
+
+    if (point->y > input->max.y) {
+        output->y = input->max.y;
+    } else if (point->y < input->min.y) {
+        output->y = input->min.y;
+    } else {
+        output->y = point->y;
+    }
+
+    if (point->z > input->max.z) {
+        output->z = input->max.z;
+    } else if (point->z < input->min.z) {
+        output->z = input->min.z;
+    } else {
+        output->z = point->z;
+    }
+}
+
+void box3DOffset(struct Box3D* input, struct Vector3* offset, struct Box3D* ouput) {
+    vector3Add(&input->min, offset, &ouput->min);
+    vector3Add(&input->max, offset, &ouput->max);
+}

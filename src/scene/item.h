@@ -39,6 +39,9 @@ struct Item {
     struct SKAnimator animator;
     struct SKArmature armature;
 
+    Mtx* mtxTransform;
+    Mtx* mtxArmature;
+
     union
     {
         struct Transform target;
@@ -55,6 +58,8 @@ struct Item {
 void itemInit(struct Item* item, enum ItemType itemType, struct Transform* initialPose);
 
 void itemUpdate(struct Item* item);
+
+void itemPreRender(struct Item* item, struct RenderState* renderState);
 
 void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene);
 

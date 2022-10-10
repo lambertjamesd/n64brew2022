@@ -105,22 +105,24 @@ void tableSurfaceRenderLight(struct TableSurfaceMesh* surface, struct Vector3* o
     }
 }
 
-void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* offset, struct SpotLight* spotLight, struct RenderState* renderState) {
+void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* offset, struct Vector3* spotLightPos, struct RenderState* renderState) {
     int vertexCount = surface->vertexCount * 2;
 
     struct Vector3 verticesAsFloat[vertexCount];
 
-    float lightHeight = -spotLight->transform.position.y;
+    float lightHeight = -spotLightPos->y;
 
     for (int i = 0; i < surface->vertexCount; ++i) {
         vector3Add(&surface->vertices[i], offset, &verticesAsFloat[i]);
 
         struct Vector3 rayDirection;
-        vector3Sub(&verticesAsFloat[i], &spotLight->transform.position, &rayDirection);
+        vector3Sub(&verticesAsFloat[i], spotLightPos, &rayDirection);
 
         vector3Scale(&rayDirection, &rayDirection, lightHeight / rayDirection.y);
 
-        vector3Add(&rayDirection, &spotLight->transform.position, &verticesAsFloat[i + surface->vertexCount]);
+        vector3Add(&rayDirection, spotLightPos, &verticesAsFloat[i + surface->vertexCount]);
+        verticesAsFloat[i].y = 0.0f;
+        verticesAsFloat[i + surface->vertexCount].y = 0.0f;
     }
 
     Vtx* vertices = renderStateRequestVertices(renderState, vertexCount);
@@ -129,7 +131,7 @@ void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* 
         Vtx* current = &vertices[i];
 
         current->v.ob[0] = (short)(verticesAsFloat[i].x * SCENE_SCALE);
-        current->v.ob[1] = (short)(verticesAsFloat[i].y * SCENE_SCALE);
+        current->v.ob[1] = 1;
         current->v.ob[2] = (short)(verticesAsFloat[i].z * SCENE_SCALE);
 
         current->v.flag = 0;
@@ -145,16 +147,24 @@ void tableSurfaceRenderShadow(struct TableSurfaceMesh* surface, struct Vector3* 
 
     gSPVertex(renderState->dl++, vertices, vertexCount, 0);
 
-    for (int i = 0; i < vertexCount; ++i) { 
+    for (int i = 2; i < surface->vertexCount; i += 2) {
+        if (i + 1 < surface->vertexCount) {
+            gSP2Triangles(renderState->dl++, 0, i - 1, i, 0, 0, i, i + 1, 0);
+        } else {
+            gSP1Triangle(renderState->dl++, 0, i - 1, i, 0);
+        }
+    }
+
+    for (int i = 0; i < surface->vertexCount; ++i) { 
         int a = i;
         int b = i + 1;
 
-        if (b == vertexCount) {
+        if (b == surface->vertexCount) {
             b = 0;
         }
 
-        int c = a + vertexCount;
-        int d = b + vertexCount;
+        int c = a + surface->vertexCount;
+        int d = b + surface->vertexCount;
 
         gSP2Triangles(renderState->dl++, a, b, d, 0, a, d, c, 0);
     }
