@@ -179,3 +179,32 @@ materials:
     gSPGeometryMode:
       set: [G_SHADE, G_LIGHTING]
       clear: [G_CULL_BACK, G_CULL_FRONT]
+
+
+  items_emmisive:
+    gDPSetTile:
+      filename: "./items/items_01.png"
+    gDPSetCombineMode:
+      color: ["1", "0", "ENVIRONMENT", "TEXEL0"]
+    gDPSetEnvColor:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+      bypassEffects: true
+    gSPGeometryMode:
+      clear: [G_SHADE, G_LIGHTING]
+
+  Lights_Warehouse:
+    gDPSetTile:
+      filename: "./environment/Lanterns.png"
+    gDPSetCombineMode:
+      color: ["1", "0", "ENVIRONMENT", "TEXEL0"]
+    gDPSetEnvColor:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+      bypassEffects: true
+    gSPGeometryMode:
+      clear: [G_SHADE, G_LIGHTING]

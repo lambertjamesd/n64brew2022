@@ -3,6 +3,8 @@
 #include "../build/assets/models/ui/item_prompt.h"
 #include "../build/assets/materials/static.h"
 
+#include "../build/assets/models/portal.h"
+
 #include "../defs.h"
 
 #include "../util/time.h"
@@ -56,7 +58,7 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* re
 
     struct Transform signTransform;
     signTransform.position = requester->transform.position;
-    signTransform.position.y += OSCILATE_HEIGHT * sinf(gTimePassed * (M_PI * 2.0f / OSCILATE_PERIOD));
+    signTransform.position.y += OSCILATE_HEIGHT + OSCILATE_HEIGHT * sinf(gTimePassed * (M_PI * 2.0f / OSCILATE_PERIOD));
     signTransform.rotation = renderScene->cameraTransform.rotation;
     signTransform.scale = gOneVec;
 
@@ -69,6 +71,11 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* re
     Gfx* gfx = itemRenderUseImage(requester->requestedType, renderScene->renderState, ui_item_prompt_model_gfx);
 
     renderSceneAdd(renderScene, gfx, matrix, ITEM_PROMPT_INDEX, &requester->transform.position, NULL, NULL);
+
+
+    Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
+    transformToMatrixL(&requester->transform, mtx, SCENE_SCALE);
+    renderSceneAdd(renderScene, portal_model_gfx, mtx, ITEMS_EMMISIVE_INDEX, &requester->transform.position, NULL, NULL);
 }
 
 int itemRequesterHover(struct ItemRequester* requester, struct Item* item, struct Vector3* dropAt) {
@@ -76,7 +83,7 @@ int itemRequesterHover(struct ItemRequester* requester, struct Item* item, struc
     vector3Sub(&requester->transform.position, dropAt, &offset);
     offset.y = 0.0f;
 
-    int result = vector3MagSqrd(&offset) < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS;
+    int result = vector3MagSqrd(&offset) < ITEM_DROP_PICKUP_RADIUS * ITEM_DROP_PICKUP_RADIUS;
 
     if (result && item && requester->requestedType == item->type) {
         requester->flags |= ItemRequesterFlagsHover;

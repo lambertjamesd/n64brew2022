@@ -29,6 +29,7 @@ struct ItemTypeDefinition {
 #define ITEM_FLAGS_SUCCESS          (1 << 5)
 
 #define ITEM_PICKUP_RADIUS  0.5f
+#define ITEM_DROP_PICKUP_RADIUS  0.75f
 
 extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
 
