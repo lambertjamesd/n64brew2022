@@ -380,7 +380,7 @@ void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int
     struct LightConfiguration* currentConfiguration = configurations;
 
     while (current != NULL) {
-        spotLightsFindConfiguration(spotLights, spotLightCount, &current->transform.position, NULL, currentConfiguration);
+        spotLightsFindConfiguration(spotLights, spotLightCount, &current->transform.position, 0.0f, currentConfiguration);
         Light* light = spotLightsSetupLight(currentConfiguration, &current->transform.position, renderScene->renderState);
         itemRender(current, light, renderScene);
 

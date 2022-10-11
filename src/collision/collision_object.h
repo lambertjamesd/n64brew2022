@@ -20,7 +20,6 @@ struct CollisionCapsule {
 };
 
 void collisionCapsuleUpdateBB(struct CollisionCapsule* capsule);
-
 void collisionCapsuleInit(struct CollisionCapsule* capsule, float height, float radius);
 
 #endif

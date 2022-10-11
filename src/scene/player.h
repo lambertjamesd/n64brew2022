@@ -13,6 +13,8 @@
 
 #include "../collision/collision_object.h"
 
+#include "./shadow_volume_group.h"
+
 #include "shadow_map.h"
 #include "item.h"
 
@@ -51,5 +53,7 @@ void playerGrabPoint(struct Player* player, struct Vector3* grabFrom);
 void playerHandObject(struct Player* player, struct Item* holdingItem);
 
 Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState);
+
+void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* target, Light* light);
 
 #endif

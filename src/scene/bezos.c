@@ -49,7 +49,7 @@ void bezosRender(struct Bezos* bezos, struct SpotLight* spotLights, int spotLigh
 
     struct LightConfiguration lightConfig;
 
-    spotLightsFindConfiguration(spotLights, spotLightCount, &bezos->transform.position, NULL, &lightConfig);
+    spotLightsFindConfiguration(spotLights, spotLightCount, &bezos->transform.position, 0.0f, &lightConfig);
 
     Light* light = spotLightsSetupLight(&lightConfig, &bezos->transform.position, renderScene->renderState);
 

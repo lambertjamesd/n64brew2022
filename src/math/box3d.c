@@ -64,3 +64,13 @@ void box3DOffset(struct Box3D* input, struct Vector3* offset, struct Box3D* oupu
     vector3Add(&input->min, offset, &ouput->min);
     vector3Add(&input->max, offset, &ouput->max);
 }
+
+void box3DExtend(struct Box3D* input, float amount, struct Box3D* output) {
+    output->min.x = input->min.x - amount;
+    output->min.y = input->min.y - amount;
+    output->min.z = input->min.z - amount;
+
+    output->max.x = input->max.x + amount;
+    output->max.y = input->max.y + amount;
+    output->max.z = input->max.z + amount;
+}

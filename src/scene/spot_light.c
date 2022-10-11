@@ -171,46 +171,16 @@ void spotLightRenderProjection(struct SpotLight* spotLight, struct RenderState* 
     gSPDisplayList(renderState->dl++, displayList);
 }
 
-struct SpotLightFace {
-    struct SpotLight* spotLight;
-    int faceIndex;
-};
+float spotLightShadowSortOrder(struct SpotLight* spotLight, int index) {
+    float result = spotLight->lightOutline[index].z;
 
-int spotLightFaceSum(void* data, struct Vector3* direction, struct Vector3* output) {
-    struct SpotLightFace* face = (struct SpotLightFace*)data;
+    int nextIndex = index == (LIGHT_CIRCLE_POINT_COUNT - 1) ? 0 : index + 1;
 
-    int result = 0;
-    float dotCompare = vector3Dot(&face->spotLight->rigidBody.transform.position, direction);
-
-    struct Vector3* firstVertex = &face->spotLight->lightOutline[face->faceIndex];
-    float test = vector3Dot(firstVertex, direction);
-
-    if (test > dotCompare) {
-        dotCompare = test;
-        result = 1;
+    if (spotLight->lightOutline[nextIndex].z < result) {
+        result = spotLight->lightOutline[nextIndex].z;
     }
 
-    struct Vector3* secondVertex = &face->spotLight->lightOutline[(face->faceIndex + 1) % LIGHT_CIRCLE_POINT_COUNT];
-    test = vector3Dot(secondVertex, direction);
-
-    if (test > dotCompare) {
-        dotCompare = test;
-        result = 2;
-    }
-    
-    switch (result) {
-        case 0: 
-            *output = face->spotLight->rigidBody.transform.position;
-            break;
-        case 1:
-            *output = *firstVertex;
-            break;
-        case 2:
-            *output = *secondVertex;
-            break;
-    }
-
-    return 1 << result;
+    return result;
 }
 
 float spotLightClosenessWeight(struct SpotLight* spotLight, struct Vector3* point) {
@@ -230,58 +200,37 @@ float spotLightClosenessWeight(struct SpotLight* spotLight, struct Vector3* poin
     return weight;
 }
 
-enum LightIntersection spotLightPointIsInside(struct SpotLight* spotLight, struct Vector3* point) {
-    if (!box3DContainsPoint(&spotLight->boundingBox, point)) {
-        return LightIntersectionOutside;
+float spotLightMeasureDepth(struct SpotLight* spotLight, struct Vector3* point, float radius) {
+    struct Box3D extendedBox;
+
+    box3DExtend(&spotLight->boundingBox, radius, &extendedBox);
+
+    if (!box3DContainsPoint(&extendedBox, point)) {
+        return -1.0f;
     }
 
     struct Vector3 offset;
 
     vector3Sub(&spotLight->rigidBody.transform.position, point, &offset);
 
+    float minDistnace = 1000.0f;
+
     for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
-        if (vector3Dot(&offset, &spotLight->faceNormal[i]) > 0.0f) {
-            return LightIntersectionOutside;
+        float distance = radius - vector3Dot(&offset, &spotLight->faceNormal[i]);
+
+        if (distance < 0.0f) {
+            return -1.0;
+        }
+
+        if (distance < minDistnace) {
+            minDistnace = distance;
         }
     }
 
-    return LightIntersectionInside;
+    return minDistnace;
 }
 
-
-enum LightIntersection spotLightIsInside(struct SpotLight* spotLight, struct CollisionObject* collisionObject) {
-    if (!box3DHasOverlap(&spotLight->boundingBox, &collisionObject->boundingBox)) {
-        return LightIntersectionOutside;
-    }
-
-    int isInside = 1;
-    int hasBackFaceCollision = 0;
-    int hasFrontFaceCollision = 0;
-
-    struct Simplex simplex;
-
-    for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
-        if (gjkCheckForOverlap(
-            &simplex, 
-            NULL, 
-            spotLightFaceSum, 
-            collisionObject->data, 
-            collisionObject->minkowskiSum, 
-            &spotLight->faceNormal[i]
-        )) {
-            hasBackFaceCollision = 1;
-            hasFrontFaceCollision = 1;
-        }
-    }
-
-    if (isInside) {
-        return LightIntersectionInside;
-    }
-
-    return (hasBackFaceCollision ? LightIntersectionTouchingBackFace : 0) | (hasFrontFaceCollision ? LightIntersectionTouchingFrontFace : 0);
-}
-
-int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct Vector3* point, struct CollisionObject* collisionObject, struct LightConfiguration* output) {
+int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct Vector3* point, float pointRadius, struct LightConfiguration* output) {
     float primaryLightNearness = -1.0f;
     float secondaryLightNearness = -1.0f;
 
@@ -290,11 +239,11 @@ int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct
     output->blendWeight = 0.0f;
 
     for (int i = 0; i < lightCount; ++i) {
-        if (!spotLightPointIsInside(&lights[i], point)) {
+        float weight = spotLightMeasureDepth(&lights[i], point, pointRadius);
+
+        if (weight <= 0.0f) {
             continue;
         }
-
-        float weight = spotLightClosenessWeight(&lights[i], point);
 
         if (weight > primaryLightNearness) {
             secondaryLightNearness = primaryLightNearness;

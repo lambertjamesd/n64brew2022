@@ -19,6 +19,7 @@
 #include "../collision/collision_scene.h"
 #include "item_render.h"
 #include "table_surface.h"
+#include "shadow_volume_group.h"
 
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
@@ -252,7 +253,12 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     for (int i = 0; i < scene->playerCount; ++i) {
-        spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &scene->players[i].transform.position, NULL, &playerLightConfig[i]);
+        struct Player* player = &scene->players[i];
+
+        struct Vector3 capsuleCenter;
+        transformPoint(&player->transform, &player->shadowMap.offset, &capsuleCenter);
+
+        spotLightsFindConfiguration(scene->spotLights, scene->spotLightCount, &capsuleCenter, player->shadowMap.subjectRadius, &playerLightConfig[i]);
 
         struct Vector3 lightPosition;
 
@@ -260,17 +266,17 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
             Gfx* playerShadowGfx = playerGenerateShadowMapGfx(&scene->players[i], renderState);
 
             shadowMapRender(
-                &scene->players[i].shadowMap, 
+                &player->shadowMap, 
                 renderState, 
                 task, 
                 &lightPosition, 
-                &scene->players[i].transform, 
+                &player->transform, 
                 playerShadowGfx
             );
 
-            scene->players[i].shadowMap.flags |= SHADOW_MAP_ENABLED;
+            player->shadowMap.flags |= SHADOW_MAP_ENABLED;
         } else {
-            scene->players[i].shadowMap.flags &= ~SHADOW_MAP_ENABLED;
+            player->shadowMap.flags &= ~SHADOW_MAP_ENABLED;
         }
     }
 
@@ -309,6 +315,9 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPPipeSync(renderState->dl++);
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
+
+    struct ShadowVolumeGroup shadowGroup;
+    shadowVolumeGroupInit(&shadowGroup);
     
     // render objects
     renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, levelMaterialDefault());
@@ -318,9 +327,22 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     for (unsigned i = 0; i < scene->playerCount; ++i) {
-        Light* light = spotLightsSetupLight(&playerLightConfig[i], &scene->players[i].transform.position, renderState);
+        struct Player* player = &scene->players[i];
+
+        struct ShadowVolumeTarget target;
+        Light* light = spotLightsSetupLight(&playerLightConfig[i], &player->transform.position, renderState);
+        playerToShadowTarget(player, &target, light);
+
+        struct CollisionCapsule shadowCapsule;
+        collisionCapsuleInit(&shadowCapsule, 0.0f, player->shadowMap.subjectRadius);
+        transformPoint(&player->transform, &player->shadowMap.offset, &shadowCapsule.center);
+        collisionCapsuleUpdateBB(&shadowCapsule);
+
+        target.collisionObject = &shadowCapsule.collisionObject;
+
+        Light* firstLight = shadowVolumeGroupPopulate(&shadowGroup, scene->spotLights, scene->spotLightCount, &target);
         
-        playerRender(&scene->players[i], light, renderScene);
+        playerRender(&scene->players[i], firstLight, renderScene);
     }
 
     for (unsigned i = 0; i < scene->spotLightCount; ++i) {

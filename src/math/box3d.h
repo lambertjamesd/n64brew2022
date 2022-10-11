@@ -20,4 +20,6 @@ void box3DNearestPoint(struct Box3D* input, struct Vector3* point, struct Vector
 
 void box3DOffset(struct Box3D* input, struct Vector3* offset, struct Box3D* ouput);
 
+void box3DExtend(struct Box3D* input, float amount, struct Box3D* output);
+
 #endif

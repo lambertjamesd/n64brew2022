@@ -40,9 +40,12 @@ void spotLightRender(struct SpotLight* spotLight, struct RenderScene* renderScen
 
 void spotLightRenderProjection(struct SpotLight* spotLight, struct RenderState* renderState);
 
+float spotLightShadowSortOrder(struct SpotLight* spotLight, int index);
+
 float spotLightClosenessWeight(struct SpotLight* spotLight, struct Vector3* point);
-enum LightIntersection spotLightPointIsInside(struct SpotLight* spotLight, struct Vector3* point);
-enum LightIntersection spotLightIsInside(struct SpotLight* spotLight, struct CollisionObject* collisionObject);
+float spotLightMeasureDepth(struct SpotLight* spotLight, struct Vector3* point, float radius);
+
+Gfx* spotLightShadowPlane(struct SpotLight* spotLight, int index);
 
 struct LightConfiguration {
     struct SpotLight* primaryLight;
@@ -50,7 +53,7 @@ struct LightConfiguration {
     float blendWeight;
 };
 
-int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct Vector3* point, struct CollisionObject* collisionObject, struct LightConfiguration* output);
+int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct Vector3* point, float pointRadius, struct LightConfiguration* output);
 
 Light* spotLightsSetupLight(struct LightConfiguration* lightConfig, struct Vector3* target, struct RenderState* renderState);
 
