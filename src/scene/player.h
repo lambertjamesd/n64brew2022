@@ -38,6 +38,8 @@ struct Player {
     struct Item* holdingItem;
 
     struct CollisionCapsule collider;
+
+    struct Vector3 hoverLocation;
 };
 
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer);

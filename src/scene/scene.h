@@ -62,6 +62,6 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom);
 
 int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt);
 int sceneSwapItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Item** replacement);
-void sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropAt);
+int sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Vector3* hoverOutput);
 
 #endif

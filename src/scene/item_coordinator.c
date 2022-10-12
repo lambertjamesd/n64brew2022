@@ -1,6 +1,7 @@
 #include "item_coordinator.h"
 
 #include "../math/mathf.h"
+#include "../util/time.h"
 
 void itemDeckInit(struct ItemDeck* deck) {
     deck->deckSize = 0;
@@ -65,6 +66,7 @@ void itemCoordinatorInitCurrentStep(struct ItemCoordinator* itemCoordinator) {
     itemDeckShuffle(&itemCoordinator->itemDrop);
 
     itemCoordinator->currentSuccessCount = 0;
+    itemCoordinator->currentDelay = currentStep->itemDelay;
 }
 
 void itemCoordinatorInit(struct ItemCoordinator* itemCoordinator, struct ItemScript* script) {
@@ -81,6 +83,10 @@ enum ItemType itemCoordinatorNextRequest(struct ItemCoordinator* itemCoordinator
     int requestsLeft = currentStep->successCount - itemCoordinator->currentSuccessCount;
 
     if (requestsLeft <= activeRequesterCount) {
+        return ItemTypeCount;
+    }
+
+    if (itemCoordinator->currentDelay > 0.0f) {
         return ItemTypeCount;
     }
 
@@ -103,6 +109,9 @@ void itemCoordinatorMarkSuccess(struct ItemCoordinator* itemCoordinator) {
     ++itemCoordinator->currentSuccessCount;
 
     struct ItemScriptStep* currentStep = &itemCoordinator->script->steps[itemCoordinator->currentScriptStep];
+
+    itemCoordinator->currentDelay = currentStep->itemDelay;
+    
     if (itemCoordinator->currentSuccessCount >= currentStep->successCount) {
         ++itemCoordinator->currentScriptStep;
 
@@ -115,5 +124,17 @@ void itemCoordinatorMarkSuccess(struct ItemCoordinator* itemCoordinator) {
 }
 
 void itemCoordinatorUpdate(struct ItemCoordinator* itemCoordinator) {
+    if (itemCoordinator->currentDelay > 0.0f) {
+        itemCoordinator->currentDelay -= FIXED_DELTA_TIME;
+    }
+}
 
+float itemCoordinatorTimeout(struct ItemCoordinator* itemCoordinator) {
+    if (itemCoordinator->currentScriptStep >= itemCoordinator->script->stepCount) {
+        return 30.0f;
+    }
+
+    struct ItemScriptStep* currentStep = &itemCoordinator->script->steps[itemCoordinator->currentScriptStep];
+
+    return currentStep->itemTimeout;
 }

@@ -3,7 +3,11 @@
 
 ## TODO
 
-* Table shadow volume
-* item void requester
-* item drop penalty
-* swinging lights
+* polish movement and controls
+*   table drop indicator
+*   item request timer
+*   item request delay
+* build out a level
+* bezos chases players
+* lose condition (caught by bezos)
+* win condition (finish level script)

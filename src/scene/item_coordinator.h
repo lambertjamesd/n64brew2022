@@ -27,6 +27,7 @@ struct ItemCoordinator {
     short currentScriptStep;
     short currentSuccessCount;
     short activeRequesterCount;
+    float currentDelay;
 };
 
 void itemCoordinatorInit(struct ItemCoordinator* itemCoordinator, struct ItemScript* script);
@@ -39,5 +40,7 @@ int itemCoordinatorDidWin(struct ItemCoordinator* itemCoordinator);
 void itemCoordinatorMarkSuccess(struct ItemCoordinator* itemCoordinator);
 
 void itemCoordinatorUpdate(struct ItemCoordinator* itemCoordinator);
+
+float itemCoordinatorTimeout(struct ItemCoordinator* itemCoordinator);
 
 #endif

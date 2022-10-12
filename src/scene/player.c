@@ -7,20 +7,24 @@
 
 #include "../build/assets/models/player.h"
 #include "../build/assets/materials/static.h"
+#include "../build/assets/models/ui/item_drop_prompt.h"
 
 #include "../collision/collision_scene.h"
 
-#define PLAYER_MOVE_SPEED   2.0f
+
+#define PLAYER_MOVE_SPEED   1.6f
 
 #define PLAYER_MAX_SPRINT_SPEED 4.0f
 #define PLAYER_MAX_WALK_SPEED   1.0f
 
-#define PLAYER_ACCELERATION 10.0f
+#define PLAYER_ACCELERATION 8.0f
 
-#define PLAYER_ROTATE_RATE  (M_PI * 2.0f)
+#define PLAYER_ROTATE_RATE  (M_PI * 1.5f)
 
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
+
+#define PLAYER_GRAVITY      -9.8f
 
 struct Vector2 gMaxRotateVector;
 
@@ -79,6 +83,9 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     player->animationSpeed = 0.0f;
     player->holdingItem = NULL;
     player->velocity = gZeroVec;
+
+    player->hoverLocation = gZeroVec;
+    player->hoverLocation.y = -1.0f;
 
     skArmatureInit(
         &player->armature, 
@@ -142,10 +149,11 @@ void playerUpdate(struct Player* player) {
         vector3Scale(&moveDir, &moveDir, PLAYER_MOVE_SPEED);
     }
 
-    moveDir.y = -0.1f;
+    moveDir.y = player->velocity.y;
 
     vector3MoveTowards(&player->velocity, &moveDir, PLAYER_ACCELERATION * FIXED_DELTA_TIME, &player->velocity);
 
+    player->velocity.y += PLAYER_GRAVITY * FIXED_DELTA_TIME;
     vector3AddScaled(&player->transform.position, &player->velocity, FIXED_DELTA_TIME, &player->transform.position);
 
     if (magSqrd > 0.0f) {
@@ -195,6 +203,8 @@ void playerSetupTransforms(struct Player* player, struct RenderState* renderStat
     player->mtxArmature = armature;
 }
 
+Light gGemLight = {{{255, 255, 255}, 0, {255, 255, 255}, 0, {88, 88, 0}, 0}};
+
 void playerRender(struct Player* player, Light* light, struct RenderScene* renderScene) {
     Gfx* attachments = skBuildAttachments(&player->armature, NULL, renderScene->renderState);
 
@@ -216,6 +226,20 @@ void playerRender(struct Player* player, Light* light, struct RenderScene* rende
         player->mtxArmature,
         light
     );
+
+    if (player->hoverLocation.y >= 0.0f) {
+        struct Transform hoverTransform;
+        hoverTransform.position = player->hoverLocation;
+        hoverTransform.position.y += (sinf(gTimePassed) + 1.0f) * 0.25f;
+        quatAxisAngle(&gUp, gTimePassed * 5.0f, &hoverTransform.rotation);
+        hoverTransform.scale = gOneVec;
+
+
+        Mtx* hoverMtx = renderStateRequestMatrices(renderScene->renderState, 1);
+        transformToMatrixL(&hoverTransform, hoverMtx, SCENE_SCALE);
+
+        renderSceneAdd(renderScene, ui_item_drop_prompt_model_gfx, hoverMtx, ITEM_DROP_PROMPT_INDEX, &player->hoverLocation, NULL, &gGemLight);
+    }
 }
 
 

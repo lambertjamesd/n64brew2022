@@ -195,6 +195,22 @@ materials:
     gSPGeometryMode:
       clear: [G_SHADE, G_LIGHTING]
 
+  item_drop_prompt:
+    gDPSetCombineMode:
+      color: ["SHADE", "0", "ENVIRONMENT", "PRIMITIVE"]
+    gDPSetPrimColor:
+      r: 0
+      g: 255
+      b: 0
+    gDPSetEnvColor:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+      bypassEffects: true
+    gSPGeometryMode:
+      set: [G_SHADE, G_LIGHTING]
+
   Lights_Warehouse:
     gDPSetTile:
       filename: "./environment/Lanterns.png"

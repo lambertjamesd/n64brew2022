@@ -25,6 +25,8 @@ struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom);
 
 int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt);
 
+int tableHoverItem(struct Table* table, struct Vector3* dropAt, struct Vector3* hoverOutput);
+
 int tableSwapItem(struct Table* table, struct Item* item, struct Vector3* dropAt, struct Item** replacement);
 
 #endif

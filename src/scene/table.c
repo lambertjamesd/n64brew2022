@@ -51,9 +51,16 @@ void tableRender(struct Table* table, struct RenderScene* renderScene) {
     );
 }
 
-struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom) {
+int tableFindSlot(struct Table* table, struct Vector3* grabFrom, int filterEmpty, int filterFilled) {
+    int result = -1;
+    float resultDistance = 0.0f;
+
     for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
-        if (!table->itemSlots[i]) {
+        if (filterEmpty && !table->itemSlots[i]) {
+            continue;
+        }
+
+        if (filterFilled && table->itemSlots[i]) {
             continue;
         }
 
@@ -64,84 +71,96 @@ struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom) {
         vector3Sub(&itemPosition, grabFrom, &offset);
         offset.y = 0.0f;
 
-        if (vector3MagSqrd(&offset) < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
-            struct Item* result = table->itemSlots[i];
-            table->itemSlots[i] = NULL;
-            itemMarkNewTarget(result);
-            return result;
+        float distanceSqrd = vector3MagSqrd(&offset);
+
+        if (distanceSqrd < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
+            if (result == -1 || resultDistance > distanceSqrd) {
+                resultDistance = distanceSqrd;
+                result = i;
+            }
         }
     }
 
-    return NULL;
+    return result;
+}
+
+struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom) {
+    int resultIndex = tableFindSlot(table, grabFrom, 1, 0);
+
+    if (resultIndex == -1) {
+        return NULL;
+    }
+
+    struct Item* result = table->itemSlots[resultIndex];
+    table->itemSlots[resultIndex] = NULL;
+    itemMarkNewTarget(result);
+    return result;
 }
 
 int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt) {
-    for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
-        if (table->itemSlots[i]) {
-            continue;
-        }
-        
-        struct Vector3 itemPosition;
-        vector3Add(&table->position, &table->tableType->itemSlots[i], &itemPosition);
+    int resultIndex = tableFindSlot(table, dropAt, 0, 1);
 
-        struct Vector3 offset;
-        vector3Sub(&itemPosition, dropAt, &offset);
-        offset.y = 0.0f;
-
-        if (vector3MagSqrd(&offset) < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
-            if (table->itemSlots[i]) {
-                itemMarkNewTarget(table->itemSlots[i]);
-            }
-
-            table->itemSlots[i] = item;
-            itemMarkNewTarget(item);
-            struct Transform transform;
-            transform.position = itemPosition;
-            quatIdent(&transform.rotation);
-            transform.scale = gOneVec;
-
-            itemUpdateTarget(item, &transform);
-
-            return 1;
-        }
+    if (resultIndex == -1) {
+        return 0;
     }
 
-    return 0;
+    if (table->itemSlots[resultIndex]) {
+        itemMarkNewTarget(table->itemSlots[resultIndex]);
+    }
+
+    struct Vector3 itemPosition;
+    vector3Add(&table->position, &table->tableType->itemSlots[resultIndex], &itemPosition);
+
+    table->itemSlots[resultIndex] = item;
+    itemMarkNewTarget(item);
+    struct Transform transform;
+    transform.position = itemPosition;
+    quatIdent(&transform.rotation);
+    transform.scale = gOneVec;
+
+    itemUpdateTarget(item, &transform);
+
+    return 1;
+}
+
+int tableHoverItem(struct Table* table, struct Vector3* dropAt, struct Vector3* hoverOutput) {
+    int resultIndex = tableFindSlot(table, dropAt, 0, 0);
+
+    if (resultIndex == -1) {
+        return 0;
+    }
+
+    struct Vector3 itemPosition;
+    vector3Add(&table->position, &table->tableType->itemSlots[resultIndex], &itemPosition);
+    *hoverOutput = itemPosition;
+    return 1;
 }
 
 int tableSwapItem(struct Table* table, struct Item* item, struct Vector3* dropAt, struct Item** replacement) {
-    for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
-        if (!table->itemSlots[i]) {
-            continue;
-        }
-        
-        struct Vector3 itemPosition;
-        vector3Add(&table->position, &table->tableType->itemSlots[i], &itemPosition);
+    int resultIndex = tableFindSlot(table, dropAt, 0, 0);
 
-        struct Vector3 offset;
-        vector3Sub(&itemPosition, dropAt, &offset);
-        offset.y = 0.0f;
-
-        if (vector3MagSqrd(&offset) < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
-            *replacement = table->itemSlots[i];
-            itemMarkNewTarget(table->itemSlots[i]);
-
-            if (table->itemSlots[i]) {
-                itemMarkNewTarget(table->itemSlots[i]);
-            }
-
-            table->itemSlots[i] = item;
-            itemMarkNewTarget(item);
-            struct Transform transform;
-            transform.position = itemPosition;
-            quatIdent(&transform.rotation);
-            transform.scale = gOneVec;
-
-            itemUpdateTarget(item, &transform);
-
-            return 1;
-        }
+    if (resultIndex == -1 || !table->itemSlots[resultIndex]) {
+        return 0;
     }
 
-    return 0;
+    *replacement = table->itemSlots[resultIndex];
+    itemMarkNewTarget(table->itemSlots[resultIndex]);
+
+    if (table->itemSlots[resultIndex]) {
+        itemMarkNewTarget(table->itemSlots[resultIndex]);
+    }
+
+    struct Vector3 itemPosition;
+    vector3Add(&table->position, &table->tableType->itemSlots[resultIndex], &itemPosition);
+
+    table->itemSlots[resultIndex] = item;
+    itemMarkNewTarget(item);
+    struct Transform transform;
+    transform.position = itemPosition;
+    quatIdent(&transform.rotation);
+    transform.scale = gOneVec;
+
+    itemUpdateTarget(item, &transform);
+
+    return 1;
 }

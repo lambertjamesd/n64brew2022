@@ -1,0 +1,1 @@
+-r 90,0,0 --model-scale 0.02 -m assets/materials/static.skm.yaml --default-material item_drop_prompt

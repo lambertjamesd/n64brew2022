@@ -50,6 +50,10 @@ int itemRequesterIsActive(struct ItemRequester* requester) {
 }
 
 void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* renderScene) {
+    Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
+    transformToMatrixL(&requester->transform, mtx, SCENE_SCALE);
+    renderSceneAdd(renderScene, portal_model_gfx, mtx, ITEMS_EMMISIVE_INDEX, &requester->transform.position, NULL, NULL);
+
     if (requester->timeLeft <= 0.0f) {
         return;
     }
@@ -71,11 +75,6 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* re
     Gfx* gfx = itemRenderUseImage(requester->requestedType, renderScene->renderState, ui_item_prompt_model_gfx);
 
     renderSceneAdd(renderScene, gfx, matrix, ITEM_PROMPT_INDEX, &requester->transform.position, NULL, NULL);
-
-
-    Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
-    transformToMatrixL(&requester->transform, mtx, SCENE_SCALE);
-    renderSceneAdd(renderScene, portal_model_gfx, mtx, ITEMS_EMMISIVE_INDEX, &requester->transform.position, NULL, NULL);
 }
 
 int itemRequesterHover(struct ItemRequester* requester, struct Item* item, struct Vector3* dropAt) {

@@ -2,15 +2,27 @@
     "script": [
         {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat"],
-            "success_count": 4
+            "success_count": 4,
+            "item_timeout": 60,
+            "item_delay": 8
         },
         {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat", "Broom"],
-            "success_count": 6
+            "success_count": 6,
+            "item_timeout": 45,
+            "item_delay": 2
         },
         {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat", "Broom", "Candle"],
-            "success_count": 8
+            "success_count": 1,
+            "item_timeout": 30,
+            "item_delay": 20
+        },
+        {
+            "item_pool": ["Pumpkin", "Pumpkin", "Hat", "Broom", "Candle"],
+            "success_count": 7,
+            "item_timeout": 30,
+            "item_delay": 0
         }
     ]
 }

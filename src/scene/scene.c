@@ -127,7 +127,10 @@ void sceneUpdate(struct Scene* scene) {
         struct Vector3 grabFrom;
         playerGrabPoint(player, &grabFrom);
 
-        sceneItemHover(scene, player->holdingItem, &grabFrom);
+        player->hoverLocation.y = -1.0f;
+        if (player->holdingItem) {
+            sceneItemHover(scene, player->holdingItem, &grabFrom, &player->hoverLocation);
+        }
 
         int didReplace = 0;
 
@@ -203,7 +206,7 @@ void sceneUpdate(struct Scene* scene) {
             enum ItemType newItemType = itemCoordinatorNextRequest(&scene->itemCoordinator, activeRequesterCount);
 
             if (newItemType < ItemTypeCount) {
-                itemRequesterRequestItem(&scene->itemRequesters[i], newItemType, 8.0f);
+                itemRequesterRequestItem(&scene->itemRequesters[i], newItemType, itemCoordinatorTimeout(&scene->itemCoordinator));
                 ++activeRequesterCount;
             }
         }
@@ -504,12 +507,6 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
 }
 
 int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt) {
-    for (int i = 0; i < scene->tableCount; ++i) {
-        if (tableDropItem(&scene->tables[i], item, dropAt)) {
-            return 1;
-        }
-    }
-
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         enum ItemDropResult dropResult = itemRequesterDrop(&scene->itemRequesters[i], item, dropAt);
         if (dropResult) {
@@ -517,6 +514,12 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
             }
 
+            return 1;
+        }
+    }
+
+    for (int i = 0; i < scene->tableCount; ++i) {
+        if (tableDropItem(&scene->tables[i], item, dropAt)) {
             return 1;
         }
     }
@@ -534,8 +537,22 @@ int sceneSwapItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
     return 0;
 }
 
-void sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropAt) {
+int sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Vector3* hoverOutput) {
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
-        itemRequesterHover(&scene->itemRequesters[i], item, dropAt);
+        if (itemRequesterHover(&scene->itemRequesters[i], item, dropAt) && scene->itemRequesters[i].requestedType == item->type) {
+            *hoverOutput = scene->itemRequesters[i].transform.position;
+            hoverOutput->y += 0.5f;
+            return 1;
+        }
     }
+
+
+    for (int i = 0; i < scene->tableCount; ++i) {
+        int result = tableHoverItem(&scene->tables[i], dropAt, hoverOutput);
+        if (result) {
+            return result;
+        }
+    }
+
+    return 0;
 }

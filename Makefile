@@ -103,6 +103,7 @@ MODEL_LIST = assets/models/conveyor.blend \
 	assets/models/skull.blend \
 	assets/models/spider.blend \
 	assets/models/ui/item_prompt.blend \
+	assets/models/ui/item_drop_prompt.blend \
 	assets/models/ghostjeff.blend \
 	assets/models/lantern.blend \
 	assets/models/portal.blend
@@ -154,7 +155,7 @@ build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c
 	$(SKELATOOL64) --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/models/%.fbx=%) -m $< $(shell cat $(<:build/assets/models/%.fbx=assets/models/%.flags)) -o $(<:%.fbx=%.h) $<
 
 
-build/src/scene/player.o: build/assets/models/player.h build/assets/materials/static.h
+build/src/scene/player.o: build/assets/models/player.h build/assets/models/ui/item_drop_prompt.h build/assets/materials/static.h
 build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h 
 build/src/scene/spot_light.o: build/assets/models/lantern.h build/assets/materials/static.h 
 build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h tools/table_export.lua

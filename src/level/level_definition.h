@@ -71,6 +71,8 @@ struct ItemScriptStep {
     u8 itemPoolSize;
     u8 successCount;
     u8* itemPool;
+    float itemTimeout;
+    float itemDelay;
 };
 
 struct ItemScript {
