@@ -81,7 +81,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
     },
     [ItemTypeCat] = {
         cat_model_gfx,
-        ANIMAL_GREY_INDEX,
+        ANIMAL_MAT_INDEX,
         CAT_DEFAULT_BONES_COUNT,
         CAT_ATTACHMENT_COUNT,
         cat_default_bones,

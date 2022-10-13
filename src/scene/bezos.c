@@ -20,13 +20,13 @@ void bezosActivate(struct Bezos* bezos, struct Vector3* at) {
     bezos->transform.position = *at;
     bezos->transform.position.y = 0.0f;
 
-    skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFFIDLE_INDEX], SKAnimatorFlagsLoop);
+    skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTIDLE_INDEX], SKAnimatorFlagsLoop);
 
     bezos->flags |= BezosFlagsActive;
 }
 
 void bezosDeactivate(struct Bezos* bezos) {
-    skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFFIDLE_INDEX], 0);
+    skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTIDLE_INDEX], 0);
 
     bezos->flags &= ~BezosFlagsActive;
 }

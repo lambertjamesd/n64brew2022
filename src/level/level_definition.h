@@ -57,6 +57,9 @@ struct ConveyorDefinition {
     struct Quaternion rotation;
 };
 
+#define TABLE_HORIZONTAL    0
+#define TABLE_VERTICAL      1
+
 struct TableDefinition {
     struct Vector3 position;
     short tableType;

@@ -7,7 +7,7 @@ for _, current in pairs(nodes_for_type('@table')) do
 
     table.insert(tables, {
         position = position,
-        tableType = 0
+        tableType = raw(current.node.meshes[1].name)
     })
 end
 

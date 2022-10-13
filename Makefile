@@ -80,7 +80,9 @@ build/%.o: %.s
 ## Assets
 ####################
 
-LEVEL_LIST = $(shell find assets/levels/ -type f -name '*.blend')
+LEVEL_LIST = assets/levels/tutorial.blend \
+	assets/levels/test_level.blend \
+	assets/levels/warehouse.blend
 
 LEVEL_LIST_FBX = $(LEVEL_LIST:%.blend=build/%.fbx)
 LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
@@ -88,6 +90,7 @@ LEVEL_LIST_OBJECTS = $(LEVEL_LIST:%.blend=build/%_geo.o)
 
 MODEL_LIST = assets/models/conveyor.blend \
 	assets/models/table.blend \
+	assets/models/table_vertical.blend \
 	assets/models/player.blend \
 	assets/models/pumpkin.blend \
 	assets/models/hat.blend \
@@ -158,7 +161,7 @@ build/assets/models/%.h build/assets/models/%_geo.c build/assets/models/%_anim.c
 build/src/scene/player.o: build/assets/models/player.h build/assets/models/ui/item_drop_prompt.h build/assets/materials/static.h
 build/src/scene/conveyor.o: build/assets/models/conveyor.h build/assets/materials/static.h 
 build/src/scene/spot_light.o: build/assets/models/lantern.h build/assets/materials/static.h 
-build/src/scene/table.o: build/assets/models/table.h build/assets/materials/static.h tools/table_export.lua
+build/src/scene/table.o: build/assets/models/table.h build/assets/models/table_vertical.h build/assets/materials/static.h tools/table_export.lua
 build/src/scene/item_requester.o: build/assets/models/ui/item_prompt.h build/assets/models/portal.h build/assets/materials/static.h
 build/src/scene/shadow_volume_group.o: build/assets/materials/static.h 
 

@@ -1,5 +1,6 @@
 local lunajson = require('lunajson')
 
+print(input_filename)
 local json_filename = string.sub(input_filename, 7, -4) .. 'json'
 print("Loading json file for level " .. json_filename)
 

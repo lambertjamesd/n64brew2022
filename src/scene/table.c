@@ -3,15 +3,21 @@
 #include "../util/memory.h"
 
 #include "../build/assets/models/table.h"
+#include "../build/assets/models/table_vertical.h"
 #include "../build/assets/materials/static.h"
 
 #include "../collision/collision_scene.h"
 
 #include "../defs.h"
 
+struct TableType* gTableTypes[] = {
+    [TABLE_HORIZONTAL] = &table_definition,
+    [TABLE_VERTICAL] = &table_vertical_definition,
+};
+
 void tableInit(struct Table* table, struct TableDefinition* def) {
     table->position = def->position;
-    table->tableType = &table_definition;
+    table->tableType = gTableTypes[def->tableType];
     table->itemSlots = malloc(sizeof(struct Item*) * table->tableType->itemSlotCount);
 
     for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
