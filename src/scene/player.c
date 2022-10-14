@@ -68,7 +68,7 @@ void playerUpdateColliderPos(struct Player* player) {
 void playerColliderCallback(void* data, struct Vector3* normal, float depth) {
     struct Player* player = (struct Player*)data;
 
-    vector3AddScaled(&player->transform.position, normal, depth * 0.25f, &player->transform.position);
+    vector3AddScaled(&player->transform.position, normal, depth * 0.75f, &player->transform.position);
 
     if (vector3Dot(&player->velocity, normal) > 0.0f) {
         vector3ProjectPlane(&player->velocity, normal, &player->velocity);

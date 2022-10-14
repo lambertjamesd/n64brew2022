@@ -83,6 +83,11 @@ struct ItemScript {
       short stepCount;
 };
 
+struct BoundarySegment {
+    struct Vector2 a;
+    struct Vector2 b;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
@@ -109,6 +114,9 @@ struct LevelDefinition {
     struct CameraDefinition cameraDefinition;
 
     struct ItemScript* script;
+
+    struct BoundarySegment* boundary;
+    short boundaryCount;
 };
 
 struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);

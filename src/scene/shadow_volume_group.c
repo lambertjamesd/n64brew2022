@@ -58,6 +58,9 @@ void shadowVolumeGroupSort(struct ShadowVolumeGroup* group, u8* order, u8* tmp, 
 
     int mid = (min + max) >> 1;
 
+    shadowVolumeGroupSort(group, order, tmp, min, mid);
+    shadowVolumeGroupSort(group, order, tmp, mid, max);    
+
     int aIndex = min;
     int bIndex = mid;
     int writeIndex = min;

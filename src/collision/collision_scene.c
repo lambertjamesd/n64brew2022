@@ -48,18 +48,23 @@ void colliderEdgeSort(struct ColliderEdge* edges, struct ColliderEdge* tmp, int 
     }
 
     if (min + 2 == max) {
-        struct ColliderEdge swap = edges[min];
-        edges[min] = edges[min + 1];
-        edges[min + 1] = swap;
+        if (edges[min].position > edges[min + 1].position) {
+            struct ColliderEdge swap = edges[min];
+            edges[min] = edges[min + 1];
+            edges[min + 1] = swap;
+        }
         return;
     }
 
     int mid = (min + max) >> 1;
 
-    int aSource = 0;
+    colliderEdgeSort(edges, tmp, min, mid);
+    colliderEdgeSort(edges, tmp, mid, max);
+
+    int aSource = min;
     int bSource = mid;
 
-    int output = 0;
+    int output = min;
 
     while (aSource < mid || bSource < max) {
         if ((aSource < mid && bSource < max && edges[aSource].position < edges[bSource].position) || bSource == max) {
@@ -125,15 +130,15 @@ void collisionSceneWalkColliders(struct CollisionScene* collisionScene, struct C
                     &overlap
                 );
 
-                if (collisionScene->callbacks[edge->itemIndex].callback) {
-                    struct DynamicCallbackPair callback = collisionScene->callbacks[edge->itemIndex];
-                    callback.callback(callback.data, &overlap.normal, overlap.penetration);
+                if (collisionScene->callbacks[currentColliders[i]].callback) {
+                    struct DynamicCallbackPair callback = collisionScene->callbacks[currentColliders[i]];
+                    callback.callback(callback.data, &overlap.normal, -overlap.penetration);
                 }
 
-                if (collisionScene->callbacks[currentColliders[i]].callback) {
+                if (collisionScene->callbacks[edge->itemIndex].callback) {
                     vector3Negate(&overlap.normal, &overlap.normal);
-                    struct DynamicCallbackPair callback = collisionScene->callbacks[currentColliders[i]];
-                    callback.callback(callback.data, &overlap.normal, overlap.penetration);
+                    struct DynamicCallbackPair callback = collisionScene->callbacks[edge->itemIndex];
+                    callback.callback(callback.data, &overlap.normal, -overlap.penetration);
                 }
             }
 

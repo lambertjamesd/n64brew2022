@@ -24,17 +24,7 @@ void tableInit(struct Table* table, struct TableDefinition* def) {
         table->itemSlots[i] = NULL;
     }
 
-    vector3Add(
-        &table->tableType->boundingBox.min, 
-        &table->position,
-        &table->collisionObject.boundingBox.min
-    );
-
-    vector3Add(
-        &table->tableType->boundingBox.max, 
-        &table->position,
-        &table->collisionObject.boundingBox.max
-    );
+    box3DOffset(&table->tableType->boundingBox, &table->position, &table->collisionObject.boundingBox);
 
     table->collisionObject.data = &table->collisionObject;
     table->collisionObject.minkowskiSum = collisionObjectBoundingBox;

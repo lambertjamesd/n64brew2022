@@ -58,7 +58,7 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     itemPoolInit(&scene->itemPool);
-    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount);
+    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount + definition->boundaryCount);
     
     itemCoordinatorInit(&scene->itemCoordinator, definition->script);
 
@@ -108,6 +108,12 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     }
 
     scene->dropPenalty = 0.0f;
+
+    struct CollisionBoundary* boundaries = malloc(sizeof(struct CollisionBoundary) * definition->boundaryCount);
+    for (int i = 0; i < definition->boundaryCount; ++i) {
+        collisionBoundaryInit(&boundaries[i], &definition->boundary[i].a, &definition->boundary[i].b);
+        collisionSceneAddStatic(&gCollisionScene, &boundaries[i].collisionObject);
+    }
 
     bezosInit(&scene->bezos);
 }

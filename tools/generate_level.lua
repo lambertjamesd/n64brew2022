@@ -12,6 +12,7 @@ local spotLightOutput = require('tools.generate_level.spot_light')
 local conveyorOutput = require('tools.generate_level.conveyor')
 local tableOutput = require('tools.generate_level.table')
 local itemRequesterOutput = require('tools.generate_level.item_requester')
+local boundaryOutput = require('tools.generate_level.boundary')
 
 local levelJson = require('tools.generate_level.level_json')
 
@@ -42,4 +43,7 @@ add_definition("level", "struct LevelDefinition", "_geo", {
     cameraDefinition = cameraOutput,
 
     script = reference_to(levelJson.script),
+
+    boundary = reference_to(boundaryOutput.boundaryEntries, 1),
+    boundaryCount = #boundaryOutput.boundaryEntries,
 })

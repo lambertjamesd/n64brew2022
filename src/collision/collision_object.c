@@ -35,7 +35,10 @@ int collisionObjectBoundingBox(void* data, struct Vector3* direction, struct Vec
 int collisionCapsuleMinkowsi(void* data, struct Vector3* direction, struct Vector3* output) {
     struct CollisionCapsule* capsule = (struct CollisionCapsule*)data;
 
-    vector3AddScaled(&capsule->center, direction, capsule->radius, output);
+    struct Vector3 normalizedDir;
+    vector3Normalize(direction, &normalizedDir);
+
+    vector3AddScaled(&capsule->center, &normalizedDir, capsule->radius, output);
 
     if (direction->y > 0.0f) {
         output->y += capsule->halfHeight;

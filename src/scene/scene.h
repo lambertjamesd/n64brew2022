@@ -18,6 +18,8 @@
 #include "bezos.h"
 #include "item_coordinator.h"
 
+#include "../collision/collision_boundary.h"
+
 typedef void (*SetObjectMaterial)(struct RenderState* renderState, int objectIndex);
 
 enum RenderModeFlags {
