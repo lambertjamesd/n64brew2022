@@ -58,7 +58,7 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     itemPoolInit(&scene->itemPool);
-    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount + definition->boundaryCount);
+    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount + definition->boundaryCount + definition->conveyorCount);
     
     itemCoordinatorInit(&scene->itemCoordinator, definition->script);
 

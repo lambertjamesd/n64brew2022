@@ -3,6 +3,7 @@
 
 #include "../math/transform.h"
 #include "../graphics/render_scene.h"
+#include "../collision/collision_object.h"
 
 #include "../level/level_definition.h"
 
@@ -10,6 +11,7 @@
 
 struct Conveyor {
     struct Transform transform;
+    struct CollisionObject collisionObject;
     struct Item* pendingItems[2];
     float beltOffset[2];
 };

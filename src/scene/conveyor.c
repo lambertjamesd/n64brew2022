@@ -3,6 +3,8 @@
 #include "../build/assets/models/conveyor.h"
 #include "../build/assets/materials/static.h"
 
+#include "../collision/collision_scene.h"
+
 #include "../models/models.h"
 #include "../util/time.h"
 
@@ -21,7 +23,14 @@ void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definiti
     conveyor->transform.scale = gOneVec; 
 
     conveyor->pendingItems[0] = NULL;
-    conveyor->pendingItems[1] = NULL;  
+    conveyor->pendingItems[1] = NULL;
+
+    box3DRotate(&conveyor_definition.boundingBox, &conveyor->transform.rotation, &conveyor->collisionObject.boundingBox);
+    box3DOffset(&conveyor->collisionObject.boundingBox, &conveyor->transform.position, &conveyor->collisionObject.boundingBox);
+    conveyor->collisionObject.data = &conveyor->collisionObject;
+    conveyor->collisionObject.minkowskiSum = collisionObjectBoundingBox;
+
+    collisionSceneAddStatic(&gCollisionScene, &conveyor->collisionObject);
 }
 
 void conveyorUpdate(struct Conveyor* conveyor) {
@@ -54,7 +63,7 @@ void conveyorRender(struct Conveyor* conveyor, struct RenderScene* renderScene) 
     Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
     transformToMatrixL(&conveyor->transform, mtx, SCENE_SCALE);
 
-    renderSceneAdd(renderScene, conveyor_model_gfx, mtx, FURNITURE_WAREHOUSE_INDEX, &conveyor->transform.position, NULL, NULL);
+    renderSceneAdd(renderScene, conveyor_definition.displayList, mtx, conveyor_definition.materialIndex, &conveyor->transform.position, NULL, NULL);
 }
 
 int conveyorCanAcceptItem(struct Conveyor* conveyor) {
