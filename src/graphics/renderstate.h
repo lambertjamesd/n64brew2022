@@ -3,14 +3,26 @@
 
 #include <ultra64.h>
 
+#include "color.h"
+
 #define MAX_DL_LENGTH           2000
 #define MAX_RENDER_STATE_MEMORY 12800
 #define MAX_RENDER_STATE_MEMORY_CHUNKS (MAX_RENDER_STATE_MEMORY / sizeof(u64))
 #define MAX_DYNAMIC_LIGHTS      128
+#define MAX_LAYER_COUNT     8
+
+struct SpriteState {
+    Gfx* layerSetup[MAX_LAYER_COUNT];
+    struct Coloru8 layerColor[MAX_LAYER_COUNT];
+    Gfx* layerDL[MAX_LAYER_COUNT];
+    Gfx* currentLayerDL[MAX_LAYER_COUNT];
+    Gfx* currentChunkEnd[MAX_LAYER_COUNT];
+};
 
 struct RenderState {
     Gfx glist[MAX_DL_LENGTH];
     u64 renderStateMemory[MAX_RENDER_STATE_MEMORY_CHUNKS];
+    struct SpriteState spriteState;
     Gfx* dl;
     u16* framebuffer;
     u16* depthBuffer;

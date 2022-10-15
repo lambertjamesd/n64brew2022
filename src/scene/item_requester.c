@@ -5,6 +5,8 @@
 
 #include "../build/assets/models/portal.h"
 
+#include "../collision/collision_scene.h"
+
 #include "../defs.h"
 
 #include "../util/time.h"
@@ -26,6 +28,12 @@ void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefi
     requester->requestedType = ItemTypeCount;
     requester->timeLeft = 0.0f;
     requester->duration = 0.0f;
+
+    collisionCapsuleInit(&requester->collisionCapsule, 1.0f, 0.5f);
+    requester->collisionCapsule.center = requester->transform.position;
+    collisionCapsuleUpdateBB(&requester->collisionCapsule);
+
+    collisionSceneAddStatic(&gCollisionScene, &requester->collisionCapsule.collisionObject);
 }
 
 void itemRequesterUpdate(struct ItemRequester* requester) {

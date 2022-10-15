@@ -1,15 +1,15 @@
 {
     "script": [
         {
+            "item_pool": ["Pumpkin"],
+            "success_count": 1
+        },
+        {
+            "item_pool": ["Hat"],
+            "success_count": 1
+        },
+        {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat"],
-            "success_count": 4
-        },
-        {
-            "item_pool": ["Pumpkin", "Pumpkin", "Hat", "Broom"],
-            "success_count": 6
-        },
-        {
-            "item_pool": ["Pumpkin", "Pumpkin", "Hat", "Broom", "Candle"],
             "success_count": 8
         }
     ]

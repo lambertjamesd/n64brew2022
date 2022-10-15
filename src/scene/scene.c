@@ -20,7 +20,10 @@
 #include "item_render.h"
 #include "table_surface.h"
 #include "shadow_volume_group.h"
+#include "../ui/spritefont.h"
+#include "../ui/sprite.h"
 
+#include "../build/assets/materials/ui.h"
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
 
@@ -58,7 +61,7 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     itemPoolInit(&scene->itemPool);
-    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount + definition->boundaryCount + definition->conveyorCount);
+    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount + definition->boundaryCount + definition->conveyorCount + definition->itemRequesterCount);
     
     itemCoordinatorInit(&scene->itemCoordinator, definition->script);
 
@@ -241,6 +244,10 @@ struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
+    for (int i = 0; i < DEFAULT_UI_INDEX; ++i) {
+        spriteSetLayer(renderState, i, ui_material_list[i]);
+    }
+
     Mtx* identity = renderStateRequestMatrices(renderState, 1);
     guMtxIdent(identity);
     gSPMatrix(renderState->dl++, identity, G_MTX_LOAD | G_MTX_NOPUSH | G_MTX_MODELVIEW);
@@ -486,7 +493,14 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     gSPDisplayList(renderState->dl++, gCopyCB);
 
-    gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
+    gDPPipeSync(renderState->dl++);
+    gSPDisplayList(renderState->dl++, ui_default_ui);
+
+    spriteInit(renderState);
+
+    spriteDraw(renderState, NIGHTCHILDE_INDEX, 10, 10, 128, 64, 0, 0, 0, 0);
+
+    spriteFinish(renderState);
 
     // shadowMapRenderDebug(renderState, scene->players[0].shadowMap.buffer);
 }

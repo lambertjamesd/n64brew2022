@@ -4,10 +4,11 @@
 ## TODO
 
 * polish movement and controls
-*   table drop indicator
 *   item request timer
 *   item request delay
 * build out a level
 * bezos chases players
+* load next level
+* main menu
 * lose condition (caught by bezos)
 * win condition (finish level script)

@@ -1,0 +1,25 @@
+
+materials:
+  default_ui:
+    gSPGeometryMode:
+      clear: [G_ZBUFFER, G_LIGHTING, G_SHADE]
+    gDPSetTextureLUT: G_TT_NONE
+    gDPSetTexturePersp: G_TP_NONE
+    gDPSetRenderMode: G_RM_XLU_SURF
+
+    sortOrder: 10
+
+  nightchilde:
+    gDPSetTile:
+      filename: "./ui/nightchilde.png"
+      siz: G_IM_SIZ_4b
+      fmt: G_IM_FMT_I
+    gDPSetCombineMode: 
+      color: [TEXEL0, "0", ENVIRONMENT, "0"]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
+    gDPSetRenderMode: G_RM_XLU_SURF
+    gDPSetEnvColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 255

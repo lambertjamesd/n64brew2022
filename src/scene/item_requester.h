@@ -5,6 +5,7 @@
 #include "item.h"
 #include "../level/level_definition.h"
 #include "../graphics/render_scene.h"
+#include "../collision/collision_object.h"
 
 enum ItemRequesterFlags {
     ItemRequesterFlagsHover = (1 << 0),
@@ -12,6 +13,7 @@ enum ItemRequesterFlags {
 
 struct ItemRequester {
     struct Transform transform;
+    struct CollisionCapsule collisionCapsule;
     enum ItemType requestedType;
     float timeLeft;
     float duration;

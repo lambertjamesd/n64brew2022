@@ -137,6 +137,10 @@ build/assets/materials/pallete.h: assets/materials/pallete.skm.yaml assets/mater
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --name pallete -m $< --material-output -o build/assets/materials/pallete.h
 
+build/assets/materials/ui.h: assets/materials/ui.skm.yaml $(SKELATOOL64) $(ALL_IMAGES)
+	@mkdir -p $(@D)
+	$(SKELATOOL64) --name ui -m $< --material-output -o build/assets/materials/ui.h --default-material default_ui
+
 build/src/level/level.o: build/assets/materials/static.h build/assets/levels/level_list.h
 
 build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h
@@ -235,7 +239,7 @@ build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
 ## Linking
 ####################
 
-DATA_OBJECTS = $(MODEL_OBJECTS) build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o
+DATA_OBJECTS = $(MODEL_OBJECTS) build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o build/assets/materials/ui_mat.o
 
 $(BOOT_OBJ): $(BOOT)
 	$(OBJCOPY) -I binary -B mips -O elf32-bigmips $< $@
