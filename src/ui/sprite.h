@@ -21,7 +21,7 @@
 struct SpriteTile
 {
     char x;
-char y;
+    char y;
     char w;
     char h;
 };

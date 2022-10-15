@@ -22,6 +22,7 @@
 #include "shadow_volume_group.h"
 #include "../ui/spritefont.h"
 #include "../ui/sprite.h"
+#include "../ui/nightchilde.h"
 
 #include "../build/assets/materials/ui.h"
 #include "../build/assets/materials/static.h"
@@ -498,7 +499,9 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     spriteInit(renderState);
 
-    spriteDraw(renderState, NIGHTCHILDE_INDEX, 10, 10, 128, 64, 0, 0, 0, 0);
+    // spriteDraw(renderState, NIGHTCHILDE_INDEX, 10, 10, 128, 64, 0, 0, 1, 1);
+
+    fontRenderText(renderState, &gNightChilde, "aabb", 10, 10, 0);
 
     spriteFinish(renderState);
 

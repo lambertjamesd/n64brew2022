@@ -10,6 +10,7 @@
 #include "level/level.h"
 #include "sk64/skelatool_animator.h"
 #include "sk64/skelatool_defs.h"
+#include "ui/nightchilde.h"
 
 #ifdef WITH_DEBUGGER
 #include "../debugger/debugger.h"
@@ -128,6 +129,8 @@ void gameProc(void *arg) {
 
     heapInit(_heapStart, memoryEnd);
     romInit();
+
+    nightChildeInit();
 
     skInitDataPool(gPiHandle);
     skSetSegmentLocation(CHARACTER_ANIMATION_SEGMENT, (unsigned)_animation_segmentSegmentRomStart);

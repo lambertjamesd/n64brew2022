@@ -143,7 +143,9 @@ build/assets/materials/ui.h: assets/materials/ui.skm.yaml $(SKELATOOL64) $(ALL_I
 
 build/src/level/level.o: build/assets/materials/static.h build/assets/levels/level_list.h
 
-build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h
+build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h build/assets/materials/ui.h
+
+build/src/ui/nightchilde.o: build/assets/materials/ui.h
 
 ####################
 ## Models
