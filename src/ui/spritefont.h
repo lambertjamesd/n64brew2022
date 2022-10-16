@@ -12,6 +12,7 @@ struct CharacterDefinition
     char spriteLayer;
     struct SpriteTile data;
     char kerning;
+    char yOffset;
 };
 
 struct Font

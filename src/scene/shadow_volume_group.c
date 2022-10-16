@@ -5,6 +5,8 @@
 #include "../build/assets/materials/static.h"
 #include "../sk64/skelatool_defs.h"
 
+#include "../build/assets/models/pumpkin.h"
+
 Light gNoLight = {{
     {0, 0, 0}, 0,
     {0, 0, 0}, 0,
@@ -40,7 +42,7 @@ void shadowVolumeGroupAddObject(struct ShadowVolumeGroup* group, Gfx* displayLis
     struct ShadowVolumeStep* step = &group->steps[group->currentCount];
 
     step->sortOrder = sortOrder;
-    step->sortOrder = ShadowVolumeStepTypeObject;
+    step->stepType = ShadowVolumeStepTypeObject;
 
     step->object.displayList = displayList;
     step->object.armature = armature;
@@ -65,7 +67,7 @@ void shadowVolumeGroupSort(struct ShadowVolumeGroup* group, u8* order, u8* tmp, 
     int bIndex = mid;
     int writeIndex = min;
 
-    if (aIndex < mid || bIndex < max) {
+    while (aIndex < mid || bIndex < max) {
         struct ShadowVolumeStep* aStep = aIndex < mid ? &group->steps[order[aIndex]] : NULL;
         struct ShadowVolumeStep* bStep = bIndex < max ? &group->steps[order[bIndex]] : NULL;
 
@@ -134,6 +136,8 @@ void shadowVolumeGroupRender(struct ShadowVolumeGroup* group, struct RenderState
                 continue;
             }
 
+            model = spotLightShadowPlane(currentStep->plane.light, currentStep->plane.faceIndex, renderState);
+
             materialIndex = SHADOW_INDEX;
 
             lastShadowPlane = currentStep;
@@ -146,11 +150,14 @@ void shadowVolumeGroupRender(struct ShadowVolumeGroup* group, struct RenderState
         }
 
         if (materialIndex != currentMaterialIndex) {
-            if (currentMaterialIndex == -1) {
+            if (currentMaterialIndex != -1) {
                 gSPDisplayList(renderState->dl++, levelMaterialRevert(currentMaterialIndex));
             }
             gSPDisplayList(renderState->dl++, levelMaterial(materialIndex));
-            gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_DECAL, G_RM_ZB_OPA_DECAL2);
+
+            if (materialIndex != SHADOW_INDEX) {
+                gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_DECAL, G_RM_ZB_OPA_DECAL2);
+            }
             
             currentMaterialIndex = materialIndex;
         }
@@ -223,7 +230,7 @@ int spotLightFaceSum(void* data, struct Vector3* direction, struct Vector3* outp
 
 #define FACE_DISTANCE_NONE  -10000.0f
 
-enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct SpotLight* spotLight, struct ShadowVolumeTarget* target) {
+enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct SpotLight* spotLight, struct ShadowVolumeTarget* target, float* furthestBackFace, float* furthestFrontFace) {
     if (!box3DHasOverlap(&spotLight->boundingBox, &target->collisionObject->boundingBox)) {
         return LightIntersectionOutside;
     }
@@ -288,6 +295,8 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
         );
 
         result |= LightIntersectionTouchingBackFace;
+
+        *furthestBackFace = MIN(*furthestBackFace, closestBackFace);
     }
 
     if (closestFrontFace != FACE_DISTANCE_NONE) {
@@ -302,6 +311,8 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
         );
 
         result |= LightIntersectionTouchingFrontFace;
+
+        *furthestFrontFace= MIN(*furthestFrontFace, closestFrontFace);
     }
 
     return result;
@@ -317,8 +328,11 @@ Light* shadowVolumeGroupPopulate(
 
     int intersections = 0;
 
+    float furthestBackFace = -FACE_DISTANCE_NONE;
+    float furthestFrontFace = -FACE_DISTANCE_NONE;
+
     for (int i = 0; i < lightCount; ++i) {
-        enum LightIntersection spotLightResult = spotLightIsInside(group, &lights[i], target);
+        enum LightIntersection spotLightResult = spotLightIsInside(group, &lights[i], target, &furthestBackFace, &furthestFrontFace);
 
         if (spotLightResult == LightIntersectionInside) {
             group->currentCount = startCount;
@@ -336,5 +350,9 @@ Light* shadowVolumeGroupPopulate(
         return &gNoLight;
     }
 
-    return target->light;
+    if (furthestFrontFace < furthestBackFace) {
+        return target->light;
+    }
+
+    return &gNoLight;
 }

@@ -17,6 +17,7 @@
 #include "item_requester.h"
 #include "bezos.h"
 #include "item_coordinator.h"
+#include "tutorial.h"
 
 #include "../collision/collision_boundary.h"
 
@@ -46,6 +47,7 @@ struct Scene {
     struct ItemPool itemPool;
     struct Bezos bezos;
     struct ItemCoordinator itemCoordinator;
+    struct Tutorial tutorial;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;

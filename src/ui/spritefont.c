@@ -31,7 +31,7 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
             spriteDraw(
                 renderState, 
                 curr->spriteLayer, 
-                x, y, 
+                x, y + curr->yOffset, 
                 curr->data.w, curr->data.h, 
                 curr->data.x, curr->data.y, 
                 scaleShift, scaleShift

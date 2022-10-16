@@ -101,7 +101,7 @@ void spotLightUpdateGeometry(struct SpotLight* spotLight, struct Vector3* camera
         vector3Cross(&lightDirection[(i + 1) % LIGHT_CIRCLE_POINT_COUNT], &lightDirection[i], &spotLight->faceNormal[i]);
         vector3Normalize(&spotLight->faceNormal[i], &spotLight->faceNormal[i]);
 
-        if (vector3Dot(&dirFromCamera, &spotLight->faceNormal[i]) > 0.0f) {
+        if (vector3Dot(&dirFromCamera, &spotLight->faceNormal[i]) < 0.0f) {
             isBackFaceMask |= (1 << i);
         }
     }
@@ -228,6 +228,40 @@ float spotLightMeasureDepth(struct SpotLight* spotLight, struct Vector3* point, 
     }
 
     return minDistnace;
+}
+
+void vectorToVtx(struct Vector3* vector, Vtx* output) {
+    output->v.ob[0] = (SCENE_SCALE * vector->x);
+    output->v.ob[1] = (SCENE_SCALE * vector->y);
+    output->v.ob[2] = (SCENE_SCALE * vector->z);
+
+    output->v.flag = 0;
+
+    output->v.tc[0] = 0;
+    output->v.tc[1] = 0;
+
+    output->v.cn[0] = 0;
+    output->v.cn[1] = 0;
+    output->v.cn[2] = 0;
+    output->v.cn[3] = 255;
+}
+
+Gfx* spotLightShadowPlane(struct SpotLight* spotLight, int index, struct RenderState* renderState) {
+    Gfx* result = renderStateAllocateDLChunk(renderState, 3);
+
+    Vtx* vertices = renderStateRequestVertices(renderState, 3);
+
+    vectorToVtx(&spotLight->rigidBody.transform.position, &vertices[0]);
+    vectorToVtx(&spotLight->lightOutline[index], &vertices[1]);
+    vectorToVtx(&spotLight->lightOutline[(index + 1) & (LIGHT_CIRCLE_POINT_COUNT - 1)], &vertices[2]);
+
+    Gfx* dl = result;
+
+    gSPVertex(dl++, vertices, 3, 0);
+    gSP1Triangle(dl++, 0, 1, 2, 0);
+    gSPEndDisplayList(dl++);
+
+    return result;
 }
 
 int spotLightsFindConfiguration(struct SpotLight* lights, int lightCount, struct Vector3* point, float pointRadius, struct LightConfiguration* output) {

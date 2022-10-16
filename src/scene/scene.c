@@ -120,6 +120,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     }
 
     bezosInit(&scene->bezos);
+    tutorialInit(&scene->tutorial);
 }
 
 unsigned ignoreInputFrames = 10;
@@ -236,6 +237,8 @@ void sceneUpdate(struct Scene* scene) {
     itemCoordinatorUpdate(&scene->itemCoordinator);
 
     collisionSceneCollide(&gCollisionScene);
+    
+    tutorialUpdate(&scene->tutorial);
 }
 
 struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
@@ -463,6 +466,8 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         }
     }
 
+    shadowVolumeGroupRender(&shadowGroup, renderState);
+
     gDPPipeSync(renderState->dl++);
     gSPGeometryMode(renderState->dl++, G_CULL_FRONT, G_CULL_BACK);
     gDPSetRenderMode(renderState->dl++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
@@ -501,7 +506,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     // spriteDraw(renderState, NIGHTCHILDE_INDEX, 10, 10, 128, 64, 0, 0, 1, 1);
 
-    fontRenderText(renderState, &gNightChilde, "aabb", 10, 10, 0);
+    tutorialRender(&scene->tutorial, renderState);
 
     spriteFinish(renderState);
 

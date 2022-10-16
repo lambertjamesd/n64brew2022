@@ -23,3 +23,11 @@ materials:
       g: 255
       b: 255
       a: 255
+
+    sortOrder: 5
+
+  solid_ui:
+    gDPSetRenderMode: G_RM_OPA_SURF
+    gDPSetCombineMode:
+      color: ["0", "0", "0", ENVIRONMENT]
+      alpha: ["0", "0", "0", "1"]

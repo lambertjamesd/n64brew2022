@@ -45,7 +45,7 @@ float spotLightShadowSortOrder(struct SpotLight* spotLight, int index);
 float spotLightClosenessWeight(struct SpotLight* spotLight, struct Vector3* point);
 float spotLightMeasureDepth(struct SpotLight* spotLight, struct Vector3* point, float radius);
 
-Gfx* spotLightShadowPlane(struct SpotLight* spotLight, int index);
+Gfx* spotLightShadowPlane(struct SpotLight* spotLight, int index, struct RenderState* renderState);
 
 struct LightConfiguration {
     struct SpotLight* primaryLight;
