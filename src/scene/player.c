@@ -284,7 +284,8 @@ void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* targ
     target->collisionObject = &player->collider.collisionObject;
     target->displayList = player->armature.displayList;
     target->light = light;
-    target->materialIndex = PLAYER_0_INDEX,
+    target->materialIndex = PLAYER_0_INDEX;
     target->matrix = player->mtxTransform;
-    target->position = &player->transform.position;
+    target->position = player->transform.position;
+    vector3Add(&target->position, &gPlayerCenter, &target->position);
 }

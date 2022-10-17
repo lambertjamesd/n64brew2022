@@ -47,7 +47,8 @@ void itemRenderGenerate(enum ItemType itemType, struct RenderState* renderState)
         camera.transform.position = itemDef->cameraDefinition->position;
         camera.transform.rotation = itemDef->cameraDefinition->rotation;
 
-        cameraSetupMatrices(&camera, renderState, 1.0f, NULL);
+        float viewPerspMatrix[4][4];
+        cameraSetupMatrices(&camera, renderState, 1.0f, viewPerspMatrix);
     } else {
         Mtx* projection = renderStateRequestMatrices(renderState, 1);
         guOrtho(projection, 

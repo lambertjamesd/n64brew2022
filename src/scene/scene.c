@@ -313,10 +313,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gDPFillRectangle(renderState->dl++, 0, 0, SCREEN_WD-1, SCREEN_HT-1);
     gDPPipeSync(renderState->dl++);
     gDPSetCycleType(renderState->dl++, G_CYC_1CYCLE);
+    
+    float viewPerspMatrix[4][4];
 
-    struct FrustrumCullingInformation cullingInformation;
-
-    cameraSetupMatrices(&scene->camera, renderState, (float)SCREEN_WD / (float)SCREEN_HT, &cullingInformation);
+    cameraSetupMatrices(&scene->camera, renderState, (float)SCREEN_WD / (float)SCREEN_HT, viewPerspMatrix);
     
     gSPSetLights1(renderState->dl++, gLights);
     gDPSetRenderMode(renderState->dl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
@@ -337,7 +337,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
 
     struct ShadowVolumeGroup shadowGroup;
-    shadowVolumeGroupInit(&shadowGroup, &scene->camera.transform.position);
+    shadowVolumeGroupInit(&shadowGroup, &scene->camera.transform, &viewPerspMatrix);
     
     // render objects
     renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, levelMaterialDefault());

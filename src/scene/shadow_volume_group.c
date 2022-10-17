@@ -4,8 +4,8 @@
 
 #include "../build/assets/materials/static.h"
 #include "../sk64/skelatool_defs.h"
-
-#include "../build/assets/models/pumpkin.h"
+#include "../math/matrix.h"
+#include "../graphics/graphics.h"
 
 Light gNoLight = {{
     {0, 0, 0}, 0,
@@ -15,9 +15,12 @@ Light gNoLight = {{
 
 float gLargeSortValue = 10000.0f;
 
-void shadowVolumeGroupInit(struct ShadowVolumeGroup* group, struct Vector3* cameraPosition) {
+void shadowVolumeGroupInit(struct ShadowVolumeGroup* group, struct Transform* cameraTransform, float (*viewPerspMatrix)[4][4]) {
     group->currentCount = 0;
-    group->cameraPosition = cameraPosition;
+    group->cameraTransform = cameraTransform;
+    group->viewPerspMatrix = viewPerspMatrix;
+    group->screenClip.min = gOneVec2;
+    group->screenClip.max = gZeroVec2;
 }
 
 void shadowVolumeGroupAddSpotLightFace(struct ShadowVolumeGroup* group, struct SpotLight* light, int faceIndex) {
@@ -109,6 +112,10 @@ void shadowVolumeGroupRender(struct ShadowVolumeGroup* group, struct RenderState
     u8 order[SHADOW_VOLUME_STEP_MAX_COUNT];
     u8 orderTmp[SHADOW_VOLUME_STEP_MAX_COUNT];
 
+    if (group->currentCount == 0) {
+        return;
+    }
+
     for (int i = 0; i < group->currentCount; ++i) {
         order[i] = i;
     }
@@ -118,6 +125,15 @@ void shadowVolumeGroupRender(struct ShadowVolumeGroup* group, struct RenderState
     struct ShadowVolumeStep* lastShadowPlane = NULL;
 
     int currentMaterialIndex = DEFAULT_INDEX;
+
+    gDPSetScissor(
+        renderState->dl++, 
+        G_SC_NON_INTERLACE,
+        MAX(0, (int)group->screenClip.min.x),
+        MAX(0, (int)group->screenClip.min.y),
+        MIN(SCREEN_WD, (int)group->screenClip.max.x),
+        MIN(SCREEN_WD, (int)group->screenClip.max.y)
+    );
 
     gSPDisplayList(renderState->dl++, levelMaterialDefault());
 
@@ -185,6 +201,8 @@ void shadowVolumeGroupRender(struct ShadowVolumeGroup* group, struct RenderState
     if (currentMaterialIndex != -1) {
         gSPDisplayList(renderState->dl++, levelMaterialRevert(currentMaterialIndex));
     }
+
+    gDPSetScissor(renderState->dl++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
 }
 
 struct SpotLightFace {
@@ -270,9 +288,9 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
 
     struct CollisionObjectToCamera collisionObjectToCamera;
     collisionObjectToCamera.collisionObject = target->collisionObject;
-    collisionObjectToCamera.cameraPosition = group->cameraPosition;
+    collisionObjectToCamera.cameraPosition = &group->cameraTransform->position;
 
-    vector3Sub(&spotLight->rigidBody.transform.position, target->position, &offset);
+    vector3Sub(&spotLight->rigidBody.transform.position, &target->position, &offset);
 
     for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
         spotLightFace.faceIndex = i;
@@ -344,6 +362,31 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
     return result;
 }
 
+struct Vector3 gLocalOffset = {0.5f, 0.5f, 0.0f};
+
+void shadowVolumeAppendViewPoint(
+    struct ShadowVolumeGroup* group,
+    struct Vector3* worldPoint
+) {
+    struct Vector4 pos4D;
+    struct Vector3 scaledWorldPoint;
+    vector3Scale(worldPoint, &scaledWorldPoint, SCENE_SCALE);
+    matrixVec3Mul(*group->viewPerspMatrix, &scaledWorldPoint, &pos4D);
+    float invW = 1.0f / pos4D.w;
+
+    struct Vector2 screenPos;
+    screenPos.x = (SCREEN_WD * 0.5f) * (pos4D.x * invW + 1.0f);
+    screenPos.y = (SCREEN_HT * 0.5f) * (-pos4D.y * invW + 1.0f);
+
+    if (group->screenClip.min.x > group->screenClip.max.x) {
+        group->screenClip.min = screenPos;
+        group->screenClip.max = screenPos;
+    } else {
+        vector2Min(&group->screenClip.min, &screenPos, &group->screenClip.min);
+        vector2Max(&group->screenClip.max, &screenPos, &group->screenClip.max);
+    }
+}
+
 Light* shadowVolumeGroupPopulate(
     struct ShadowVolumeGroup* group, 
     struct SpotLight* lights,
@@ -356,6 +399,7 @@ Light* shadowVolumeGroupPopulate(
 
     float furthestBackFace = -FACE_DISTANCE_NONE;
     float furthestFrontFace = -FACE_DISTANCE_NONE;
+
 
     for (int i = 0; i < lightCount; ++i) {
         enum LightIntersection spotLightResult = spotLightIsInside(group, &lights[i], target, &furthestBackFace, &furthestFrontFace);
@@ -371,6 +415,14 @@ Light* shadowVolumeGroupPopulate(
     if (intersections == LightIntersectionOutside) {
         return &gNoLight;
     }
+
+    struct Vector3 worldOffset;
+    quatMultVector(&group->cameraTransform->rotation, &gLocalOffset, &worldOffset);
+    struct Vector3 extent;
+    vector3Add(&target->position, &worldOffset, &extent);
+    shadowVolumeAppendViewPoint(group, &extent);
+    vector3Sub(&target->position, &worldOffset, &extent);
+    shadowVolumeAppendViewPoint(group, &extent);
 
     if (intersections & LightIntersectionTouchingBackFace) {
         return &gNoLight;

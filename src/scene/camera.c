@@ -95,7 +95,7 @@ int cameraIsValidMatrix(float matrix[4][4]) {
     return fabsf(matrix[3][0]) <= 0x7fff && fabsf(matrix[3][1]) <= 0x7fff && fabsf(matrix[3][2]) <= 0x7fff;
 }
 
-Mtx* cameraSetupMatrices(struct Camera* camera, struct RenderState* renderState, float aspectRatio, struct FrustrumCullingInformation* clippingInfo) {
+Mtx* cameraSetupMatrices(struct Camera* camera, struct RenderState* renderState, float aspectRatio, float viewPerspMatrix[4][4]) {
     Mtx* viewProjMatrix = renderStateRequestMatrices(renderState, 2);
     
     if (!viewProjMatrix) {
@@ -109,29 +109,18 @@ Mtx* cameraSetupMatrices(struct Camera* camera, struct RenderState* renderState,
 
     float view[4][4];
     float persp[4][4];
-    float combined[4][4];
 
     u16 perspectiveNormalize;
     cameraBuildProjectionMatrix(camera, persp, &perspectiveNormalize, aspectRatio);
 
     cameraBuildViewMatrix(camera, view);
-    guMtxCatF(view, persp, combined);
+    guMtxCatF(view, persp, viewPerspMatrix);
 
-    if (!cameraIsValidMatrix(combined)) {
+    if (!cameraIsValidMatrix(viewPerspMatrix)) {
         goto error;
     }
 
-    guMtxF2L(combined, &viewProjMatrix[1]);
-
-    if (clippingInfo) {
-        cameraExtractClippingPlane(combined, &clippingInfo->clippingPlanes[0], 0, 1.0f);
-        cameraExtractClippingPlane(combined, &clippingInfo->clippingPlanes[1], 0, -1.0f);
-        cameraExtractClippingPlane(combined, &clippingInfo->clippingPlanes[2], 1, 1.0f);
-        cameraExtractClippingPlane(combined, &clippingInfo->clippingPlanes[3], 1, -1.0f);
-        cameraExtractClippingPlane(combined, &clippingInfo->clippingPlanes[4], 2, 1.0f);
-        clippingInfo->cameraPos = camera->transform.position;
-        clippingInfo->usedClippingPlaneCount = 5;
-    }
+    guMtxF2L(viewPerspMatrix, &viewProjMatrix[1]);
 
     gSPMatrix(renderState->dl++, osVirtualToPhysical(&viewProjMatrix[1]), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     gSPPerspNormalize(renderState->dl++, perspectiveNormalize);

@@ -3,6 +3,8 @@
 
 #include "./spot_light.h"
 
+#include "../math/box2d.h"
+
 #include "../graphics/renderstate.h"
 
 enum ShadowVolumeStepType {
@@ -34,8 +36,10 @@ struct ShadowVolumeStep {
 
 struct ShadowVolumeGroup {
     struct ShadowVolumeStep steps[SHADOW_VOLUME_STEP_MAX_COUNT];
-    struct Vector3* cameraPosition;
+    struct Transform* cameraTransform;
     int currentCount;
+    float (*viewPerspMatrix)[4][4];
+    struct Box2D screenClip;
 };
 
 struct ShadowVolumeTarget {
@@ -45,10 +49,10 @@ struct ShadowVolumeTarget {
     Mtx* matrix;
     Light* light;
     int materialIndex;
-    struct Vector3* position;
+    struct Vector3 position;
 };
 
-void shadowVolumeGroupInit(struct ShadowVolumeGroup* group, struct Vector3* cameraPosition);
+void shadowVolumeGroupInit(struct ShadowVolumeGroup* group, struct Transform* cameraTransform, float (*viewPerspMatrix)[4][4]);
 
 void shadowVolumeGroupAddSpotLightFace(struct ShadowVolumeGroup* group, struct SpotLight* light, int faceIndex);
 void shadowVolumeGroupAddObject(struct ShadowVolumeGroup* group, Gfx* displayList, Mtx* armature, Mtx* matrix, Light* light, int materialIndex, float sortOrder);
