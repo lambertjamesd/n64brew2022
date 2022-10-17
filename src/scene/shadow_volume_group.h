@@ -34,6 +34,7 @@ struct ShadowVolumeStep {
 
 struct ShadowVolumeGroup {
     struct ShadowVolumeStep steps[SHADOW_VOLUME_STEP_MAX_COUNT];
+    struct Vector3* cameraPosition;
     int currentCount;
 };
 
@@ -47,7 +48,7 @@ struct ShadowVolumeTarget {
     struct Vector3* position;
 };
 
-void shadowVolumeGroupInit(struct ShadowVolumeGroup* group);
+void shadowVolumeGroupInit(struct ShadowVolumeGroup* group, struct Vector3* cameraPosition);
 
 void shadowVolumeGroupAddSpotLightFace(struct ShadowVolumeGroup* group, struct SpotLight* light, int faceIndex);
 void shadowVolumeGroupAddObject(struct ShadowVolumeGroup* group, Gfx* displayList, Mtx* armature, Mtx* matrix, Light* light, int materialIndex, float sortOrder);

@@ -337,7 +337,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gSPSetGeometryMode(renderState->dl++, G_ZBUFFER);
 
     struct ShadowVolumeGroup shadowGroup;
-    shadowVolumeGroupInit(&shadowGroup);
+    shadowVolumeGroupInit(&shadowGroup, &scene->camera.transform.position);
     
     // render objects
     renderScene = renderSceneNew(&scene->camera.transform, renderState, RENDER_SCENE_CAPACITY, ~0, levelMaterialDefault());

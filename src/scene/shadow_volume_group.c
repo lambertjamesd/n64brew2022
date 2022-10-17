@@ -15,8 +15,9 @@ Light gNoLight = {{
 
 float gLargeSortValue = 10000.0f;
 
-void shadowVolumeGroupInit(struct ShadowVolumeGroup* group) {
+void shadowVolumeGroupInit(struct ShadowVolumeGroup* group, struct Vector3* cameraPosition) {
     group->currentCount = 0;
+    group->cameraPosition = cameraPosition;
 }
 
 void shadowVolumeGroupAddSpotLightFace(struct ShadowVolumeGroup* group, struct SpotLight* light, int faceIndex) {
@@ -230,6 +231,27 @@ int spotLightFaceSum(void* data, struct Vector3* direction, struct Vector3* outp
 
 #define FACE_DISTANCE_NONE  -10000.0f
 
+struct CollisionObjectToCamera {
+    struct CollisionObject* collisionObject;
+    struct Vector3* cameraPosition;
+};
+
+int collisionObjectToCameraSum(void* data, struct Vector3* direction, struct Vector3* output) {
+    struct CollisionObjectToCamera* collisionObject = (struct CollisionObjectToCamera*)data;
+
+    struct Vector3 offset;
+
+    int result = collisionObject->collisionObject->minkowskiSum(collisionObject->collisionObject->data, direction, output);
+
+    vector3Sub(collisionObject->cameraPosition, output, &offset);
+
+    if (vector3Dot(&offset, direction) > 0.0f) {
+        *output = *collisionObject->cameraPosition;
+    }
+
+    return result;
+}
+
 enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct SpotLight* spotLight, struct ShadowVolumeTarget* target, float* furthestBackFace, float* furthestFrontFace) {
     if (!box3DHasOverlap(&spotLight->boundingBox, &target->collisionObject->boundingBox)) {
         return LightIntersectionOutside;
@@ -246,6 +268,10 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
 
     struct Vector3 offset;
 
+    struct CollisionObjectToCamera collisionObjectToCamera;
+    collisionObjectToCamera.collisionObject = target->collisionObject;
+    collisionObjectToCamera.cameraPosition = group->cameraPosition;
+
     vector3Sub(&spotLight->rigidBody.transform.position, target->position, &offset);
 
     for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
@@ -259,8 +285,8 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
             &simplex, 
             &spotLightFace, 
             spotLightFaceSum, 
-            target->collisionObject->data, 
-            target->collisionObject->minkowskiSum, 
+            &collisionObjectToCamera, 
+            collisionObjectToCameraSum, 
             &spotLight->faceNormal[i]
         )) {
             shadowVolumeGroupAddSpotLightFace(group, spotLight, i);
