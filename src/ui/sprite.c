@@ -32,8 +32,9 @@ void spriteWriteRaw(struct RenderState* renderState, int layer, Gfx* src, int co
     }
 }
 
-void spriteSetLayer(struct RenderState* renderState, int layer, Gfx* graphics) {
+void spriteSetLayer(struct RenderState* renderState, int layer, Gfx* graphics, Gfx* revert) {
     renderState->spriteState.layerSetup[layer] = graphics;
+    renderState->spriteState.layerRevert[layer] = revert;
 }
 
 void spritePreallocate(struct RenderState* renderState, int layer, int count) {
@@ -56,6 +57,29 @@ void spritePreallocate(struct RenderState* renderState, int layer, int count) {
 void spriteSolid(struct RenderState* renderState, int layer, int x, int y, int w, int h) {
     Gfx workingMem[4];
     Gfx* curr = workingMem;
+
+    if (x < 0) {
+        w += x;
+        x = 0;
+    }
+
+    if (y < 0) {
+        h += y;
+        y = 0;
+    }
+
+    if (x + w > SCREEN_WD) {
+        w = SCREEN_WD - x;
+    }
+
+    if (y + h > SCREEN_HT) {
+        h = SCREEN_HT - y;
+    }
+
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+
     gDPFillRectangle(curr++, x, y, x + w, y + h);
     spriteWriteRaw(renderState, layer, workingMem, curr - workingMem);
     
@@ -175,6 +199,10 @@ void spriteSetColor(struct RenderState* renderState, int layer, struct Coloru8 c
     }
 }
 
+struct Coloru8 spriteGetColor(struct RenderState* renderState, int layer) {
+    return renderState->spriteState.layerColor[layer];
+}
+
 void spriteInit(struct RenderState* renderState)
 {
     for (int i = 0; i < MAX_LAYER_COUNT; ++i)
@@ -211,6 +239,10 @@ void spriteFinish(struct RenderState* renderState)
                 gSPDisplayList(renderState->dl++, renderState->spriteState.layerSetup[i]);
             }
             gSPDisplayList(renderState->dl++, renderState->spriteState.layerDL[i]);
+            if (renderState->spriteState.layerRevert[i]) {
+                gDPPipeSync(renderState->dl++);
+                gSPDisplayList(renderState->dl++, renderState->spriteState.layerRevert[i]);
+            }
         }
     }
 }

@@ -22,8 +22,10 @@ struct Font
     short lineHeight;
 };
 
+typedef void (*CharacterRenderModifier)(void* data, int index, char character, int* x, int* y, struct Coloru8* color);
+
 void fontInit(struct Font* font, int spaceWidth, int lineHeight, struct CharacterDefinition* chars, int charCount);
-void fontRenderText(struct RenderState* renderState, struct Font* font, const char* str, int x, int y, int scaleShift);
+void fontRenderText(struct RenderState* renderState, struct Font* font, const char* str, int x, int y, int scaleShift, void* data, CharacterRenderModifier characterModifier);
 int fontMeasure(struct Font* font, const char* str, int scaleShift);
 
 #endif

@@ -72,5 +72,5 @@ struct CharacterDefinition gNightChildeDefinitions[] = {
 };
 
 void nightChildeInit() {
-    fontInit(&gNightChilde, 9, 20, gNightChildeDefinitions, sizeof(gNightChildeDefinitions) / sizeof(*gNightChildeDefinitions));
+    fontInit(&gNightChilde, 9, 24, gNightChildeDefinitions, sizeof(gNightChildeDefinitions) / sizeof(*gNightChildeDefinitions));
 }

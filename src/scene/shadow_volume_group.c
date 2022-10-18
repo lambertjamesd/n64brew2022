@@ -286,13 +286,53 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
 
     struct Vector3 offset;
 
-    struct CollisionObjectToCamera collisionObjectToCamera;
-    collisionObjectToCamera.collisionObject = target->collisionObject;
-    collisionObjectToCamera.cameraPosition = &group->cameraTransform->position;
 
     vector3Sub(&spotLight->rigidBody.transform.position, &target->position, &offset);
 
     for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
+        if ((spotLight->isBackFaceMask & (1 << i)) == 0) {
+            continue;
+        }
+
+        spotLightFace.faceIndex = i;
+
+        if (isInside && vector3Dot(&offset, &spotLight->faceNormal[i]) > 0.0f) {
+            isInside = 0;
+        }
+
+        if (gjkCheckForOverlap(
+            &simplex, 
+            &spotLightFace, 
+            spotLightFaceSum, 
+            target->collisionObject, 
+            target->collisionObject->minkowskiSum, 
+            &spotLight->faceNormal[i]
+        )) {
+            shadowVolumeGroupAddSpotLightFace(group, spotLight, i);
+
+            float faceDepth = spotLightShadowSortOrder(spotLight, i);
+            closestBackFace = MAX(closestBackFace, faceDepth);
+
+            isInside = 0;
+        }
+    }
+
+    struct CollisionObjectToCamera collisionObjectToCamera;
+    collisionObjectToCamera.collisionObject = target->collisionObject;
+
+    // if a back plane is intersecting the player then front
+    // planes need to be rendered too
+    if (closestBackFace == FACE_DISTANCE_NONE) {
+        collisionObjectToCamera.cameraPosition = &target->position;
+    } else {
+        collisionObjectToCamera.cameraPosition = &group->cameraTransform->position;
+    }
+
+    for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
+        if ((spotLight->isBackFaceMask & (1 << i)) != 0) {
+            continue;
+        }
+
         spotLightFace.faceIndex = i;
 
         if (isInside && vector3Dot(&offset, &spotLight->faceNormal[i]) > 0.0f) {
@@ -310,12 +350,7 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
             shadowVolumeGroupAddSpotLightFace(group, spotLight, i);
 
             float faceDepth = spotLightShadowSortOrder(spotLight, i);
-
-            if (spotLight->isBackFaceMask & (1 << i)) {
-                closestBackFace = MAX(closestBackFace, faceDepth);
-            } else {
-                closestFrontFace = MAX(closestFrontFace, faceDepth);
-            }
+            closestFrontFace = MAX(closestFrontFace, faceDepth);
 
             isInside = 0;
         }

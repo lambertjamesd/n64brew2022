@@ -18,9 +18,11 @@ void fontInit(struct Font* font, int spaceWidth, int lineHeight, struct Characte
     }
 }
 
-void fontRenderText(struct RenderState* renderState, struct Font* font, const char* str, int x, int y, int scaleShift)
+void fontRenderText(struct RenderState* renderState, struct Font* font, const char* str, int x, int y, int scaleShift, void* data, CharacterRenderModifier characterModifier)
 {
     int startX = x;
+
+    int index = 0;
 
     while (*str)
     {
@@ -28,14 +30,27 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
         struct CharacterDefinition* curr = &font->characters[charValue];
         if (curr->data.w)
         {
-            spriteDraw(
-                renderState, 
-                curr->spriteLayer, 
-                x, y + curr->yOffset, 
-                curr->data.w, curr->data.h, 
-                curr->data.x, curr->data.y, 
-                scaleShift, scaleShift
-            );
+            int finalX = x;
+            int finalY = y;
+            struct Coloru8 color = spriteGetColor(renderState, curr->spriteLayer);
+
+            if (characterModifier) {
+                characterModifier(data, index, charValue, &finalX, &finalY, &color);
+            }
+
+            if (color.a) {
+                spriteSetColor(renderState, curr->spriteLayer, color);
+
+                spriteDraw(
+                    renderState, 
+                    curr->spriteLayer, 
+                    finalX, finalY + curr->yOffset, 
+                    curr->data.w, curr->data.h, 
+                    curr->data.x, curr->data.y, 
+                    scaleShift, scaleShift
+                );
+            }
+
             if (scaleShift >= 0) {
                 x += (curr->data.w + curr->kerning) << scaleShift;
             } else {
@@ -62,6 +77,7 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
         }
 
         ++str;
+        ++index;
     }
 }
 

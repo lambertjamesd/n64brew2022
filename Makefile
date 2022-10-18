@@ -170,6 +170,7 @@ build/src/scene/spot_light.o: build/assets/models/lantern.h build/assets/materia
 build/src/scene/table.o: build/assets/models/table.h build/assets/models/table_vertical.h build/assets/materials/static.h tools/table_export.lua
 build/src/scene/item_requester.o: build/assets/models/ui/item_prompt.h build/assets/models/portal.h build/assets/materials/static.h
 build/src/scene/shadow_volume_group.o: build/assets/materials/static.h 
+build/src/scene/tutorial.o: build/assets/materials/ui.h 
 
 build/src/scene/item.o: build/assets/materials/static.h \
 	build/assets/models/pumpkin.h \

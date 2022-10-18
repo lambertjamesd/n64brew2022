@@ -130,6 +130,11 @@ void sceneUpdate(struct Scene* scene) {
         --ignoreInputFrames;
     }
 
+    // allow the tutorial to pause
+    if (tutorialUpdate(&scene->tutorial)) {
+        return;
+    }
+
     for (int i = 0; i < scene->playerCount; ++i) {
         struct Player* player = &scene->players[i];
 
@@ -237,8 +242,6 @@ void sceneUpdate(struct Scene* scene) {
     itemCoordinatorUpdate(&scene->itemCoordinator);
 
     collisionSceneCollide(&gCollisionScene);
-    
-    tutorialUpdate(&scene->tutorial);
 }
 
 struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
@@ -249,7 +252,7 @@ struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     for (int i = 0; i < DEFAULT_UI_INDEX; ++i) {
-        spriteSetLayer(renderState, i, ui_material_list[i]);
+        spriteSetLayer(renderState, i, ui_material_list[i], ui_material_revert_list[i]);
     }
 
     Mtx* identity = renderStateRequestMatrices(renderState, 1);

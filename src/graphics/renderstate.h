@@ -13,6 +13,7 @@
 
 struct SpriteState {
     Gfx* layerSetup[MAX_LAYER_COUNT];
+    Gfx* layerRevert[MAX_LAYER_COUNT];
     struct Coloru8 layerColor[MAX_LAYER_COUNT];
     Gfx* layerDL[MAX_LAYER_COUNT];
     Gfx* currentLayerDL[MAX_LAYER_COUNT];

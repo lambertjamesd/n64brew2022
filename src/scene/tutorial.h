@@ -5,15 +5,32 @@
 
 enum TutorialState {
     TutorialStateWait,
+    TutorialStateIntro,
     TutorialStatePickup,
     TutorialStateDrop,
     TutorialStateTable,
     TutorialStatePlay,
+    TutorialStateCount,
+};
+
+struct TutorialScriptStep {
+    char* message;
+};
+
+struct TutorialScript {
+    struct TutorialScriptStep* steps;
+    short count;
+    short nextState;
 };
 
 struct Tutorial {
     enum TutorialState state;
     enum TutorialState nextState;
+
+    struct TutorialScript* currentScript;
+    short currentStep;
+    short currentStepCharacterCount;
+    float currentCharacter;
 
     float animationLerp;
 };
@@ -26,7 +43,7 @@ void tutorialItemPickedUp(struct Tutorial* tutorial);
 void tutorialItemDropped(struct Tutorial* tutorial);
 void tutorialItemTabled(struct Tutorial* tutorial);
 
-void tutorialUpdate(struct Tutorial* tutorial);
+int tutorialUpdate(struct Tutorial* tutorial);
 
 void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState);
 

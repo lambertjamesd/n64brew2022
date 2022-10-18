@@ -27,7 +27,7 @@ struct SpriteTile
 };
 
 void spriteWriteRaw(struct RenderState* renderState, int layer, Gfx* src, int count);
-void spriteSetLayer(struct RenderState* renderState, int layer, Gfx* graphics);
+void spriteSetLayer(struct RenderState* renderState, int layer, Gfx* graphics, Gfx* revert);
 void spritePreallocate(struct RenderState* renderState, int layer, int count);
 void spriteTextureRectangle(struct RenderState* renderState, int layer, int x, int y, int w, int h, int sx, int sy, int dsdx, int dsdy);
 void spriteSolid(struct RenderState* renderState, int layer, int x, int y, int w, int h);
@@ -35,6 +35,7 @@ void spriteCopyImage(struct RenderState* renderState, int layer, void* image, in
 void spriteDraw(struct RenderState* renderState, int layer, int x, int y, int w, int h, int sx, int sy, int scaleShiftX, int scaleShiftY);
 void spriteDrawTile(struct RenderState* renderState, int layer, int x, int y, int w, int h, struct SpriteTile tile);
 void spriteSetColor(struct RenderState* renderState, int layer, struct Coloru8 color);
+struct Coloru8 spriteGetColor(struct RenderState* renderState, int layer);
 
 void spriteInit(struct RenderState* renderState);
 void spriteFinish(struct RenderState* renderState);

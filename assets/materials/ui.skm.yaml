@@ -15,7 +15,7 @@ materials:
       siz: G_IM_SIZ_4b
       fmt: G_IM_FMT_I
     gDPSetCombineMode: 
-      color: [TEXEL0, "0", ENVIRONMENT, "0"]
+      color: ["0", "0", "0", ENVIRONMENT]
       alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
     gDPSetRenderMode: G_RM_XLU_SURF
     gDPSetEnvColor:
@@ -31,3 +31,21 @@ materials:
     gDPSetCombineMode:
       color: ["0", "0", "0", ENVIRONMENT]
       alpha: ["0", "0", "0", "1"]
+
+  buttons:
+    gDPSetTile:
+      filename: "./ui/buttons.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", TEXEL0]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
+    gDPSetRenderMode: G_RM_XLU_SURF
+    gDPSetEnvColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 255
+      
+    sortOrder: 5
+    
