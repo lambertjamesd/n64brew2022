@@ -17,6 +17,7 @@ struct ItemRequester {
     enum ItemType requestedType;
     float timeLeft;
     float duration;
+    float requestDelay;
     short flags;
 };
 

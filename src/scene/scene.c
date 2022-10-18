@@ -545,6 +545,8 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
             }
 
+            scene->itemRequesters[i].requestDelay = itemCoordinatorPreDelay(&scene->itemCoordinator);
+
             return 1;
         }
     }

@@ -149,7 +149,7 @@ int tutorialUpdate(struct Tutorial* tutorial) {
                 ++tutorial->currentStep;
 
                 if (tutorial->currentStep == tutorial->currentScript->count) {
-                    tutorial->nextState = TutorialStateWait;
+                    tutorialSetNextState(tutorial, tutorial->currentScript->nextState);
                 } else {
                     tutorialInitCurrentMessage(tutorial);
                 }
@@ -157,7 +157,7 @@ int tutorialUpdate(struct Tutorial* tutorial) {
         }
     }
     
-    return 1;
+    return tutorial->state != TutorialStatePickup && tutorial->state != TutorialStateDrop;
 }
 
 struct Coloru8 gDialogBack = {0, 0, 0, 255};
@@ -268,14 +268,40 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
     }
 }
 
-void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, struct RenderState* renderState) {
+#define LONG_SHOT_PROMPT        200
+
+void tutorialModifyActionPrompt(void* data, int index, char character, int* x, int* y, struct Coloru8* color) {
+    struct Tutorial* tutorial = (struct Tutorial*)data;
+
+    struct Vector2* direction = &gCharacterAnimationDirection[(index * 997) & 0x7];
+
+    float animationDir = ((1.0f - tutorial->animationLerp) * LONG_SHOT_PROMPT);
+
+    color->a = (unsigned char)(tutorial->animationLerp * 255.0f);
+    *x += (int)(animationDir * direction->x);
+    *y += (int)(animationDir * direction->y);
+}
+
+#define BUTTON_SIDE_PADDING    80
+#define BUTTON_BUTTON_PADDING  80
+#define BUTTOM_IMAGE_HEIGHT    48
+#define BUTTON_TEXT_PADDING    16
+
+#define BUTTON_TEXT_BOX_WIDTH  128
+
+struct SpriteTile gButtonSprites[] = {
+    {0, 0, 32, 32},
+    {32, 0, 32, 32},
+};
+
+void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, char* message, struct RenderState* renderState) {
     int animationOffset = (int)((1.0f - showAmount) * SCREEN_WD);
-    int blackX = SIDE_PADDING + animationOffset;
-    int blackY = SCREEN_HT - BOTTOM_PADDING - IMAGE_HEIGHT;
+    int blackX = BUTTON_SIDE_PADDING + animationOffset;
+    int blackY = SCREEN_HT - BUTTON_BUTTON_PADDING - BUTTOM_IMAGE_HEIGHT;
 
-    int purpleX = SIDE_PADDING - PURPLE_OFFSET_X - animationOffset;
+    int purpleX = BUTTON_SIDE_PADDING - PURPLE_OFFSET_X - animationOffset;
 
-    int purpleWidth = MIN(TEXT_BOX_WIDTH, blackX - purpleX);
+    int purpleWidth = MIN(BUTTON_TEXT_BOX_WIDTH, blackX - purpleX);
 
     spriteSetColor(renderState, SOLID_UI_INDEX, gDialogPurple);
     spriteSolid(
@@ -284,16 +310,16 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, str
         purpleX, 
         blackY - PURPLE_OFFSET_Y, 
         purpleWidth, 
-        IMAGE_HEIGHT
+        BUTTOM_IMAGE_HEIGHT
     );
 
-    if (purpleWidth < TEXT_BOX_WIDTH) {
+    if (purpleWidth < BUTTON_TEXT_BOX_WIDTH) {
         spriteSolid(
             renderState, 
             SOLID_UI_INDEX, 
             blackX, 
             blackY - PURPLE_OFFSET_Y, 
-            TEXT_BOX_WIDTH - purpleWidth, 
+            BUTTON_TEXT_BOX_WIDTH - purpleWidth, 
             PURPLE_OFFSET_Y
         );
     }
@@ -304,24 +330,35 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, str
         SOLID_UI_INDEX, 
         blackX, 
         blackY, 
-        TEXT_BOX_WIDTH, 
-        IMAGE_HEIGHT
+        BUTTON_TEXT_BOX_WIDTH, 
+        BUTTOM_IMAGE_HEIGHT
     );
 
-    struct TutorialScriptStep* step = tutorialCurrentStep(tutorial);
+    fontRenderText(
+        renderState, 
+        &gNightChilde, 
+        message, 
+        BUTTON_SIDE_PADDING + BUTTON_TEXT_PADDING,
+        SCREEN_HT - BUTTON_BUTTON_PADDING - BUTTOM_IMAGE_HEIGHT + BUTTON_TEXT_PADDING, 
+        0,
+        tutorial,
+        tutorialModifyActionPrompt
+    );
 
-    if (tutorial->animationLerp >= 1.0f && step) {
-        fontRenderText(
-            renderState, 
-            &gNightChilde, 
-            step->message, 
-            SIDE_PADDING + IMAGE_HEIGHT,
-            SCREEN_HT - BOTTOM_PADDING - IMAGE_HEIGHT + TEXT_PADDING, 
-            0,
-            tutorial,
-            tutorialModifyColor
-        );
-    }
+    struct SpriteTile* spriteTile = &gButtonSprites[0];
+
+    struct Coloru8 buttonColor = {255, 255, 255, 255};
+    buttonColor.a = (int)(255.0f * tutorial->animationLerp);
+
+    spriteSetColor(renderState, BUTTONS_UI_INDEX, buttonColor);
+    spriteDrawTile(
+        renderState, 
+        BUTTONS_UI_INDEX, 
+        BUTTON_SIDE_PADDING + BUTTON_TEXT_BOX_WIDTH - spriteTile->w - 8,
+        SCREEN_HT - BUTTON_BUTTON_PADDING - BUTTOM_IMAGE_HEIGHT + 8,
+        spriteTile->w, spriteTile->h,
+        *spriteTile
+    );
 }
 
 void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState) {
@@ -331,5 +368,9 @@ void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState) 
     
     if (tutorial->currentScript) {
         tutorialRenderTextBacking(tutorial, tutorial->animationLerp, renderState);
+    }
+
+    if (tutorial->state == TutorialStatePickup) {
+        tutorialRenderButtonPrompt(tutorial, tutorial->animationLerp, "Pickup", renderState);
     }
 }

@@ -29,6 +29,8 @@ void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefi
     requester->timeLeft = 0.0f;
     requester->duration = 0.0f;
 
+    requester->requestDelay = 3.5f;
+
     collisionCapsuleInit(&requester->collisionCapsule, 1.0f, 0.5f);
     requester->collisionCapsule.center = requester->transform.position;
     collisionCapsuleUpdateBB(&requester->collisionCapsule);
@@ -45,6 +47,14 @@ void itemRequesterUpdate(struct ItemRequester* requester) {
             requester->requestedType = ItemTypeCount;
         }
     }
+
+    if (requester->requestDelay > 0.0f) {
+        requester->requestDelay -= FIXED_DELTA_TIME;
+
+        if (requester->requestDelay < 0.0f) {
+            requester->requestDelay = 0.0f;
+        }
+    }
 }
 
 void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType itemType, float duration) {
@@ -54,7 +64,7 @@ void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType ite
 }
 
 int itemRequesterIsActive(struct ItemRequester* requester) {
-    return requester->timeLeft > 0.0f;
+    return requester->timeLeft > 0.0f || requester->requestDelay > 0.0f;
 }
 
 void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* renderScene) {
