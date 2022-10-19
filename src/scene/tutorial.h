@@ -7,8 +7,11 @@ enum TutorialState {
     TutorialStateWait,
     TutorialStateIntro,
     TutorialStatePickup,
+    TutorialStatePortalDialog,
     TutorialStateDrop,
+    TutorialStateWrongDrop,
     TutorialStateTable,
+    TutorialStateSecondDrop,
     TutorialStatePlay,
     TutorialStateCount,
 };
@@ -40,7 +43,7 @@ void tutorialInit(struct Tutorial* tutorial);
 void tutorialSetNextState(struct Tutorial* tutorial, enum TutorialState state);
 
 void tutorialItemPickedUp(struct Tutorial* tutorial);
-void tutorialItemDropped(struct Tutorial* tutorial);
+void tutorialItemDropped(struct Tutorial* tutorial, int success);
 void tutorialItemTabled(struct Tutorial* tutorial);
 
 int tutorialUpdate(struct Tutorial* tutorial);

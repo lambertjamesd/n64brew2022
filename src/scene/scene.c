@@ -163,6 +163,8 @@ void sceneUpdate(struct Scene* scene) {
             if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
                 struct Item* item = player->holdingItem;
 
+                tutorialItemDropped(&scene->tutorial, 0);
+
                 itemDrop(player->holdingItem);
 
                 scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
@@ -174,6 +176,8 @@ void sceneUpdate(struct Scene* scene) {
                 if (mathfRandomFloat() < scene->dropPenalty) {
                     bezosActivate(&scene->bezos, &item->transform.position);
                 }
+            } else {
+                tutorialItemDropped(&scene->tutorial, 1);
             }
 
             player->holdingItem = NULL;
@@ -183,6 +187,7 @@ void sceneUpdate(struct Scene* scene) {
             struct Item* item = scenePickupItem(scene, &grabFrom);
 
             if (item) {
+                tutorialItemPickedUp(&scene->tutorial);
                 playerHandObject(player, item);
             }
         }

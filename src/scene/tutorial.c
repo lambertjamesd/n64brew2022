@@ -24,7 +24,7 @@ void tutorialInitCurrentState(struct Tutorial* tutorial);
 struct TutorialScriptStep gIntroScript[] = {
     {
         "Welcome to your first day of\norientation\n" 
-        "I am Mr Spook\n"
+        "I am Tony Spook\n"
         "Your floor manager"
     },
     {
@@ -37,11 +37,70 @@ struct TutorialScriptStep gIntroScript[] = {
     },
 };
 
+struct TutorialScriptStep gPortalPrompt[] = {
+    {
+        "Great\n"
+        "Now place the pumpkin in\n"
+        "the portal"
+    }
+};
+
+struct TutorialScriptStep gWrongDrop[] = {
+    {
+        "No\n"
+        "You need to drop the pumpkin\n"
+        "in the the portal"
+    }
+};
+
+struct TutorialScriptStep gTables[] = {
+    {
+        "Excellent work\n"
+        "Now the shipments coming in\n"
+        "wont always match the requests\n"
+        "that come from the portals"
+    },
+    {
+        "You can store objects on the\n"
+        "tables that are not needed\n"
+        "right away"
+    }
+};
+
+struct TutorialScriptStep gCompleteShift[] = {
+    {
+        "Thats all you need to know\n"
+        "Complete your shift today\n"
+        "tomorrow we will assign you to\n"
+        "a larger warehouse"
+    }
+};
+
 struct TutorialScript gTutorialScripts[TutorialStateCount] = {
     [TutorialStateIntro] = {
         gIntroScript,
         sizeof(gIntroScript) / sizeof(gIntroScript[0]),
         TutorialStatePickup,
+    },
+    [TutorialStatePortalDialog] = {
+        gPortalPrompt,
+        sizeof(gPortalPrompt) / sizeof(gPortalPrompt[0]),
+        TutorialStateDrop,
+    },
+    [TutorialStateWrongDrop] = {
+        gWrongDrop,
+        sizeof(gWrongDrop) / sizeof(gWrongDrop[0]),
+        TutorialStatePickup,
+    },
+    [TutorialStateTable] = {
+        gTables,
+        sizeof(gTables) / sizeof(gTables[0]),
+        TutorialStateSecondDrop,
+    },
+    [TutorialStatePlay] = {
+        gCompleteShift,
+        sizeof(gCompleteShift) / sizeof(gCompleteShift[0]),
+        TutorialStateWait,
     },
 };
 
@@ -63,11 +122,23 @@ void tutorialSetNextState(struct Tutorial* tutorial, enum TutorialState state) {
 }
 
 void tutorialItemPickedUp(struct Tutorial* tutorial) {
-
+    if (tutorial->state == TutorialStatePickup) {
+        tutorial->nextState = TutorialStatePortalDialog;
+    }
 }
 
-void tutorialItemDropped(struct Tutorial* tutorial) {
+void tutorialItemDropped(struct Tutorial* tutorial, int success) {
+    if (tutorial->state == TutorialStateDrop) {
+        if (success) {
+            tutorial->nextState = TutorialStateTable;
+        } else {
+            tutorial->nextState = TutorialStateWrongDrop;
+        }
+    }
 
+    if (tutorial->state == TutorialStateSecondDrop && success) {
+        tutorial->nextState = TutorialStatePlay;
+    }
 }
 
 void tutorialItemTabled(struct Tutorial* tutorial) {
@@ -157,7 +228,9 @@ int tutorialUpdate(struct Tutorial* tutorial) {
         }
     }
     
-    return tutorial->state != TutorialStatePickup && tutorial->state != TutorialStateDrop;
+    return tutorial->state != TutorialStatePickup && 
+        tutorial->state != TutorialStateDrop &&
+        tutorial->state != TutorialStateSecondDrop;
 }
 
 struct Coloru8 gDialogBack = {0, 0, 0, 255};
@@ -294,7 +367,7 @@ struct SpriteTile gButtonSprites[] = {
     {32, 0, 32, 32},
 };
 
-void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, char* message, struct RenderState* renderState) {
+void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, char* message, struct SpriteTile* spriteTile, struct RenderState* renderState) {
     int animationOffset = (int)((1.0f - showAmount) * SCREEN_WD);
     int blackX = BUTTON_SIDE_PADDING + animationOffset;
     int blackY = SCREEN_HT - BUTTON_BUTTON_PADDING - BUTTOM_IMAGE_HEIGHT;
@@ -345,8 +418,6 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, cha
         tutorialModifyActionPrompt
     );
 
-    struct SpriteTile* spriteTile = &gButtonSprites[0];
-
     struct Coloru8 buttonColor = {255, 255, 255, 255};
     buttonColor.a = (int)(255.0f * tutorial->animationLerp);
 
@@ -371,6 +442,10 @@ void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState) 
     }
 
     if (tutorial->state == TutorialStatePickup) {
-        tutorialRenderButtonPrompt(tutorial, tutorial->animationLerp, "Pickup", renderState);
+        tutorialRenderButtonPrompt(tutorial, tutorial->animationLerp, "Pickup", &gButtonSprites[0], renderState);
+    }
+
+    if (tutorial->state == TutorialStateDrop) {
+        tutorialRenderButtonPrompt(tutorial, tutorial->animationLerp, "Drop", &gButtonSprites[1], renderState);
     }
 }

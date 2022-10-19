@@ -11,6 +11,10 @@
         {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat"],
             "success_count": 8
+        },
+        {
+            "item_pool": ["Pumpkin", "Hat", "Candle"],
+            "success_count": 8
         }
     ]
 }
