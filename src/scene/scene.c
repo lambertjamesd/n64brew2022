@@ -130,7 +130,7 @@ void sceneUpdate(struct Scene* scene) {
     if (ignoreInputFrames) {
         --ignoreInputFrames;
     }
-    
+
     endScreenUpdate(&scene->endScreen);
 
     // allow the tutorial to pause
@@ -506,6 +506,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         &gAmbientScale, 
         &gLightColor, 
         effects,
+        endScreenFadeAmount(&scene->endScreen),
         renderState
     );
 

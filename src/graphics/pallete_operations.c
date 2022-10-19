@@ -35,7 +35,7 @@ struct Coloru8 palleteApplyEffects(struct Coloru8 color, enum PalleteEffects eff
     return color;
 }
 
-u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, enum PalleteEffects effects, struct RenderState* renderState) {
+u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, enum PalleteEffects effects, float fadeAmount, struct RenderState* renderState) {
     u16* result = renderStateRequestMemory(renderState, sizeof(u16) * 256);
 
     u16* output = result;
@@ -45,7 +45,13 @@ u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, s
     float max = MAX(lightColor->r, lightColor->g);
     max = MAX(lightColor->g, lightColor->b);
 
-    float scale = 1.0f / (1.0f + max);
+    float scale = fadeAmount / (1.0f + max);
+
+    struct Colorf32 finalScale = *ambientScale;
+
+    finalScale.r *= fadeAmount;
+    finalScale.g *= fadeAmount;
+    finalScale.b *= fadeAmount;
 
     lightScale.r = scale;
     lightScale.g = scale;
@@ -53,7 +59,7 @@ u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, s
     lightScale.a = 1.0f;
 
     for (unsigned i = 0; i < 80; ++i) {
-        struct Coloru8 colorOut = palleteApplyEffects(palleteProcessColor(*colors, ambientLight, ambientScale), effects, i);
+        struct Coloru8 colorOut = palleteApplyEffects(palleteProcessColor(*colors, ambientLight, &finalScale), effects, i);
 
         *output = GPACK_RGBA5551(colorOut.r, colorOut.g, colorOut.b, 1);
         ++output;
