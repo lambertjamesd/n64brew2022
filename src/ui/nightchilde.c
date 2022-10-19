@@ -69,6 +69,8 @@ struct CharacterDefinition gNightChildeDefinitions[] = {
     {'7', NIGHTCHILDE_INDEX, {85, 48, 10, 15}, 0, 0},
     {'8', NIGHTCHILDE_INDEX, {98, 48, 11, 15}, 0, 0},
     {'9', NIGHTCHILDE_INDEX, {110, 48, 12, 15}, 0, 0},
+
+    {'.', NIGHTCHILDE_INDEX, {79, 33, 5, 14}, 1, 0},
 };
 
 void nightChildeInit() {

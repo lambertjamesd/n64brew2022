@@ -121,6 +121,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 
     bezosInit(&scene->bezos);
     tutorialInit(&scene->tutorial);
+    endScreenInit(&scene->endScreen);
 }
 
 unsigned ignoreInputFrames = 10;
@@ -129,11 +130,14 @@ void sceneUpdate(struct Scene* scene) {
     if (ignoreInputFrames) {
         --ignoreInputFrames;
     }
+    
+    endScreenUpdate(&scene->endScreen);
 
     // allow the tutorial to pause
     if (tutorialUpdate(&scene->tutorial)) {
         return;
     }
+
 
     for (int i = 0; i < scene->playerCount; ++i) {
         struct Player* player = &scene->players[i];
@@ -167,14 +171,16 @@ void sceneUpdate(struct Scene* scene) {
 
                 itemDrop(player->holdingItem);
 
-                scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
+                if (scene->tutorial.state == TutorialStateWait) {
+                    scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
 
-                if (scene->dropPenalty > 1.0f) {
-                    scene->dropPenalty = 1.0f;
-                }
+                    if (scene->dropPenalty > 1.0f) {
+                        scene->dropPenalty = 1.0f;
+                    }
 
-                if (mathfRandomFloat() < scene->dropPenalty) {
-                    bezosActivate(&scene->bezos, &item->transform.position);
+                    if (mathfRandomFloat() < scene->dropPenalty) {
+                        bezosActivate(&scene->bezos, &item->transform.position);
+                    }
                 }
             } else {
                 tutorialItemDropped(&scene->tutorial, 1);
@@ -512,9 +518,8 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     spriteInit(renderState);
 
-    // spriteDraw(renderState, NIGHTCHILDE_INDEX, 10, 10, 128, 64, 0, 0, 1, 1);
-
-    tutorialRender(&scene->tutorial, renderState);
+    // tutorialRender(&scene->tutorial, renderState);
+    endScreenRender(&scene->endScreen, renderState);
 
     spriteFinish(renderState);
 

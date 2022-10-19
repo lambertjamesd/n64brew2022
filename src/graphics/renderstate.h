@@ -9,7 +9,7 @@
 #define MAX_RENDER_STATE_MEMORY 12800
 #define MAX_RENDER_STATE_MEMORY_CHUNKS (MAX_RENDER_STATE_MEMORY / sizeof(u64))
 #define MAX_DYNAMIC_LIGHTS      128
-#define MAX_LAYER_COUNT     8
+#define MAX_LAYER_COUNT     16
 
 struct SpriteState {
     Gfx* layerSetup[MAX_LAYER_COUNT];

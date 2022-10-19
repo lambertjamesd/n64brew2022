@@ -6,7 +6,7 @@
 #include "../graphics/image.h"
 #include "../graphics/graphics.h"
 
-#define DL_CHUNK_SIZE       64
+#define DL_CHUNK_SIZE       32
 
 void spriteWriteRaw(struct RenderState* renderState, int layer, Gfx* src, int count)
 {
@@ -43,7 +43,7 @@ void spritePreallocate(struct RenderState* renderState, int layer, int count) {
 
     if (current)
     {
-        gSPBranchList(current++, osVirtualToPhysical(next));
+        gSPBranchList(current++, next);
     }
     else
     {
@@ -214,6 +214,19 @@ void spriteInit(struct RenderState* renderState)
     }
 }
 
+void copyDisplayList(struct RenderState* renderState, Gfx* source) {
+    Gfx* current = source;
+
+    while (_SHIFTR(current->words.w0, 24, 8) != G_ENDDL) {
+        if (_SHIFTR(current->words.w0, 24, 8) == G_DL && 
+            _SHIFTR(current->words.w0, 16, 8) == G_DL_NOPUSH) {
+            current = (Gfx*)current->words.w1;
+        } else {
+            *renderState->dl++ = *current++;
+        }
+    }
+}
+
 void spriteFinish(struct RenderState* renderState)
 {
     Mtx* menuMatrices = renderStateRequestMatrices(renderState, 2);
@@ -238,7 +251,7 @@ void spriteFinish(struct RenderState* renderState)
                 gDPPipeSync(renderState->dl++);
                 gSPDisplayList(renderState->dl++, renderState->spriteState.layerSetup[i]);
             }
-            gSPDisplayList(renderState->dl++, renderState->spriteState.layerDL[i]);
+            copyDisplayList(renderState, renderState->spriteState.layerDL[i]);
             if (renderState->spriteState.layerRevert[i]) {
                 gDPPipeSync(renderState->dl++);
                 gSPDisplayList(renderState->dl++, renderState->spriteState.layerRevert[i]);

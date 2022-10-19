@@ -18,6 +18,7 @@
 #include "bezos.h"
 #include "item_coordinator.h"
 #include "tutorial.h"
+#include "end_screen.h"
 
 #include "../collision/collision_boundary.h"
 
@@ -48,6 +49,7 @@ struct Scene {
     struct Bezos bezos;
     struct ItemCoordinator itemCoordinator;
     struct Tutorial tutorial;
+    struct EndScreen endScreen;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;

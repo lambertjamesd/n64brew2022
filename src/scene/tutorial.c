@@ -73,7 +73,29 @@ struct TutorialScriptStep gCompleteShift[] = {
         "Complete your shift today\n"
         "tomorrow we will assign you to\n"
         "a larger warehouse"
-    }
+    },
+    {
+        "Oh and do not drop too many\n"
+        "items on the floor or fail\n"
+        "to fulfill requests\n"
+        "if you do"
+    },
+    {
+        "He will come"
+    },
+    {
+        "and if he catches you\n"
+        "you will be..."
+    },
+    {
+        "terminated"
+    },
+    {
+        "..."
+    },
+    {
+        "have a nice shift"
+    },
 };
 
 struct TutorialScript gTutorialScripts[TutorialStateCount] = {
@@ -338,6 +360,21 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
             tutorial,
             tutorialModifyColor
         );
+
+        int imageX = blackX + 8;
+        int imageY = blackY + 8;
+
+        spriteDraw(renderState, FLOOR_MANAGER_UI_00_INDEX, imageX, imageY, 64, 32, 0, 0, 0, 0);
+        spriteDraw(renderState, FLOOR_MANAGER_UI_10_INDEX, imageX + 64, imageY, 64, 32, 0, 0, 0, 0);
+
+        spriteDraw(renderState, FLOOR_MANAGER_UI_01_INDEX, imageX, imageY + 32, 64, 32, 0, 0, 0, 0);
+        spriteDraw(renderState, FLOOR_MANAGER_UI_11_INDEX, imageX + 64, imageY + 32, 64, 32, 0, 0, 0, 0);
+
+        spriteDraw(renderState, FLOOR_MANAGER_UI_02_INDEX, imageX, imageY + 64, 64, 32, 0, 0, 0, 0);
+        spriteDraw(renderState, FLOOR_MANAGER_UI_12_INDEX, imageX + 64, imageY + 64, 64, 32, 0, 0, 0, 0);
+
+        spriteDraw(renderState, FLOOR_MANAGER_UI_03_INDEX, imageX, imageY + 96, 64, 32, 0, 0, 0, 0);
+        spriteDraw(renderState, FLOOR_MANAGER_UI_13_INDEX, imageX + 64, imageY + 96, 64, 32, 0, 0, 0, 0);
     }
 }
 
