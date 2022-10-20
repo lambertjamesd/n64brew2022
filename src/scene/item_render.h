@@ -6,9 +6,10 @@
 
 #define ITEM_RENDER_SIZE    64
 
-void itemRenderGenerate(enum ItemType itemType, struct RenderState* renderState);
-void itemRenderGenerateAll(struct RenderState* renderState);
+#define MAX_ITEM_REQUESTERS 8
 
-Gfx* itemRenderUseImage(enum ItemType itemType, struct RenderState* renderState, Gfx* promptGfx);
+void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, struct RenderState* renderState);
+
+Gfx* itemRenderUseImage(int itemIndex, struct RenderState* renderState, Gfx* promptGfx);
 
 #endif

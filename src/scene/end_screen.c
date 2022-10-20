@@ -256,7 +256,7 @@ void endScreenEndGame(struct EndScreen* endScreen, int success) {
     endScreen->success = success;
 }
 
-int endSceenIsDone(struct EndScreen* endScreen) {
+int endScreenIsDone(struct EndScreen* endScreen) {
     return endScreen->textAnimation >= TOTAL_ANIMATION_TIME && endScreen->animationLerp <= 0.0f;
 }
 

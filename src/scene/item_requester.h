@@ -29,7 +29,8 @@ enum ItemDropResult {
 
 void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefinition* definition);
 void itemRequesterUpdate(struct ItemRequester* requester);
-void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* scene);
+void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex, struct RenderState* renderState);
+void itemRequesterRender(struct ItemRequester* requester, int itemIndex, struct RenderScene* scene);
 
 void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType itemType, float duration);
 int itemRequesterIsActive(struct ItemRequester* requester);

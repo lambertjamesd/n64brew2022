@@ -8,6 +8,7 @@
 #include "../sk64/skelatool_defs.h"
 
 #include "../graphics/graphics.h"
+#include "../util/time.h"
 
 static Vp gItemRenderViewport = {
   .vp = {
@@ -18,20 +19,25 @@ static Vp gItemRenderViewport = {
 
 Lights1 gRenderLights = gdSPDefLights1(0, 0, 0, 255, 255, 255, 127, 0, 0);
 
-u8 __attribute__((aligned(64))) gItemImages[ItemTypeCount][ITEM_RENDER_SIZE * ITEM_RENDER_SIZE];
+u8 __attribute__((aligned(64))) gItemImages[MAX_ITEM_REQUESTERS][ITEM_RENDER_SIZE * ITEM_RENDER_SIZE];
 
 int gItemImagesRendered = 0;
 
 extern u8 __attribute__((aligned(64))) indexColorBuffer[SCREEN_HT * SCREEN_WD];
 
-void itemRenderGenerate(enum ItemType itemType, struct RenderState* renderState) {
+void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, struct RenderState* renderState) {
     struct ItemTypeDefinition* itemDef = &gItemDefinitions[itemType];
 
-    gDPSetColorImage(renderState->dl++, G_IM_FMT_I, G_IM_SIZ_8b, ITEM_RENDER_SIZE, gItemImages[itemType]);
+    gDPSetColorImage(renderState->dl++, G_IM_FMT_I, G_IM_SIZ_8b, ITEM_RENDER_SIZE, gItemImages[itemIndex]);
+
+    int progressX = (int)(ITEM_RENDER_SIZE * progress);
     
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
     gDPSetFillColor(renderState->dl++, 0x25252525);
-    gDPFillRectangle(renderState->dl++, 0, 0, ITEM_RENDER_SIZE-1, ITEM_RENDER_SIZE-1);
+    gDPFillRectangle(renderState->dl++, 0, 0, progressX-1, ITEM_RENDER_SIZE-1);
+    gDPPipeSync(renderState->dl++);
+    gDPSetFillColor(renderState->dl++, 0x11111111);
+    gDPFillRectangle(renderState->dl++, progressX, 0, ITEM_RENDER_SIZE-1, ITEM_RENDER_SIZE-1);
     gSPViewport(renderState->dl++, &gItemRenderViewport);
     gDPSetScissor(renderState->dl++, G_SC_NON_INTERLACE, 0, 0, ITEM_RENDER_SIZE, ITEM_RENDER_SIZE);
 
@@ -60,6 +66,9 @@ void itemRenderGenerate(enum ItemType itemType, struct RenderState* renderState)
         gSPMatrix(renderState->dl++, projection, G_MTX_LOAD | G_MTX_PROJECTION | G_MTX_NOPUSH);
     }
 
+    Mtx* modelMtx = renderStateRequestMatrices(renderState, 1);
+    guRotate(modelMtx, gTimePassed * 30.0f, 0.0f, 1.0f, 0.0f);
+    gSPMatrix(renderState->dl++, modelMtx, G_MTX_PUSH | G_MTX_MODELVIEW | G_MTX_MUL);
     
     // set item material
     gDPPipeSync(renderState->dl++);
@@ -99,26 +108,17 @@ void itemRenderGenerate(enum ItemType itemType, struct RenderState* renderState)
 
     // render item
     gSPDisplayList(renderState->dl++, itemDef->dl);
+    gSPPopMatrix(renderState->dl++, G_MTX_MODELVIEW);
 }
 
-void itemRenderGenerateAll(struct RenderState* renderState) {
-    if (gItemImagesRendered >= ItemTypeCount) {
-        return;
-    }
-
-    itemRenderGenerate(gItemImagesRendered, renderState);
-
-    ++gItemImagesRendered;
-}
-
-Gfx* itemRenderUseImage(enum ItemType itemType, struct RenderState* renderState, Gfx* promptGfx) {
+Gfx* itemRenderUseImage(int itemIndex, struct RenderState* renderState, Gfx* promptGfx) {
     Gfx* result = renderStateAllocateDLChunk(renderState, 10);
 
     Gfx* dl = result;
 
     gDPLoadTextureBlock(
         dl++, 
-        gItemImages[itemType], 
+        gItemImages[itemIndex], 
         G_IM_FMT_I, G_IM_SIZ_8b, 
         ITEM_RENDER_SIZE, ITEM_RENDER_SIZE, 0, 
         G_TX_CLAMP | G_TX_NOMIRROR, G_TX_CLAMP | G_TX_NOMIRROR,

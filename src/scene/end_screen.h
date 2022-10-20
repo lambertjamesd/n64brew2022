@@ -20,7 +20,7 @@ void endScreenInit(struct EndScreen* endScreen);
 void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderState);
 int endScreenUpdate(struct EndScreen* endScreen);
 void endScreenEndGame(struct EndScreen* endScreen, enum EndScreenType type);
-int endSceenIsDone(struct EndScreen* endScreen);
+int endScreenIsDone(struct EndScreen* endScreen);
 float endScreenFadeAmount(struct EndScreen* endScreen);
 
 #endif

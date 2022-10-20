@@ -154,6 +154,16 @@ void gameProc(void *arg) {
             case (OS_SC_RETRACE_MSG):
                 static int renderSkip = 1;
 
+                if (levelGetQueued() != NO_QUEUED_LEVEL) {
+                    if (pendingGFX == 0) {
+                        heapInit(_heapStart, memoryEnd);
+                        loadLevel(levelGetQueued());
+                        sceneInit(&gScene, gCurrentLevel, 1);
+                    }
+
+                    break;
+                }
+
                 if (pendingGFX < 2 && !renderSkip) {
                     graphicsCreateTask(&gGraphicsTasks[drawBufferIndex], (GraphicsCallback)sceneRender, &gScene);
                     drawBufferIndex = drawBufferIndex ^ 1;

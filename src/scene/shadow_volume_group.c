@@ -286,14 +286,13 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
 
     struct Vector3 offset;
 
-
+    // only add back faces on the first pass
+    // if the player found to intersect any faces then
+    // a second pass that adds any shadow volumes that
+    // occlude the player
     vector3Sub(&spotLight->rigidBody.transform.position, &target->position, &offset);
 
     for (int i = 0; i < LIGHT_CIRCLE_POINT_COUNT; ++i) {
-        if ((spotLight->isBackFaceMask & (1 << i)) == 0) {
-            continue;
-        }
-
         spotLightFace.faceIndex = i;
 
         if (isInside && vector3Dot(&offset, &spotLight->faceNormal[i]) > 0.0f) {
@@ -308,13 +307,19 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
             target->collisionObject->minkowskiSum, 
             &spotLight->faceNormal[i]
         )) {
-            shadowVolumeGroupAddSpotLightFace(group, spotLight, i);
+            if (spotLight->isBackFaceMask & (1 << i)) {
+                shadowVolumeGroupAddSpotLightFace(group, spotLight, i);
 
-            float faceDepth = spotLightShadowSortOrder(spotLight, i);
-            closestBackFace = MAX(closestBackFace, faceDepth);
+                float faceDepth = spotLightShadowSortOrder(spotLight, i);
+                closestBackFace = MAX(closestBackFace, faceDepth);
+            }
 
             isInside = 0;
         }
+    }
+
+    if (isInside) {
+        return LightIntersectionInside;
     }
 
     struct CollisionObjectToCamera collisionObjectToCamera;
@@ -354,10 +359,6 @@ enum LightIntersection spotLightIsInside(struct ShadowVolumeGroup* group, struct
 
             isInside = 0;
         }
-    }
-
-    if (isInside) {
-        return LightIntersectionInside;
     }
 
     int result = 0;

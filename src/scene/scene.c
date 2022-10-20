@@ -155,6 +155,15 @@ void sceneUpdate(struct Scene* scene) {
 
     int isEnding = scene->endScreen.success != EndScreenTypeNone;
 
+    if (endScreenIsDone(&scene->endScreen)) {
+        if (scene->endScreen.success == EndScreenTypeSuccess) {
+            levelQueueLoad(NEXT_LEVEL);
+        } else {
+            levelQueueLoad(gCurrentLevelIndex);
+        }
+        return;
+    }
+
     for (int i = 0; i < scene->playerCount; ++i) {
         struct Player* player = &scene->players[i];
 
@@ -304,7 +313,9 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     guMtxIdent(identity);
     gSPMatrix(renderState->dl++, identity, G_MTX_LOAD | G_MTX_NOPUSH | G_MTX_MODELVIEW);
 
-    itemRenderGenerateAll(renderState);
+    for (int i = 0; i < scene->itemRequesterCount; ++i) {
+        itemRequesterRenderGenerate(&scene->itemRequesters[i], i, renderState);
+    }
 
     struct LightConfiguration playerLightConfig[scene->playerCount];
 
@@ -430,7 +441,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
-        itemRequesterRender(&scene->itemRequesters[i], renderScene);
+        itemRequesterRender(&scene->itemRequesters[i], i, renderScene);
     }
 
     renderSceneGenerate(renderScene, renderState);

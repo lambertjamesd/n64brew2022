@@ -67,7 +67,13 @@ int itemRequesterIsActive(struct ItemRequester* requester) {
     return requester->timeLeft > 0.0f || requester->requestDelay > 0.0f;
 }
 
-void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* renderScene) {
+void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex, struct RenderState* renderState) {
+    if (requester->requestedType < ItemTypeCount) {
+        itemRenderGenerate(itemIndex, requester->requestedType, requester->timeLeft / requester->duration, renderState);
+    }
+}
+
+void itemRequesterRender(struct ItemRequester* requester, int itemIndex, struct RenderScene* renderScene) {
     Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
     transformToMatrixL(&requester->transform, mtx, SCENE_SCALE);
     renderSceneAdd(renderScene, portal_model_gfx, mtx, ITEMS_EMMISIVE_INDEX, &requester->transform.position, NULL, NULL);
@@ -90,7 +96,7 @@ void itemRequesterRender(struct ItemRequester* requester, struct RenderScene* re
 
     transformToMatrixL(&signTransform, matrix, SCENE_SCALE);
 
-    Gfx* gfx = itemRenderUseImage(requester->requestedType, renderScene->renderState, ui_item_prompt_model_gfx);
+    Gfx* gfx = itemRenderUseImage(itemIndex, renderScene->renderState, ui_item_prompt_model_gfx);
 
     renderSceneAdd(renderScene, gfx, matrix, ITEM_PROMPT_INDEX, &requester->transform.position, NULL, NULL);
 }
