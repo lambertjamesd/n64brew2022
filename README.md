@@ -7,3 +7,4 @@
 * main menu
 * polish
   * spawn bezos after item falls
+  * "coyote time" for item drops

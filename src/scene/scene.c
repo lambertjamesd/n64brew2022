@@ -150,19 +150,19 @@ void sceneUpdate(struct Scene* scene) {
     }
 
     if (endScreenUpdate(&scene->endScreen)) {
+        if (endScreenIsDone(&scene->endScreen)) {
+            if (scene->endScreen.success == EndScreenTypeSuccess) {
+                levelQueueLoad(NEXT_LEVEL);
+            } else {
+                levelQueueLoad(gCurrentLevelIndex);
+            }
+            return;
+        }
+
         return;
     }
 
     int isEnding = scene->endScreen.success != EndScreenTypeNone;
-
-    if (endScreenIsDone(&scene->endScreen)) {
-        if (scene->endScreen.success == EndScreenTypeSuccess) {
-            levelQueueLoad(NEXT_LEVEL);
-        } else {
-            levelQueueLoad(gCurrentLevelIndex);
-        }
-        return;
-    }
 
     for (int i = 0; i < scene->playerCount; ++i) {
         struct Player* player = &scene->players[i];
