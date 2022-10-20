@@ -7,6 +7,19 @@
 
 #define MAX_PLAYERS     4
 
+enum TutorialState {
+    TutorialStateWait,
+    TutorialStateIntro,
+    TutorialStatePickup,
+    TutorialStatePortalDialog,
+    TutorialStateDrop,
+    TutorialStateWrongDrop,
+    TutorialStateTable,
+    TutorialStateSecondDrop,
+    TutorialStatePlay,
+    TutorialStateCount,
+};
+
 enum ItemType {
     ItemTypePumpkin,
     ItemTypeHat,
@@ -117,6 +130,8 @@ struct LevelDefinition {
 
     struct BoundarySegment* boundary;
     short boundaryCount;
+
+    enum TutorialState tutorial;
 };
 
 struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);

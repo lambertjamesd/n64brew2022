@@ -2,19 +2,7 @@
 #define __SCENE_TUTORIAL_H__
 
 #include "../graphics/renderstate.h"
-
-enum TutorialState {
-    TutorialStateWait,
-    TutorialStateIntro,
-    TutorialStatePickup,
-    TutorialStatePortalDialog,
-    TutorialStateDrop,
-    TutorialStateWrongDrop,
-    TutorialStateTable,
-    TutorialStateSecondDrop,
-    TutorialStatePlay,
-    TutorialStateCount,
-};
+#include "../level/level_definition.h"
 
 struct TutorialScriptStep {
     char* message;

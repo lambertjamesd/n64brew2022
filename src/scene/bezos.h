@@ -11,6 +11,11 @@
 
 enum BezosFlags {
     BezosFlagsActive = (1 << 0),
+    BezosFlagsWaking = (1 << 1),
+
+    BezosFlagsTouchingWall = (1 << 2),
+
+    BezosFlagsCaughtPlayer = (1 << 3),
 };
 
 struct Bezos {
@@ -31,5 +36,7 @@ void bezosDeactivate(struct Bezos* bezos);
 
 void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos);
 void bezosRender(struct Bezos* bezos, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene);
+
+int bezosIsActive(struct Bezos* bezos);
 
 #endif

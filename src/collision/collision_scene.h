@@ -3,7 +3,7 @@
 
 #include "collision_object.h"
 
-typedef void (*DynamicCollisionCallback)(void* data, struct Vector3* normal, float depth);
+typedef void (*DynamicCollisionCallback)(void* data, struct Vector3* normal, float depth, struct CollisionObject* other);
 
 struct DynamicCallbackPair {
     DynamicCollisionCallback callback;

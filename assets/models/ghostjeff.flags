@@ -1,1 +1,1 @@
--r 0,0,0 -m assets/materials/static.skm.yaml --default-material Player_0
+--pallete build/assets/materials/pallete.png -r 0,0,0 -m assets/materials/static.skm.yaml --default-material GhostJeff_Body

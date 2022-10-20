@@ -46,4 +46,6 @@ add_definition("level", "struct LevelDefinition", "_geo", {
 
     boundary = reference_to(boundaryOutput.boundaryEntries, 1),
     boundaryCount = #boundaryOutput.boundaryEntries,
+
+    tutorial = levelJson.tutorial,
 })

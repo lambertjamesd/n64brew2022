@@ -58,6 +58,7 @@ struct Scene {
     u8 itemRequesterCount;
 
     float dropPenalty;
+    float appearTime;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);

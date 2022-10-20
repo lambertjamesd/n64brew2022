@@ -45,6 +45,9 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 #define DROPS_PER_FULL_BAR          5
 #define TIME_TO_DECAY_FULL_BAR      120
 
+#define APPEAR_FLAG_PERIOD  0.75f
+#define APPEAR_FLAG_COUNT   3
+
 void materialSetBasicLit(struct RenderState* renderState, int objectIndex) {
     gSPDisplayList(renderState->dl++, gBasicLitMaterial);
 }
@@ -119,6 +122,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     }
 
     scene->dropPenalty = 0.0f;
+    scene->appearTime = -10.0f;
 
     struct CollisionBoundary* boundaries = malloc(sizeof(struct CollisionBoundary) * definition->boundaryCount);
     for (int i = 0; i < definition->boundaryCount; ++i) {
@@ -129,6 +133,8 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     bezosInit(&scene->bezos);
     tutorialInit(&scene->tutorial);
     endScreenInit(&scene->endScreen);
+
+    tutorialSetNextState(&scene->tutorial, definition->tutorial);
 }
 
 unsigned ignoreInputFrames = 10;
@@ -147,10 +153,16 @@ void sceneUpdate(struct Scene* scene) {
         return;
     }
 
+    int isEnding = scene->endScreen.success != EndScreenTypeNone;
+
     for (int i = 0; i < scene->playerCount; ++i) {
         struct Player* player = &scene->players[i];
 
         playerUpdate(player);
+
+        if (isEnding) {
+            continue;
+        }
 
         struct Vector3 grabFrom;
         playerGrabPoint(player, &grabFrom);
@@ -188,6 +200,7 @@ void sceneUpdate(struct Scene* scene) {
 
                     if (mathfRandomFloat() < scene->dropPenalty) {
                         bezosActivate(&scene->bezos, &item->transform.position);
+                        scene->appearTime = gTimePassed;
                     }
                 }
             } else {
@@ -208,6 +221,14 @@ void sceneUpdate(struct Scene* scene) {
     }
 
     bezosUpdate(&scene->bezos, sceneNearestPlayerPos(scene));
+
+    if (scene->bezos.flags & BezosFlagsCaughtPlayer && scene->endScreen.success == EndScreenTypeNone) {
+        endScreenEndGame(&scene->endScreen, EndScreenTypeFail);
+
+        for (int i = 0; i < scene->playerCount; ++i) {
+            playerKill(&scene->players[i]);
+        }
+    }
 
     for (int i = 0; i < scene->conveyorCount; ++i) {
         if (conveyorCanAcceptItem(&scene->conveyors[i])) {
@@ -258,9 +279,9 @@ void sceneUpdate(struct Scene* scene) {
         }
     }
 
-    if (controllerGetButtonDown(0, Z_TRIG)) {
+    if (controllerGetButtonDown(0, Z_TRIG) && !controllerGetButton(0, A_BUTTON)) {
         scene->dropPenalty = 0.5f;
-        bezosActivate(&scene->bezos, &scene->players[0].transform.position);
+        bezosActivate(&scene->bezos, &gZeroVec);
     }
 
     itemCoordinatorUpdate(&scene->itemCoordinator);
@@ -509,8 +530,18 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     enum PalleteEffects effects = 0;
 
-    if (scene->bezos.flags & BezosFlagsActive) {
+    if (bezosIsActive(&scene->bezos)) {
         effects |= PalleteEffectsGrayscaleRed;
+    }
+
+    float timeSinceBezos = gTimePassed - scene->appearTime;
+
+    if (timeSinceBezos > 0.0f && timeSinceBezos < APPEAR_FLAG_PERIOD * APPEAR_FLAG_COUNT) {
+        if (mathfMod(timeSinceBezos, APPEAR_FLAG_PERIOD) < APPEAR_FLAG_PERIOD * 0.5f) {
+            effects |= PalleteEffectsInvert;
+        }
+
+        effects &= ~PalleteEffectsGrayscaleRed;
     }
 
     u16* pallete = palleteGenerateLit(
@@ -525,6 +556,11 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     gDPLoadTLUT_pal256(renderState->dl++, pallete);
 
+    if (bezosIsActive(&scene->bezos)) {
+        gSPDisplayList(renderState->dl++, gCopyCBScaryMaterial);
+    } else {
+        gSPDisplayList(renderState->dl++, gCopyCBMaterial);
+    }
     gSPDisplayList(renderState->dl++, gCopyCB);
 
     gDPPipeSync(renderState->dl++);

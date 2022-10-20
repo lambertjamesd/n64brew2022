@@ -13,18 +13,24 @@
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
 
-#define BEZOS_MOVE_SPEED   3.0f
+#define BEZOS_MOVE_SPEED   0.5f
 
 #define BEZOS_ACCELERATION 2.0f
 
 
-void bezosColliderCallback(void* data, struct Vector3* normal, float depth) {
+void bezosColliderCallback(void* data, struct Vector3* normal, float depth, struct CollisionObject* other) {
     struct Bezos* bezos = (struct Bezos*)data;
 
     vector3AddScaled(&bezos->transform.position, normal, depth * 0.75f, &bezos->transform.position);
 
     if (vector3Dot(&bezos->velocity, normal) > 0.0f) {
         vector3ProjectPlane(&bezos->velocity, normal, &bezos->velocity);
+    }
+
+    bezos->flags |= BezosFlagsTouchingWall;
+
+    if (other->flags & CollisionObjectFlagsIsPlayer) {
+        bezos->flags |= BezosFlagsCaughtPlayer;
     }
 }
 
@@ -54,9 +60,9 @@ void bezosActivate(struct Bezos* bezos, struct Vector3* at) {
     bezos->transform.position = *at;
     bezos->transform.position.y = 0.0f;
 
-    skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTIDLE_INDEX], SKAnimatorFlagsLoop);
+    skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX], 0);
 
-    bezos->flags |= BezosFlagsActive;
+    bezos->flags |= BezosFlagsWaking;
 }
 
 void bezosDeactivate(struct Bezos* bezos) {
@@ -68,8 +74,23 @@ void bezosDeactivate(struct Bezos* bezos) {
 void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
     skAnimatorUpdate(&bezos->animator, bezos->armature.boneTransforms, 1.0f);
 
+    if (bezos->flags & BezosFlagsWaking) {
+        if (!skAnimatorIsRunning(&bezos->animator)) {
+            bezos->flags &= ~BezosFlagsWaking;
+            bezos->flags |= BezosFlagsActive;
+            skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTIDLE_INDEX], SKAnimatorFlagsLoop);
+        }
+
+        return;
+    }
+
     if (!(bezos->flags & BezosFlagsActive)) {
         bezos->collider.center.y = -100.0f;
+        return;
+    }
+
+    if (bezos->flags & BezosFlagsCaughtPlayer) {
+        skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX], SKAnimatorFlagsLoop);
         return;
     }
 
@@ -78,13 +99,20 @@ void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
     moveDir.y = 0.0f;
     vector3Normalize(&moveDir, &moveDir);
 
-    quatLook(&moveDir, &gUp, &bezos->transform.rotation);
+    struct Vector3 backDir;
+    vector3Negate(&moveDir, &backDir);
+    quatLook(&backDir, &gUp, &bezos->transform.rotation);
 
     moveDir.y = bezos->velocity.y;
 
     vector3MoveTowards(&bezos->velocity, &moveDir, BEZOS_MOVE_SPEED * BEZOS_ACCELERATION * FIXED_DELTA_TIME, &bezos->velocity);
 
-    bezos->velocity.y += -9.8f * FIXED_DELTA_TIME;
+    if (bezos->flags & BezosFlagsTouchingWall) {
+        bezos->velocity.y = 0.5f;
+        bezos->flags &= ~BezosFlagsTouchingWall;
+    } else {
+        bezos->velocity.y += -9.8f * FIXED_DELTA_TIME;
+    }
     vector3AddScaled(&bezos->transform.position, &bezos->velocity, FIXED_DELTA_TIME, &bezos->transform.position);
 
     if (bezos->transform.position.y < 0.0f) {
@@ -96,7 +124,7 @@ void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
 }
 
 void bezosRender(struct Bezos* bezos, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene) {
-    if (!(bezos->flags & BezosFlagsActive)) {
+    if (!(bezos->flags & (BezosFlagsActive | BezosFlagsWaking))) {
         return;
     }
 
@@ -113,5 +141,9 @@ void bezosRender(struct Bezos* bezos, struct SpotLight* spotLights, int spotLigh
 
     Light* light = spotLightsSetupLight(&lightConfig, &bezos->transform.position, renderScene->renderState);
 
-    renderSceneAdd(renderScene, ghostjeff_model_gfx, matrix, PLAYER_0_INDEX, &bezos->transform.position, armature, light);
+    renderSceneAdd(renderScene, ghostjeff_model_gfx, matrix, GHOSTJEFF_BODY_INDEX, &bezos->transform.position, armature, light);
+}
+
+int bezosIsActive(struct Bezos* bezos) {
+    return bezos->flags & (BezosFlagsActive | BezosFlagsWaking) && !(bezos->flags & BezosFlagsCaughtPlayer);
 }

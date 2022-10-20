@@ -32,6 +32,12 @@ struct Coloru8 palleteApplyEffects(struct Coloru8 color, enum PalleteEffects eff
         }
     }
 
+    if (effects & PalleteEffectsInvert) {
+        color.r = 255 - color.r;
+        color.g = 255 - color.g;
+        color.b = 255 - color.b;
+    }
+
     return color;
 }
 

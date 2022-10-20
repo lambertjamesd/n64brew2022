@@ -24,6 +24,7 @@ struct Player {
     struct SKAnimator animator;
 
     short playerIndex;
+    short isDead;
 
     struct Vector3 velocity;
     struct Vector2 lookDir;
@@ -57,5 +58,7 @@ void playerHandObject(struct Player* player, struct Item* holdingItem);
 Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* renderState);
 
 void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* target, Light* light);
+
+void playerKill(struct Player* player);
 
 #endif

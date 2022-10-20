@@ -171,7 +171,7 @@ u8 __attribute__((aligned(64))) indexColorBuffer[SCREEN_HT * SCREEN_WD];
 
 #define COPY_FULL_IMAGE_ROW(y, w, h)    COPY_HALF_IMAGE_ROW(0, y, w, h), COPY_HALF_IMAGE_ROW(320, y, w, h)
 
-Gfx gCopyCB[] = {
+Gfx gCopyCBMaterial[] = {
     gsDPPipeSync(),
     gsDPSetCombineMode(UNLIT_TEXTURE, UNLIT_TEXTURE),
     gsDPSetTextureLUT(G_TT_RGBA16),
@@ -181,8 +181,25 @@ Gfx gCopyCB[] = {
     gsDPSetEnvColor(255, 255, 255, 255),
     gsSPClearGeometryMode(G_ZBUFFER),
     gsSPTexture(0xffff, 0xffff, 0, G_TX_RENDERTILE, G_ON),
+    gsSPEndDisplayList(),
+};
 
+Gfx gCopyCBScaryMaterial[] = {
+    gsDPPipeSync(),
+    gsDPSetCombineMode(UNLIT_TEXTURE, UNLIT_TEXTURE),
+    gsDPSetTextureLUT(G_TT_RGBA16),
+    gsDPSetTextureFilter(G_TF_POINT),
+    gsDPSetRenderMode(G_RM_OPA_SURF, G_RM_OPA_SURF2),
+    gsDPSetAlphaCompare(G_AC_DITHER),
+    gsDPSetAlphaDither(G_AD_NOISE),
+    gsDPSetTexturePersp(G_TP_NONE),
+    gsDPSetEnvColor(255, 255, 255, 190),
+    gsSPClearGeometryMode(G_ZBUFFER),
+    gsSPTexture(0xffff, 0xffff, 0, G_TX_RENDERTILE, G_ON),
+    gsSPEndDisplayList(),
+};
 
+Gfx gCopyCB[] = {
     COPY_FULL_IMAGE_ROW(0, 64, 32),
     COPY_FULL_IMAGE_ROW(32, 64, 32),
     COPY_FULL_IMAGE_ROW(64, 64, 32),

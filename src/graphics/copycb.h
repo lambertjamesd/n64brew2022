@@ -7,6 +7,8 @@
 
 #define SOURCE_CB   ((SOURCE_CB_SEGMENT) << 24)
 
+extern Gfx gCopyCBMaterial[];
+extern Gfx gCopyCBScaryMaterial[];
 extern Gfx gCopyCB[];
 extern u8 __attribute__((aligned(64))) indexColorBuffer[];
 

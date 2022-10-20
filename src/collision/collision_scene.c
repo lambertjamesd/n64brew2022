@@ -132,13 +132,13 @@ void collisionSceneWalkColliders(struct CollisionScene* collisionScene, struct C
 
                 if (collisionScene->callbacks[currentColliders[i]].callback) {
                     struct DynamicCallbackPair callback = collisionScene->callbacks[currentColliders[i]];
-                    callback.callback(callback.data, &overlap.normal, -overlap.penetration);
+                    callback.callback(callback.data, &overlap.normal, -overlap.penetration, collisionObject);
                 }
 
                 if (collisionScene->callbacks[edge->itemIndex].callback) {
                     vector3Negate(&overlap.normal, &overlap.normal);
                     struct DynamicCallbackPair callback = collisionScene->callbacks[edge->itemIndex];
-                    callback.callback(callback.data, &overlap.normal, -overlap.penetration);
+                    callback.callback(callback.data, &overlap.normal, -overlap.penetration, other);
                 }
             }
 

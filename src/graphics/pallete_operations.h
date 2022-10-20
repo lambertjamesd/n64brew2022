@@ -6,6 +6,7 @@
 
 enum PalleteEffects {
     PalleteEffectsGrayscaleRed = (1 << 0),
+    PalleteEffectsInvert = (1 << 1),
 };
 
 u16* palleteGenerateLit(struct Coloru8* colors, struct Colorf32* ambientLight, struct Colorf32* ambientScale, struct Colorf32* lightColor, enum PalleteEffects effects, float fadeAmount, struct RenderState* renderState);

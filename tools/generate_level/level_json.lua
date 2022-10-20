@@ -1,6 +1,5 @@
 local lunajson = require('lunajson')
 
-print(input_filename)
 local json_filename = string.sub(input_filename, 7, -4) .. 'json'
 print("Loading json file for level " .. json_filename)
 
@@ -19,7 +18,7 @@ for _, script_entry in pairs(json_body.script) do
         itemPoolSize = #script_entry.item_pool,
         successCount = script_entry.success_count,
         itemTimeout = script_entry.item_timeout or 30,
-        itemDelay = script_entry.item_delay or 0
+        itemDelay = script_entry.item_delay or 0,
     }
 
     for _, item in pairs(script_entry.item_pool) do
@@ -35,6 +34,8 @@ level_json_exports.script = {
     steps = reference_to(script_steps, 1),
     stepCount = #script_steps,
 }
+
+level_json_exports.tutorial = raw(json_body.tutorial or "TutorialStateWait");
 
 add_definition("script_step_items", "u8[]", "_geo", script_items);
 add_definition("script_steps", "struct ItemScriptStep[]", "_geo", script_steps);

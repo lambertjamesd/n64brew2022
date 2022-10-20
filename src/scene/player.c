@@ -65,7 +65,7 @@ void playerUpdateColliderPos(struct Player* player) {
     collisionCapsuleUpdateBB(&player->collider);
 }
 
-void playerColliderCallback(void* data, struct Vector3* normal, float depth) {
+void playerColliderCallback(void* data, struct Vector3* normal, float depth, struct CollisionObject* other) {
     struct Player* player = (struct Player*)data;
 
     vector3AddScaled(&player->transform.position, normal, depth * 0.75f, &player->transform.position);
@@ -80,6 +80,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     quatIdent(&player->transform.rotation);
     player->transform.scale = gOneVec;
     player->playerIndex = index;
+    player->isDead = 0;
     player->animationSpeed = 0.0f;
     player->holdingItem = NULL;
     player->velocity = gZeroVec;
@@ -142,6 +143,10 @@ void playerUpdate(struct Player* player) {
     moveDir.x = input->stick_x * (1.0f / 80.0f);
     moveDir.y = 0.0f;
     moveDir.z = -input->stick_y * (1.0f / 80.0f);
+
+    if (player->isDead) {
+        moveDir = gZeroVec;
+    }
 
     float magSqrd = vector3MagSqrd(&moveDir);
 
@@ -290,4 +295,8 @@ void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* targ
     target->matrix = player->mtxTransform;
     target->position = player->transform.position;
     vector3Add(&target->position, &gPlayerCenter, &target->position);
+}
+
+void playerKill(struct Player* player) {
+    player->isDead = 1;
 }

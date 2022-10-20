@@ -9,12 +9,13 @@
             "success_count": 1
         },
         {
-            "item_pool": ["Pumpkin", "Pumpkin", "Hat"],
+            "item_pool": ["Pumpkin", "Hat", "Hat"],
             "success_count": 8
         },
         {
             "item_pool": ["Pumpkin", "Hat", "Candle"],
             "success_count": 8
         }
-    ]
+    ],
+    "tutorial": "TutorialStateIntro"
 }
