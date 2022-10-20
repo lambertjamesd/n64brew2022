@@ -62,6 +62,7 @@ void collisionCapsuleUpdateBB(struct CollisionCapsule* capsule) {
 void collisionCapsuleInit(struct CollisionCapsule* capsule, float height, float radius) {
     capsule->collisionObject.minkowskiSum = collisionCapsuleMinkowsi;
     capsule->collisionObject.data = capsule;
+    capsule->collisionObject.flags = 0;
 
     capsule->center = gZeroVec;
     capsule->halfHeight = height * 0.5f;

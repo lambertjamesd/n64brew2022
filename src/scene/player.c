@@ -114,6 +114,8 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     collisionCapsuleInit(&player->collider, COLLIDER_HEIGHT, COLLIDER_RADIUS);
     playerUpdateColliderPos(player);
 
+    player->collider.collisionObject.flags = CollisionObjectFlagsIsPlayer;
+
     collisionSceneAddDynamic(&gCollisionScene, &player->collider.collisionObject, playerColliderCallback, player);
 }
 

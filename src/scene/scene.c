@@ -62,7 +62,14 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
     itemPoolInit(&scene->itemPool);
-    collisionSceneInit(&gCollisionScene, definition->tableCount + playerCount + definition->boundaryCount + definition->conveyorCount + definition->itemRequesterCount);
+    collisionSceneInit(&gCollisionScene, 
+        definition->tableCount + 
+        playerCount + 
+        definition->boundaryCount + 
+        definition->conveyorCount + 
+        definition->itemRequesterCount +
+        1 // bezos
+    );
     
     itemCoordinatorInit(&scene->itemCoordinator, definition->script);
 
@@ -131,13 +138,14 @@ void sceneUpdate(struct Scene* scene) {
         --ignoreInputFrames;
     }
 
-    endScreenUpdate(&scene->endScreen);
-
     // allow the tutorial to pause
     if (tutorialUpdate(&scene->tutorial)) {
         return;
     }
 
+    if (endScreenUpdate(&scene->endScreen)) {
+        return;
+    }
 
     for (int i = 0; i < scene->playerCount; ++i) {
         struct Player* player = &scene->players[i];
@@ -199,7 +207,7 @@ void sceneUpdate(struct Scene* scene) {
         }
     }
 
-    bezosUpdate(&scene->bezos);
+    bezosUpdate(&scene->bezos, sceneNearestPlayerPos(scene));
 
     for (int i = 0; i < scene->conveyorCount; ++i) {
         if (conveyorCanAcceptItem(&scene->conveyors[i])) {
@@ -248,6 +256,11 @@ void sceneUpdate(struct Scene* scene) {
             scene->dropPenalty = 0.0f;
             bezosDeactivate(&scene->bezos);
         }
+    }
+
+    if (controllerGetButtonDown(0, Z_TRIG)) {
+        scene->dropPenalty = 0.5f;
+        bezosActivate(&scene->bezos, &scene->players[0].transform.position);
     }
 
     itemCoordinatorUpdate(&scene->itemCoordinator);
@@ -519,7 +532,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     spriteInit(renderState);
 
-    // tutorialRender(&scene->tutorial, renderState);
+    tutorialRender(&scene->tutorial, renderState);
     endScreenRender(&scene->endScreen, renderState);
 
     spriteFinish(renderState);
@@ -554,6 +567,10 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
         if (dropResult) {
             if (dropResult == ItemDropResultSuccess) {
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
+
+                if (itemCoordinatorDidWin(&scene->itemCoordinator)) {
+                    endScreenEndGame(&scene->endScreen, EndScreenTypeSuccess);
+                }
             }
 
             scene->itemRequesters[i].requestDelay = itemCoordinatorPreDelay(&scene->itemCoordinator);
@@ -599,4 +616,9 @@ int sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropA
     }
 
     return 0;
+}
+
+
+struct Vector3* sceneNearestPlayerPos(struct Scene* scene) {
+    return &scene->players[0].transform.position;
 }

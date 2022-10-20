@@ -3,6 +3,12 @@
 
 #include "../graphics/renderstate.h"
 
+enum EndScreenType {
+    EndScreenTypeNone = -1,
+    EndScreenTypeSuccess,
+    EndScreenTypeFail,
+};
+
 struct EndScreen {
     float preDelay;
     float animationLerp;
@@ -12,8 +18,8 @@ struct EndScreen {
 
 void endScreenInit(struct EndScreen* endScreen);
 void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderState);
-void endScreenUpdate(struct EndScreen* endScreen);
-void endScreenEndame(struct EndScreen* endScreen, int success);
+int endScreenUpdate(struct EndScreen* endScreen);
+void endScreenEndGame(struct EndScreen* endScreen, enum EndScreenType type);
 int endSceenIsDone(struct EndScreen* endScreen);
 float endScreenFadeAmount(struct EndScreen* endScreen);
 

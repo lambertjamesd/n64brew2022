@@ -4,7 +4,34 @@
 #include "../build/assets/models/pumpkin.h"
 #include "../build/assets/materials/static.h"
 
+#include "../util/time.h"
+
+#include "../collision/collision_scene.h"
+
 #include "../defs.h"
+
+#define COLLIDER_RADIUS     0.25f
+#define COLLIDER_HEIGHT     0.25f
+
+#define BEZOS_MOVE_SPEED   3.0f
+
+#define BEZOS_ACCELERATION 2.0f
+
+
+void bezosColliderCallback(void* data, struct Vector3* normal, float depth) {
+    struct Bezos* bezos = (struct Bezos*)data;
+
+    vector3AddScaled(&bezos->transform.position, normal, depth * 0.75f, &bezos->transform.position);
+
+    if (vector3Dot(&bezos->velocity, normal) > 0.0f) {
+        vector3ProjectPlane(&bezos->velocity, normal, &bezos->velocity);
+    }
+}
+
+void bezosUpdateColliderPos(struct Bezos* bezos) {
+    vector3AddScaled(&bezos->transform.position, &gUp, COLLIDER_HEIGHT * 0.5f + COLLIDER_RADIUS, &bezos->collider.center);
+    collisionCapsuleUpdateBB(&bezos->collider);
+}
 
 void bezosInit(struct Bezos* bezos) {
     transformInitIdentity(&bezos->transform);
@@ -13,6 +40,13 @@ void bezosInit(struct Bezos* bezos) {
     skArmatureInit(&bezos->armature, ghostjeff_model_gfx, GHOSTJEFF_DEFAULT_BONES_COUNT, ghostjeff_default_bones, ghostjeff_bone_parent, GHOSTJEFF_ATTACHMENT_COUNT);
 
     bezos->flags = 0;
+    bezos->velocity = gZeroVec;
+
+    collisionCapsuleInit(&bezos->collider, COLLIDER_HEIGHT, COLLIDER_RADIUS);
+    bezosUpdateColliderPos(bezos);
+    bezos->collider.center.y = -100.0f;
+
+    collisionSceneAddDynamic(&gCollisionScene, &bezos->collider.collisionObject, bezosColliderCallback, bezos);
 }
 
 void bezosActivate(struct Bezos* bezos, struct Vector3* at) {
@@ -31,8 +65,34 @@ void bezosDeactivate(struct Bezos* bezos) {
     bezos->flags &= ~BezosFlagsActive;
 }
 
-void bezosUpdate(struct Bezos* bezos) {
+void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
     skAnimatorUpdate(&bezos->animator, bezos->armature.boneTransforms, 1.0f);
+
+    if (!(bezos->flags & BezosFlagsActive)) {
+        bezos->collider.center.y = -100.0f;
+        return;
+    }
+
+    struct Vector3 moveDir;
+    vector3Sub(nearestPlayerPos, &bezos->transform.position, &moveDir);
+    moveDir.y = 0.0f;
+    vector3Normalize(&moveDir, &moveDir);
+
+    quatLook(&moveDir, &gUp, &bezos->transform.rotation);
+
+    moveDir.y = bezos->velocity.y;
+
+    vector3MoveTowards(&bezos->velocity, &moveDir, BEZOS_MOVE_SPEED * BEZOS_ACCELERATION * FIXED_DELTA_TIME, &bezos->velocity);
+
+    bezos->velocity.y += -9.8f * FIXED_DELTA_TIME;
+    vector3AddScaled(&bezos->transform.position, &bezos->velocity, FIXED_DELTA_TIME, &bezos->transform.position);
+
+    if (bezos->transform.position.y < 0.0f) {
+        bezos->transform.position.y = 0.0f;
+        bezos->velocity.y = 0.0f;
+    }
+
+    bezosUpdateColliderPos(bezos);
 }
 
 void bezosRender(struct Bezos* bezos, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene) {

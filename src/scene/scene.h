@@ -70,4 +70,6 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 int sceneSwapItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Item** replacement);
 int sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Vector3* hoverOutput);
 
+struct Vector3* sceneNearestPlayerPos(struct Scene* scene);
+
 #endif

@@ -38,4 +38,5 @@ void collisionBoundaryInit(struct CollisionBoundary* boundary, struct Vector2* a
 
     boundary->collisionObject.data = boundary;
     boundary->collisionObject.minkowskiSum = collisionBoundarySum;
+    boundary->collisionObject.flags = 0;
 }

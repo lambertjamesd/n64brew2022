@@ -28,6 +28,7 @@ void tableInit(struct Table* table, struct TableDefinition* def) {
 
     table->collisionObject.data = &table->collisionObject;
     table->collisionObject.minkowskiSum = collisionObjectBoundingBox;
+    table->collisionObject.flags = 0;
 
     collisionSceneAddStatic(&gCollisionScene, &table->collisionObject);
 }

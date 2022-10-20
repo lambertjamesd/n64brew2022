@@ -29,6 +29,7 @@ void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definiti
     box3DOffset(&conveyor->collisionObject.boundingBox, &conveyor->transform.position, &conveyor->collisionObject.boundingBox);
     conveyor->collisionObject.data = &conveyor->collisionObject;
     conveyor->collisionObject.minkowskiSum = collisionObjectBoundingBox;
+    conveyor->collisionObject.flags = 0;
 
     collisionSceneAddStatic(&gCollisionScene, &conveyor->collisionObject);
 }

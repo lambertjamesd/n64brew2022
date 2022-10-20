@@ -9,13 +9,28 @@
 
 void endScreenInit(struct EndScreen* endScreen) { 
     endScreen->animationLerp = 0.0f;
-    endScreen->success = -1;
+    endScreen->success = EndScreenTypeNone;
     endScreen->preDelay = 1.0f;
     endScreen->textAnimation = 0.0f;
 }
 
 struct Coloru8 gEndScreenBlack = {0, 0, 0, 255};
 struct Coloru8 gEndScreenRed = {200, 0, 0, 255};
+
+struct Coloru8 gEndScreenColor[] = {
+    {76, 3, 73, 255},
+    {200, 0, 0, 255}
+};
+
+char* gEndScreenText[] = {
+    "success",
+    "terminated",
+};
+
+int gTextXPosition[] = {
+    104,
+    64,
+};
 
 #define END_SCREEN_WIDTH    512
 #define END_SCREEN_HEIGHT   144
@@ -40,9 +55,11 @@ struct Coloru8 gEndScreenRed = {200, 0, 0, 255};
 #define EXPLODE_HEIGHT      100.0f
 #define EXPLODE_DURATION    1.4f
 
+#define WIN_TEXT_INTRO_TIME 4.0f
+
 #define TOTAL_ANIMATION_TIME    13.0f
 
-void endScreenTextModifier(void* data, int index, char character, int* x, int* y, struct Coloru8* color) {
+void endScreenLossTextModifier(void* data, int index, char character, int* x, int* y, struct Coloru8* color) {
     struct EndScreen* endScreen = (struct EndScreen*)data;
 
     float animationTime = endScreen->textAnimation - ((index * 13) % 10) * TIME_PER_CHARACTER;
@@ -91,10 +108,50 @@ void endScreenTextModifier(void* data, int index, char character, int* x, int* y
     *y += offset;
 }
 
+void endScreenWinTextModifier(void* data, int index, char character, int* x, int* y, struct Coloru8* color) {
+    struct EndScreen* endScreen = (struct EndScreen*)data;
+
+    float introTime = WIN_TEXT_INTRO_TIME - (endScreen->textAnimation - index * TIME_PER_CHARACTER);
+
+    if (introTime > 0.0f) {
+        float timeLerp = (introTime - 0.5f * EXPLODE_DURATION) * (2.0f / EXPLODE_DURATION);
+
+        int offset = timeLerp * timeLerp * EXPLODE_HEIGHT - EXPLODE_HEIGHT;
+
+        if (offset > 300) {
+            offset = 300;
+        }
+
+        *y += offset;
+    }
+
+
+    float explodeTime = (endScreen->textAnimation - EXPLODE_TEXT_DELAY) - index * TIME_PER_CHARACTER;
+
+    if (explodeTime < 0.0f) {
+        return;
+    }
+
+    float timeLerp = (explodeTime - 0.5f * EXPLODE_DURATION) * (2.0f / EXPLODE_DURATION);
+
+    int offset = timeLerp * timeLerp * EXPLODE_HEIGHT - EXPLODE_HEIGHT;
+
+    if (offset > 300) {
+        offset = 300;
+    }
+
+    *y += offset;
+}
+
+CharacterRenderModifier gEndScreenTextModifier[] = {
+    endScreenWinTextModifier,
+    endScreenLossTextModifier,
+};
+
 void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderState) {
-    // if (endScreen->success == -1) {
-    //     return;
-    // }
+    if (endScreen->success == EndScreenTypeNone) {
+        return;
+    }
 
     if (endScreen->preDelay > 0.0f) {
         return;
@@ -108,7 +165,7 @@ void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderStat
     spriteSetColor(
         renderState, 
         SOLID_UI_INDEX, 
-        gEndScreenRed
+        gEndScreenColor[endScreen->success]
     );
 
     int yOverlap = (screenY + END_SCREEN_HEIGHT) - redScreenY;
@@ -150,28 +207,28 @@ void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderStat
         END_SCREEN_HEIGHT
     );
 
-    if (endScreen->textAnimation < TOTAL_ANIMATION_TIME) {
+    if (endScreen->textAnimation < TOTAL_ANIMATION_TIME && endScreen->animationLerp == 1.0f) {
         fontRenderText(
             renderState,
             &gNightChilde,
-            "terminated",
-            screenX + 64,
+            gEndScreenText[endScreen->success],
+            screenX + gTextXPosition[endScreen->success],
             screenY + 42,
             2,
             endScreen,
-            endScreenTextModifier
+            gEndScreenTextModifier[endScreen->success]
         );
     }
 }
 
-void endScreenUpdate(struct EndScreen* endScreen) {
-    // if (endScreen->success == -1) {
-    //     return;
-    // }
+int endScreenUpdate(struct EndScreen* endScreen) {
+    if (endScreen->success == EndScreenTypeNone) {
+        return 0;
+    }
 
     if (endScreen->preDelay > 0) {
         endScreen->preDelay -= FIXED_DELTA_TIME;
-        return;
+        return 0;
     }
 
     if (endScreen->textAnimation < TOTAL_ANIMATION_TIME && endScreen->animationLerp < 1.0f) {
@@ -191,9 +248,11 @@ void endScreenUpdate(struct EndScreen* endScreen) {
     }
 
     endScreen->textAnimation += FIXED_DELTA_TIME;
+
+    return 1;
 }
 
-void endScreenEndame(struct EndScreen* endScreen, int success) {
+void endScreenEndGame(struct EndScreen* endScreen, int success) {
     endScreen->success = success;
 }
 

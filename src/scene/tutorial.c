@@ -131,7 +131,7 @@ void tutorialInit(struct Tutorial* tutorial) {
     tutorial->nextState = TutorialStateWait;
     tutorial->animationLerp = 0.0f;
 
-    tutorialSetNextState(tutorial, TutorialStateIntro);
+    // tutorialSetNextState(tutorial, TutorialStateIntro);
 }
 
 void tutorialSetNextState(struct Tutorial* tutorial, enum TutorialState state) {
