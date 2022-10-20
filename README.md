@@ -4,7 +4,7 @@
 ## TODO
 
 * load next level
-* win condition (finish level script)
-* bezos chases players
-* lose condition (caught by bezos)
 * main menu
+* show how much time is left when requesting items
+* polish
+  * spawn bezos after item falls
