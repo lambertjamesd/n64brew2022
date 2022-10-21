@@ -5,6 +5,7 @@
 
 #include "level_definition.h"
 
+#define MAIN_MENU_LEVEL -3
 #define NO_QUEUED_LEVEL -2
 #define NEXT_LEVEL      -1
 

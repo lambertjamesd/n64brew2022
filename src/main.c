@@ -11,6 +11,7 @@
 #include "sk64/skelatool_animator.h"
 #include "sk64/skelatool_defs.h"
 #include "ui/nightchilde.h"
+#include "menu/main_menu.h"
 
 #ifdef WITH_DEBUGGER
 #include "../debugger/debugger.h"
@@ -91,6 +92,11 @@ extern char _animation_segmentSegmentRomStart[];
 
 struct Scene gScene;
 
+enum GameState {
+    GameStateMainMenu,
+    GameStateScene,
+};
+
 void gameProc(void *arg) {
     u8 schedulerMode = OS_VI_NTSC_HPF1;
 
@@ -145,10 +151,9 @@ void gameProc(void *arg) {
     skInitDataPool(gPiHandle);
     skSetSegmentLocation(CHARACTER_ANIMATION_SEGMENT, (unsigned)_animation_segmentSegmentRomStart);
     
-    loadLevel(0);
+    levelQueueLoad(MAIN_MENU_LEVEL);
 
     controllersInit();
-    sceneInit(&gScene, gCurrentLevel, 1);
 
 #ifdef WITH_DEBUGGER
     OSThread* debugThreads[2];
@@ -167,15 +172,26 @@ void gameProc(void *arg) {
                 if (levelGetQueued() != NO_QUEUED_LEVEL) {
                     if (pendingGFX == 0) {
                         heapInit(_heapStart, memoryEnd);
-                        loadLevel(levelGetQueued());
-                        sceneInit(&gScene, gCurrentLevel, 1);
+
+                        if (levelGetQueued() == MAIN_MENU_LEVEL) {
+                            mainMenuInit(&gMainMenu);
+                            gCurrentLevelIndex = MAIN_MENU_LEVEL;
+                            levelQueueLoad(NO_QUEUED_LEVEL);
+                        } else {
+                            loadLevel(levelGetQueued());
+                            sceneInit(&gScene, gCurrentLevel, 1);
+                        }
                     }
 
                     break;
                 }
 
                 if (pendingGFX < 2 && !renderSkip) {
-                    graphicsCreateTask(&gGraphicsTasks[drawBufferIndex], (GraphicsCallback)sceneRender, &gScene);
+                    if (gCurrentLevelIndex == MAIN_MENU_LEVEL) {
+                        graphicsCreateTask(&gGraphicsTasks[drawBufferIndex], (GraphicsCallback)mainMenuRender, &gMainMenu);
+                    } else {
+                        graphicsCreateTask(&gGraphicsTasks[drawBufferIndex], (GraphicsCallback)sceneRender, &gScene);
+                    }
                     drawBufferIndex = drawBufferIndex ^ 1;
                     ++pendingGFX;
                 } else if (renderSkip) {
@@ -184,7 +200,11 @@ void gameProc(void *arg) {
 
                 controllersTriggerRead();
                 skReadMessages();
-                sceneUpdate(&gScene);
+                if (gCurrentLevelIndex == MAIN_MENU_LEVEL) {
+                    mainMenuUpdate(&gMainMenu);
+                } else {
+                    sceneUpdate(&gScene);
+                }
                 timeUpdateDelta();
 
                 char msg[64];
