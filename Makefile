@@ -243,7 +243,9 @@ build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
 ## Linking
 ####################
 
-DATA_OBJECTS = $(MODEL_OBJECTS) build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o build/assets/materials/ui_mat.o
+MATERIAL_OBJECTS = build/assets/materials/static_mat.o build/assets/materials/pallete_mat.o build/assets/materials/ui_mat.o
+
+DATA_OBJECTS = $(MODEL_OBJECTS) 
 
 $(BOOT_OBJ): $(BOOT)
 	$(OBJCOPY) -I binary -B mips -O elf32-bigmips $< $@
@@ -263,7 +265,7 @@ $(CODESEGMENT)_no_debug.o:	$(CODEOBJECTS_NO_DEBUG)
 $(CP_LD_SCRIPT)_no_debug.ld: $(LD_SCRIPT) build/levels.ld build/anims.ld
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_no_debug.o -o $@ $<
 
-$(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld
+$(BASE_TARGET_NAME).z64: $(CODESEGMENT)_no_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_no_debug.ld $(MATERIAL_OBJECTS)
 	$(LD) -L. -T $(CP_LD_SCRIPT)_no_debug.ld -Map $(BASE_TARGET_NAME)_no_debug.map -o $(BASE_TARGET_NAME).elf
 	$(OBJCOPY) --pad-to=0x100000 --gap-fill=0xFF $(BASE_TARGET_NAME).elf $(BASE_TARGET_NAME).z64 -O binary
 	makemask $(BASE_TARGET_NAME).z64
@@ -281,7 +283,7 @@ $(CODESEGMENT)_debug.o:	$(CODEOBJECTS_DEBUG)
 $(CP_LD_SCRIPT)_debug.ld: $(LD_SCRIPT) build/levels.ld build/anims.ld
 	cpp -P -Wno-trigraphs $(LCDEFS) -DCODE_SEGMENT=$(CODESEGMENT)_debug.o -o $@ $<
 
-$(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_debug.ld
+$(BASE_TARGET_NAME)_debug.z64: $(CODESEGMENT)_debug.o $(OBJECTS) $(LEVEL_LIST_OBJECTS) $(CP_LD_SCRIPT)_debug.ld $(MATERIAL_OBJECTS)
 	$(LD) -L. -T $(CP_LD_SCRIPT)_debug.ld -Map $(BASE_TARGET_NAME)_debug.map -o $(BASE_TARGET_NAME)_debug.elf
 	$(OBJCOPY) --pad-to=0x100000 --gap-fill=0xFF $(BASE_TARGET_NAME)_debug.elf $(BASE_TARGET_NAME)_debug.z64 -O binary
 	makemask $(BASE_TARGET_NAME)_debug.z64

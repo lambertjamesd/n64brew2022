@@ -13,4 +13,8 @@ void romCopy(const char *src, const char *dest, const int len);
 #define CALC_ROM_POINTER(segmentName, addr) ((void*)(((unsigned)addr) - (unsigned)_ ## segmentName ## SegmentStart + (unsigned)_ ## segmentName ## SegmentRomStart))
 #define CALC_RAM_POINTER(addr, ramStart)    (void*)(((unsigned)(addr) & 0xFFFFFF) + (unsigned)(ramStart))
 
+#define ADJUST_POINTER_POS(ptr, offset) (void*)((ptr) ? (char*)(ptr) + (offset) : 0)
+
+#define ADJUST_POINTER_FOR_SEGMENT(ptr, memorystart, segmentNumber) ((char*)ptr + (int)(memorystart) - ((segmentNumber) << 24))
+
 #endif

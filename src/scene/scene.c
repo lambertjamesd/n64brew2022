@@ -23,6 +23,7 @@
 #include "../ui/spritefont.h"
 #include "../ui/sprite.h"
 #include "../ui/nightchilde.h"
+#include "../util/rom.h"
 
 #include "../build/assets/materials/ui.h"
 #include "../build/assets/materials/static.h"
@@ -305,8 +306,11 @@ struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
+    Gfx** uiMaterialList = (Gfx**)ADJUST_POINTER_FOR_SEGMENT(ui_material_list, gMaterialSegment, MATERIAL_SEGMENT);
+    Gfx** uiMaterialRevertList = (Gfx**)ADJUST_POINTER_FOR_SEGMENT(ui_material_revert_list, gMaterialSegment, MATERIAL_SEGMENT);
+    
     for (int i = 0; i < DEFAULT_UI_INDEX; ++i) {
-        spriteSetLayer(renderState, i, ui_material_list[i], ui_material_revert_list[i]);
+        spriteSetLayer(renderState, i, uiMaterialList[i], uiMaterialRevertList[i]);
     }
 
     Mtx* identity = renderStateRequestMatrices(renderState, 1);
@@ -556,7 +560,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     }
 
     u16* pallete = palleteGenerateLit(
-        (struct Coloru8*)pallete_half_pallete_rgba_32b, 
+        (struct Coloru8*)ADJUST_POINTER_FOR_SEGMENT(pallete_half_pallete_rgba_32b, gMaterialSegment, MATERIAL_SEGMENT), 
         &gAmbientLight,
         &gAmbientScale, 
         &gLightColor, 

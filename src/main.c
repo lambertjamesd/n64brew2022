@@ -37,6 +37,9 @@ OSSched scheduler;
 u64            scheduleStack[OS_SC_STACKSIZE/8];
 OSMesgQueue	*schedulerCommandQueue;
 
+extern char _material_dataSegmentRomStart[];
+extern char _material_dataSegmentRomEnd[];
+
 void initProc(void *arg);
 void gameProc(void *arg);
 
@@ -127,8 +130,15 @@ void gameProc(void *arg) {
 
     u16* memoryEnd = graphicsLayoutScreenBuffers((u16*)PHYS_TO_K0(osMemSize));
 
+    int materialChunkSize = _material_dataSegmentRomEnd - _material_dataSegmentRomStart;
+
+    memoryEnd -= materialChunkSize / sizeof(u16);
+
     heapInit(_heapStart, memoryEnd);
     romInit();
+
+    gMaterialSegment = memoryEnd;
+    romCopy(_material_dataSegmentRomStart, (char*)memoryEnd, materialChunkSize);
 
     nightChildeInit();
 

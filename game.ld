@@ -73,6 +73,19 @@ SECTIONS
 #include "build/levels.ld"
 #include "build/anims.ld"
 
+   BEGIN_SEG(material_data, 0x03000000)
+   {
+      build/assets/materials/static_mat.o(.data);
+      build/assets/materials/static_mat.o(.bss);
+
+      build/assets/materials/pallete_mat.o(.data);
+      build/assets/materials/pallete_mat.o(.bss);
+
+      build/assets/materials/ui_mat.o(.data);
+      build/assets/materials/ui_mat.o(.bss);
+   }
+   END_SEG(material_data)
+
    /* Discard everything not specifically mentioned above. */
    /DISCARD/ :
    {

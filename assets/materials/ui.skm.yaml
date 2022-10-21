@@ -115,3 +115,9 @@ materials:
       fmt: G_IM_FMT_RGBA
     gDPSetRenderMode: G_RM_OPA_SURF
     sortOrder: 4
+
+  title_screen:
+    gDPSetTile:
+      filename: "./ui/title_screen.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA

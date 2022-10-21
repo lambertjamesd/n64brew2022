@@ -17,15 +17,15 @@ int levelMaterialTransparentStart() {
 }
 
 Gfx* levelMaterialDefault() {
-    return static_material_list[DEFAULT_INDEX];
+    return levelMaterial(DEFAULT_INDEX);
 }
 
 Gfx* levelMaterial(int index) {
-    return static_material_list[index];
+    return ((Gfx**)ADJUST_POINTER_FOR_SEGMENT(static_material_list, gMaterialSegment, MATERIAL_SEGMENT))[index];
 }
 
 Gfx* levelMaterialRevert(int index) {
-    return static_material_revert_list[index];
+    return ((Gfx**)ADJUST_POINTER_FOR_SEGMENT(static_material_revert_list, gMaterialSegment, MATERIAL_SEGMENT))[index];
 }
 
 void loadLevel(unsigned index) {

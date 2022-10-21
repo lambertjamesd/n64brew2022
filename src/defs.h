@@ -15,6 +15,7 @@
 #define NUM_FIELDS      1 
 
 #define LEVEL_SEGMENT 2
+#define MATERIAL_SEGMENT 3
 
 #define DMA_QUEUE_SIZE  200
 
