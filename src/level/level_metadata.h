@@ -8,6 +8,7 @@ struct LevelMetadata {
     char* segmentRomStart;
     char* segmentRomEnd;
     char* segmentStart;
+    char* name;
 };
 
 #endif

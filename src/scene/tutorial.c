@@ -24,7 +24,7 @@ void tutorialInitCurrentState(struct Tutorial* tutorial);
 struct TutorialScriptStep gIntroScript[] = {
     {
         "Welcome to your first day of\norientation\n" 
-        "I am Tony Spook\n"
+        "I am Tony\n"
         "Your floor manager"
     },
     {

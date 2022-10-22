@@ -1,4 +1,5 @@
 {
+    "name": "test level",
     "script": [
         {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat"],

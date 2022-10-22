@@ -3,8 +3,21 @@
 
 #include "../graphics/graphics.h"
 
+enum MainMenuState {
+    MainMenuTitleScreen,
+    MainMenuLevelList,
+    MainMenuLoading,
+};
+
 struct MainMenu {
+    enum MainMenuState currentState;
+
     float fadeAmount;
+    float titleAnimation;
+    float windowOpenAnimation;
+
+    int levelToLoad;
+    int selectedLevel;
 };
 
 extern struct MainMenu gMainMenu;

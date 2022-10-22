@@ -12,6 +12,7 @@
 #include "sk64/skelatool_defs.h"
 #include "ui/nightchilde.h"
 #include "menu/main_menu.h"
+#include "savefile/savefile.h"
 
 #ifdef WITH_DEBUGGER
 #include "../debugger/debugger.h"
@@ -154,6 +155,7 @@ void gameProc(void *arg) {
     levelQueueLoad(MAIN_MENU_LEVEL);
 
     controllersInit();
+    saveFileLoad();
 
 #ifdef WITH_DEBUGGER
     OSThread* debugThreads[2];
@@ -198,7 +200,14 @@ void gameProc(void *arg) {
                     --renderSkip;
                 }
 
-                controllersTriggerRead();
+                if (gShouldSave) {
+                    if (!controllerHasPendingMessage()) {
+                        saveFileCheckSave();
+                    }
+                } else {
+                    controllersTriggerRead();
+                }
+
                 skReadMessages();
                 if (gCurrentLevelIndex == MAIN_MENU_LEVEL) {
                     mainMenuUpdate(&gMainMenu);

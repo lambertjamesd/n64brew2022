@@ -24,6 +24,8 @@
 #include "../ui/sprite.h"
 #include "../ui/nightchilde.h"
 #include "../util/rom.h"
+#include "../menu/ui.h"
+#include "../savefile/savefile.h"
 
 #include "../build/assets/materials/ui.h"
 #include "../build/assets/materials/static.h"
@@ -48,6 +50,8 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 
 #define APPEAR_FLAG_PERIOD  0.75f
 #define APPEAR_FLAG_COUNT   3
+
+#define FADE_IN_DURATION    2.0f
 
 void materialSetBasicLit(struct RenderState* renderState, int objectIndex) {
     gSPDisplayList(renderState->dl++, gBasicLitMaterial);
@@ -124,6 +128,8 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 
     scene->dropPenalty = 0.0f;
     scene->appearTime = -10.0f;
+    scene->fadeInTime = FADE_IN_DURATION;
+    scene->currentLevelTime = 0.0f;
 
     struct CollisionBoundary* boundaries = malloc(sizeof(struct CollisionBoundary) * definition->boundaryCount);
     for (int i = 0; i < definition->boundaryCount; ++i) {
@@ -143,6 +149,16 @@ unsigned ignoreInputFrames = 10;
 void sceneUpdate(struct Scene* scene) {
     if (ignoreInputFrames) {
         --ignoreInputFrames;
+    }
+
+    if (scene->fadeInTime > 0.0f) {
+        scene->fadeInTime -= FIXED_DELTA_TIME;
+
+        if (scene->fadeInTime < 0.0f) {
+            scene->fadeInTime = 0.0f;
+        }
+
+        return;
     }
 
     // allow the tutorial to pause
@@ -297,6 +313,8 @@ void sceneUpdate(struct Scene* scene) {
     itemCoordinatorUpdate(&scene->itemCoordinator);
 
     collisionSceneCollide(&gCollisionScene);
+    
+    scene->currentLevelTime += FIXED_DELTA_TIME;
 }
 
 struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
@@ -306,12 +324,7 @@ struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
-    Gfx** uiMaterialList = (Gfx**)ADJUST_POINTER_FOR_SEGMENT(ui_material_list, gMaterialSegment, MATERIAL_SEGMENT);
-    Gfx** uiMaterialRevertList = (Gfx**)ADJUST_POINTER_FOR_SEGMENT(ui_material_revert_list, gMaterialSegment, MATERIAL_SEGMENT);
-    
-    for (int i = 0; i < DEFAULT_UI_INDEX; ++i) {
-        spriteSetLayer(renderState, i, uiMaterialList[i], uiMaterialRevertList[i]);
-    }
+    uiInitSpirtes(renderState);
 
     Mtx* identity = renderStateRequestMatrices(renderState, 1);
     guMtxIdent(identity);
@@ -565,7 +578,7 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         &gAmbientScale, 
         &gLightColor, 
         effects,
-        endScreenFadeAmount(&scene->endScreen),
+        scene->fadeInTime ? 1.0f - scene->fadeInTime * (1.0f / FADE_IN_DURATION) : endScreenFadeAmount(&scene->endScreen),
         renderState
     );
 
@@ -621,6 +634,7 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 
                 if (itemCoordinatorDidWin(&scene->itemCoordinator)) {
                     endScreenEndGame(&scene->endScreen, EndScreenTypeSuccess);
+                    saveFileMarkLevelComplete(gCurrentLevelIndex, scene->currentLevelTime);
                 }
             }
 

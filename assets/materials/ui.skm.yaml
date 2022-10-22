@@ -121,3 +121,10 @@ materials:
       filename: "./ui/title_screen.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
+      
+  level_list:
+    gDPSetTile:
+      filename: "./ui/level_list.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+

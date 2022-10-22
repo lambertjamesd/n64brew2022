@@ -1,4 +1,5 @@
 {
+    "name": "orientation",
     "script": [
         {
             "item_pool": ["Pumpkin"],

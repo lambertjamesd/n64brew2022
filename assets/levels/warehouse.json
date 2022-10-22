@@ -1,4 +1,5 @@
 {
+    "name": "warehouse",
     "script": [
         {
             "item_pool": ["Pumpkin", "Pumpkin", "Hat"],

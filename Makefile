@@ -145,6 +145,8 @@ build/src/level/level.o: build/assets/materials/static.h build/assets/levels/lev
 
 build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h build/assets/materials/ui.h
 
+build/src/menu/ui.o: build/assets/materials/ui.h
+
 build/src/ui/nightchilde.o: build/assets/materials/ui.h
 
 ####################

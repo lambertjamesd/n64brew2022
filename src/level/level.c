@@ -56,3 +56,11 @@ void levelQueueLoad(int index) {
 int levelGetQueued() {
     return gQueuedLevel;
 }
+
+struct LevelMetadata* levelGetMetadata(int index) {
+    return &gLevelList[index];
+}
+
+int levelGetCount() {
+    return sizeof(gLevelList) / sizeof(gLevelList[0]);
+}

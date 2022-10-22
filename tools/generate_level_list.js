@@ -21,11 +21,15 @@ function generateLevelName(outputLocation, headerLocation) {
 
 function generateMetadata(outputLocation, headerLocation) {
     const segmentName = getSegmentName(headerLocation);
+
+    const json = JSON.parse(fs.readFileSync(headerLocation.substring(6, headerLocation.length - 2) + '.json'))
+
     return `    {
         &${generateLevelName(outputLocation, headerLocation)},
         _${segmentName}_geoSegmentRomStart,
         _${segmentName}_geoSegmentRomEnd,
         _${segmentName}_geoSegmentStart,
+        "${json.name || ''}",
     },`;
 }
 

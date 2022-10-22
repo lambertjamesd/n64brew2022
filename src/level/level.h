@@ -4,6 +4,7 @@
 #include <ultra64.h>
 
 #include "level_definition.h"
+#include "level_metadata.h"
 
 #define MAIN_MENU_LEVEL -3
 #define NO_QUEUED_LEVEL -2
@@ -22,5 +23,8 @@ int levelGetQueued();
 
 Gfx* levelMaterial(int index);
 Gfx* levelMaterialRevert(int index);
+
+struct LevelMetadata* levelGetMetadata(int index);
+int levelGetCount();
 
 #endif
