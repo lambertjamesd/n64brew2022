@@ -16,12 +16,23 @@ struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int point
     result->script = ADJUST_POINTER_POS(result->script, pointerOffset);
     result->script->steps = ADJUST_POINTER_POS(result->script->steps, pointerOffset);
 
+    for (int i = 0; i < result->script->stepCount; ++i) {
+        result->script->steps[i].itemPool = ADJUST_POINTER_POS(result->script->steps[i].itemPool, pointerOffset);
+    }
+
     result->boundary = ADJUST_POINTER_POS(result->boundary, pointerOffset);
 
     result->tutorial = ADJUST_POINTER_POS(result->tutorial, pointerOffset);
 
-    for (int i = 0; i < result->script->stepCount; ++i) {
-        result->script->steps[i].itemPool = ADJUST_POINTER_POS(result->script->steps[i].itemPool, pointerOffset);
+    for (int i = 0; i < result->tutorialStepCount; ++i) {
+        struct TutorialStep* tutorialStep = &result->tutorial[i];
+        
+        struct TutorialDialogStep* dialog = ADJUST_POINTER_POS(tutorialStep->dialog, pointerOffset);
+        tutorialStep->dialog = dialog;
+
+        for (int j = 0; j < tutorialStep->dialogCount; ++j) {
+            dialog[j].message = ADJUST_POINTER_POS(dialog[j].message, pointerOffset);
+        }
     }
 
     return result;

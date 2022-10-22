@@ -245,6 +245,8 @@ int tutorialUpdate(struct Tutorial* tutorial) {
                 }
             }
         }
+
+        tutorial->currentCharacter = mathfMoveTowards(tutorial->currentCharacter, tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET, FIXED_DELTA_TIME * CHARACTERS_PER_SECOND);
     }
     
     return step != NULL;
@@ -384,9 +386,9 @@ void tutorialModifyActionPrompt(void* data, int index, char character, int* x, i
 
     struct Vector2* direction = &gCharacterAnimationDirection[(index * 997) & 0x7];
 
-    float animationDir = ((1.0f - tutorial->animationLerp) * LONG_SHOT_PROMPT);
+    float animationDir = ((1.0f - tutorial->promptBoxLerp) * LONG_SHOT_PROMPT);
 
-    color->a = (unsigned char)(tutorial->animationLerp * 255.0f);
+    color->a = (unsigned char)(tutorial->promptBoxLerp * 255.0f);
     *x += (int)(animationDir * direction->x);
     *y += (int)(animationDir * direction->y);
 }
@@ -462,7 +464,7 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, cha
     );
 
     struct Coloru8 buttonColor = {255, 255, 255, 255};
-    buttonColor.a = (int)(255.0f * tutorial->animationLerp);
+    buttonColor.a = (int)(255.0f * showAmount);
 
     spriteSetColor(renderState, BUTTONS_UI_INDEX, buttonColor);
     spriteDrawTile(

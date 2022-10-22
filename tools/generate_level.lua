@@ -48,5 +48,6 @@ add_definition("level", "struct LevelDefinition", "_geo", {
     boundaryCount = #boundaryOutput.boundaryEntries,
 
     tutorial = levelJson.tutorial,
+    tutorialStepCount = levelJson.tutorial_step_count,
     tutorialOnStart = levelJson.tutorial_on_start,
 })

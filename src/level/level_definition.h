@@ -143,6 +143,7 @@ struct LevelDefinition {
     short boundaryCount;
 
     struct TutorialStep* tutorial;
+    short tutorialStepCount;
     short tutorialOnStart;
 };
 

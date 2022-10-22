@@ -12,13 +12,24 @@ local json_body = lunajson.decode(file_contents)
 local script_items = {}
 local script_steps = {}
 
-local tutorial_step_mapping = {}
-local tutoral_steps_count = 0
 
 local tutorial_json = json_body.tutorial or {}
 
+local ordered_tutorial = {}
+
 for name, step in pairs(tutorial_json) do
-    tutorial_step_mapping[name] = tutoral_steps_count
+    table.insert(ordered_tutorial, {name = name, step = step})
+end
+
+table.sort(ordered_tutorial, function (a, b)
+    return a.name < b.name
+end)
+
+local tutorial_step_mapping = {}
+local tutoral_steps_count = 0
+
+for _, pair in pairs(ordered_tutorial) do
+    tutorial_step_mapping[pair.name] = tutoral_steps_count
     tutoral_steps_count = tutoral_steps_count + 1
 end
 
@@ -48,14 +59,34 @@ end
 
 local tutorial_data = {}
 
-for name, step in pairs(tutorial_json) do
+for _, pair in pairs(ordered_tutorial) do
+    local name = pair.name
+    local step = pair.step
+
     local dialog_ref = nil
     local dialog_count = 0
 
+    local text_array = {}
+
     if (step.dialog) then
-        add_definition("dialog_" .. name, "struct TutorialDialogStep[]", "_geo", step.dialog);
-        dialog_ref = reference_to(step.dialog, 1)
-        dialog_count = #step.dialog
+        local mapped_dialog = {}
+
+        for _, dialogEntry in pairs(step.dialog) do
+            table.insert(mapped_dialog, {
+                message = reference_to(text_array, #text_array + 1)
+            })
+
+            for i = 1, #dialogEntry.message do
+                table.insert(text_array, string.byte(dialogEntry.message, i))
+            end
+
+            table.insert(text_array, 0)
+        end
+        
+        add_definition("dialog_" .. name .. "_messages", "char[]", "_geo", text_array)
+        add_definition("dialog_" .. name, "struct TutorialDialogStep[]", "_geo", mapped_dialog);
+        dialog_ref = reference_to(mapped_dialog, 1)
+        dialog_count = #mapped_dialog
     end
 
     table.insert(tutorial_data, {
@@ -65,6 +96,7 @@ for name, step in pairs(tutorial_json) do
         onSuccess = tutorial_name_to_index(step.onSuccess),
         onFail = tutorial_name_to_index(step.onFail),
         onTable = tutorial_name_to_index(step.onTable),
+        onPickup = tutorial_name_to_index(step.onPickup),
         prompt = translate_prompt(step.prompt),
         isImmune = step.isImmune and 1 or 0,
     })
@@ -93,7 +125,8 @@ level_json_exports.script = {
     stepCount = #script_steps,
 }
 
-level_json_exports.tutorial = reference_to(tutorial_data, 0);
+level_json_exports.tutorial = reference_to(tutorial_data, 1);
+level_json_exports.tutorial_step_count = #tutorial_data
 level_json_exports.tutorial_on_start = tutorial_name_to_index(json_body.tutorialOnStart)
 
 add_definition("tutorial", "struct TutorialStep[]", "_geo", tutorial_data);

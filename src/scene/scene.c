@@ -214,8 +214,6 @@ void sceneUpdate(struct Scene* scene) {
             if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
                 struct Item* item = player->holdingItem;
 
-                tutorialItemDropped(&scene->tutorial, 0);
-
                 itemDrop(player->holdingItem);
 
                 if (!tutorialIsImmute(&scene->tutorial)) {
@@ -230,8 +228,6 @@ void sceneUpdate(struct Scene* scene) {
                         scene->appearTime = gTimePassed;
                     }
                 }
-            } else {
-                tutorialItemDropped(&scene->tutorial, 1);
             }
 
             player->holdingItem = NULL;
@@ -632,12 +628,16 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
         enum ItemDropResult dropResult = itemRequesterDrop(&scene->itemRequesters[i], item, dropAt);
         if (dropResult) {
             if (dropResult == ItemDropResultSuccess) {
+                tutorialItemDropped(&scene->tutorial, TutorialDropTypeSuccess);
+
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
 
                 if (itemCoordinatorDidWin(&scene->itemCoordinator)) {
                     endScreenEndGame(&scene->endScreen, EndScreenTypeSuccess);
                     saveFileMarkLevelComplete(gCurrentLevelIndex, scene->currentLevelTime);
                 }
+            } else {
+                tutorialItemDropped(&scene->tutorial, TutorialDropTypeFail);
             }
 
             scene->itemRequesters[i].requestDelay = itemCoordinatorPreDelay(&scene->itemCoordinator);
@@ -648,9 +648,12 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 
     for (int i = 0; i < scene->tableCount; ++i) {
         if (tableDropItem(&scene->tables[i], item, dropAt)) {
+            tutorialItemDropped(&scene->tutorial, TutorialDropTypeTable);
             return 1;
         }
     }
+    
+    tutorialItemDropped(&scene->tutorial, TutorialDropTypeFail);
 
     return 0;
 }
