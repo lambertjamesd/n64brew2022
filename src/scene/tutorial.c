@@ -19,230 +19,227 @@
 
 #define SHAKE_PERIOD    0.1f
 
-void tutorialInitCurrentState(struct Tutorial* tutorial);
+// struct TutorialScriptStep gIntroScript[] = {
+//     {
+//         "Welcome to your first day of\norientation\n" 
+//         "I am Tony\n"
+//         "Your floor manager"
+//     },
+//     {
+//         "Your job is to fulfill orders"
+//     },
+//     {
+//         "Products come in on the conveyor\n" 
+//         "Belts and you carry them to\n"
+//         "the portals"
+//     },
+// };
 
-struct TutorialScriptStep gIntroScript[] = {
-    {
-        "Welcome to your first day of\norientation\n" 
-        "I am Tony\n"
-        "Your floor manager"
-    },
-    {
-        "Your job is to fulfill orders"
-    },
-    {
-        "Products come in on the conveyor\n" 
-        "Belts and you carry them to\n"
-        "the portals"
-    },
-};
+// struct TutorialScriptStep gPortalPrompt[] = {
+//     {
+//         "Great\n"
+//         "Now place the pumpkin in\n"
+//         "the portal"
+//     }
+// };
 
-struct TutorialScriptStep gPortalPrompt[] = {
-    {
-        "Great\n"
-        "Now place the pumpkin in\n"
-        "the portal"
-    }
-};
+// struct TutorialScriptStep gWrongDrop[] = {
+//     {
+//         "No\n"
+//         "You need to drop the pumpkin\n"
+//         "in the the portal"
+//     }
+// };
 
-struct TutorialScriptStep gWrongDrop[] = {
-    {
-        "No\n"
-        "You need to drop the pumpkin\n"
-        "in the the portal"
-    }
-};
+// struct TutorialScriptStep gTables[] = {
+//     {
+//         "Excellent work\n"
+//         "Now the shipments coming in\n"
+//         "wont always match the requests\n"
+//         "that come from the portals"
+//     },
+//     {
+//         "You can store objects on the\n"
+//         "tables that are not needed\n"
+//         "right away"
+//     }
+// };
 
-struct TutorialScriptStep gTables[] = {
-    {
-        "Excellent work\n"
-        "Now the shipments coming in\n"
-        "wont always match the requests\n"
-        "that come from the portals"
-    },
-    {
-        "You can store objects on the\n"
-        "tables that are not needed\n"
-        "right away"
-    }
-};
+// struct TutorialScriptStep gCompleteShift[] = {
+//     {
+//         "Thats all you need to know\n"
+//         "Complete your shift today\n"
+//         "tomorrow we will assign you to\n"
+//         "a larger warehouse"
+//     },
+//     {
+//         "Oh and do not drop too many\n"
+//         "items on the floor or fail\n"
+//         "to fulfill requests\n"
+//         "if you do"
+//     },
+//     {
+//         "He will come"
+//     },
+//     {
+//         "and if he catches you\n"
+//         "you will be..."
+//     },
+//     {
+//         "terminated"
+//     },
+//     {
+//         "..."
+//     },
+//     {
+//         "have a nice shift"
+//     },
+// };
 
-struct TutorialScriptStep gCompleteShift[] = {
-    {
-        "Thats all you need to know\n"
-        "Complete your shift today\n"
-        "tomorrow we will assign you to\n"
-        "a larger warehouse"
-    },
-    {
-        "Oh and do not drop too many\n"
-        "items on the floor or fail\n"
-        "to fulfill requests\n"
-        "if you do"
-    },
-    {
-        "He will come"
-    },
-    {
-        "and if he catches you\n"
-        "you will be..."
-    },
-    {
-        "terminated"
-    },
-    {
-        "..."
-    },
-    {
-        "have a nice shift"
-    },
-};
+// struct TutorialScript gTutorialScripts[TutorialStateCount] = {
+//     [TutorialStateIntro] = {
+//         gIntroScript,
+//         sizeof(gIntroScript) / sizeof(gIntroScript[0]),
+//         TutorialStatePickup,
+//     },
+//     [TutorialStatePortalDialog] = {
+//         gPortalPrompt,
+//         sizeof(gPortalPrompt) / sizeof(gPortalPrompt[0]),
+//         TutorialStateDrop,
+//     },
+//     [TutorialStateWrongDrop] = {
+//         gWrongDrop,
+//         sizeof(gWrongDrop) / sizeof(gWrongDrop[0]),
+//         TutorialStatePickup,
+//     },
+//     [TutorialStateTable] = {
+//         gTables,
+//         sizeof(gTables) / sizeof(gTables[0]),
+//         TutorialStateSecondDrop,
+//     },
+//     [TutorialStatePlay] = {
+//         gCompleteShift,
+//         sizeof(gCompleteShift) / sizeof(gCompleteShift[0]),
+//         TutorialStateWait,
+//     },
+// };
 
-struct TutorialScript gTutorialScripts[TutorialStateCount] = {
-    [TutorialStateIntro] = {
-        gIntroScript,
-        sizeof(gIntroScript) / sizeof(gIntroScript[0]),
-        TutorialStatePickup,
-    },
-    [TutorialStatePortalDialog] = {
-        gPortalPrompt,
-        sizeof(gPortalPrompt) / sizeof(gPortalPrompt[0]),
-        TutorialStateDrop,
-    },
-    [TutorialStateWrongDrop] = {
-        gWrongDrop,
-        sizeof(gWrongDrop) / sizeof(gWrongDrop[0]),
-        TutorialStatePickup,
-    },
-    [TutorialStateTable] = {
-        gTables,
-        sizeof(gTables) / sizeof(gTables[0]),
-        TutorialStateSecondDrop,
-    },
-    [TutorialStatePlay] = {
-        gCompleteShift,
-        sizeof(gCompleteShift) / sizeof(gCompleteShift[0]),
-        TutorialStateWait,
-    },
-};
-
-void tutorialInit(struct Tutorial* tutorial) {
-    tutorial->state = TutorialStateWait;
-    tutorial->nextState = TutorialStateWait;
-    tutorial->animationLerp = 0.0f;
-
-    // tutorialSetNextState(tutorial, TutorialStateIntro);
-}
-
-void tutorialSetNextState(struct Tutorial* tutorial, enum TutorialState state) {
-    if (tutorial->state == TutorialStateWait) {
-        tutorial->state = state;
-        tutorialInitCurrentState(tutorial);
-    }
-    
-    tutorial->nextState = state;
-}
-
-void tutorialItemPickedUp(struct Tutorial* tutorial) {
-    if (tutorial->state == TutorialStatePickup) {
-        tutorial->nextState = TutorialStatePortalDialog;
-    }
-}
-
-void tutorialItemDropped(struct Tutorial* tutorial, int success) {
-    if (tutorial->state == TutorialStateDrop) {
-        if (success) {
-            tutorial->nextState = TutorialStateTable;
-        } else {
-            tutorial->nextState = TutorialStateWrongDrop;
-        }
+struct TutorialDialogStep* tutorialCurrentDialogStep(struct Tutorial* tutorial) {
+    if (!tutorial->currentStep) {
+        return NULL;
     }
 
-    if (tutorial->state == TutorialStateSecondDrop && success) {
-        tutorial->nextState = TutorialStatePlay;
+    if (tutorial->currentDialogIndex >= tutorial->currentStep->dialogCount) {
+        return NULL;
     }
-}
 
-void tutorialItemTabled(struct Tutorial* tutorial) {
-
+    return &tutorial->currentStep->dialog[tutorial->currentDialogIndex];
 }
 
 void tutorialInitCurrentMessage(struct Tutorial* tutorial) {
-    if (tutorial->currentScript) {
-        tutorial->currentStepCharacterCount = strlen(tutorial->currentScript->steps[tutorial->currentStep].message);
-    } else {
-        tutorial->currentStepCharacterCount = 0.0f;
+    tutorial->currentDialogCharacterCount = 0;
+    tutorial->currentCharacter = 0.0f;
+
+    struct TutorialDialogStep* dialog = tutorialCurrentDialogStep(tutorial);
+
+    if (!dialog) {
+        return;
     }
 
-    tutorial->currentCharacter = 0.0f;
+    tutorial->currentDialogCharacterCount = strlen(dialog->message);
 }
 
-void tutorialInitCurrentState(struct Tutorial* tutorial) {
-    tutorial->currentScript = &gTutorialScripts[tutorial->state];
-    tutorial->currentStep = 0;
-
-    if (!tutorial->currentScript->steps) {
-        tutorial->currentScript = NULL;
+void tutorialSetNextStep(struct Tutorial* tutorial, short index) {
+    if (index == TUTORAL_NO_STEP) {
+        tutorial->currentStep = NULL;
+    } else {
+        tutorial->currentStep = &tutorial->tutorial[index];
+        tutorial->currentDialogIndex = 0;
+        tutorial->currentPrompt = tutorial->currentStep->prompt;
     }
 
     tutorialInitCurrentMessage(tutorial);
 }
 
-struct TutorialScriptStep* tutorialCurrentStep(struct Tutorial* tutorial) {
-    if (!tutorial->currentScript) {
+void tutorialInit(struct Tutorial* tutorial, struct TutorialStep* script, short tutorialOnStart) {
+    tutorial->tutorial = script;
+    tutorial->currentStep = NULL;
+    tutorial->currentDialogIndex = 0;
+    tutorial->currentDialogCharacterCount = 0;
+    tutorial->currentCharacter = 0;
+    tutorial->animationLerp = 0.0f;
+    tutorial->promptBoxLerp = 0.0f;
+
+    tutorialSetNextStep(tutorial, tutorialOnStart);
+}
+
+void tutorialItemPickedUp(struct Tutorial* tutorial) {
+    if (tutorial->currentStep && tutorial->currentStep->onPickup != TUTORAL_NO_STEP) {
+        tutorialSetNextStep(tutorial, tutorial->currentStep->onPickup);
+    }
+}
+
+void tutorialItemDropped(struct Tutorial* tutorial, enum TutorialDropType dropType) {
+    if (!tutorial->currentStep) {
+        return;
+    }
+
+    switch (dropType) {
+        case TutorialDropTypeSuccess:
+            if (tutorial->currentStep->onSuccess != TUTORAL_NO_STEP) {
+                tutorialSetNextStep(tutorial, tutorial->currentStep->onSuccess);
+            }
+            return;
+        case TutorialDropTypeFail:
+            if (tutorial->currentStep->onFail != TUTORAL_NO_STEP) {
+                tutorialSetNextStep(tutorial, tutorial->currentStep->onFail);
+            }
+            return;
+        case TutorialDropTypeTable:
+            if (tutorial->currentStep->onTable != TUTORAL_NO_STEP) {
+                tutorialSetNextStep(tutorial, tutorial->currentStep->onTable);
+            }
+            return;
+    }
+}
+
+struct TutorialDialogStep* tutorialCurrentDialog(struct Tutorial* tutorial) {
+    if (!tutorial->currentStep) {
         return NULL;
     }
 
-    if (tutorial->currentStep >= tutorial->currentScript->count) {
+    if (tutorial->currentDialogIndex >= tutorial->currentStep->dialogCount) {
         return NULL;
     }
 
-    return &tutorial->currentScript->steps[tutorial->currentStep];
+    return &tutorial->currentStep->dialog[tutorial->currentDialogIndex];
 }
 
 int tutorialUpdate(struct Tutorial* tutorial) {
-    if (tutorial->state == TutorialStateWait) {
-        return 0;
-    }
+    tutorial->animationLerp = mathfMoveTowards(
+        tutorial->animationLerp,
+        tutorial->currentStep && tutorial->currentDialogIndex < tutorial->currentStep->dialogCount ? 1.0f : 0.0f,
+        FIXED_DELTA_TIME / TRANSITION_TIME
+    );
 
-    if (tutorial->state != tutorial->nextState) {
-        tutorial->animationLerp -= (FIXED_DELTA_TIME / TRANSITION_TIME);
 
-        if (tutorial->animationLerp < 0.0f) {
-            tutorial->animationLerp = 0.0f;
-            tutorial->state = tutorial->nextState;
+    tutorial->promptBoxLerp = mathfMoveTowards(
+        tutorial->promptBoxLerp,
+        tutorial->currentStep && tutorial->currentStep->prompt != TutorialPromptTypeNone ? 1.0f : 0.0f,
+        FIXED_DELTA_TIME / TRANSITION_TIME
+    );
 
-            tutorialInitCurrentState(tutorial);
-        }
-    } else if (tutorial->animationLerp < 1.0f) {
-        tutorial->animationLerp += (FIXED_DELTA_TIME / TRANSITION_TIME);
-
-        if (tutorial->animationLerp > 1.0f) {
-            tutorial->animationLerp = 1.0f;
-        }
-    }
-
-    if (tutorial->animationLerp == 1.0f) {
-        if (tutorial->currentCharacter < tutorial->currentStepCharacterCount + CHARACTER_ANIMATION_OFFSET) {
-            tutorial->currentCharacter += FIXED_DELTA_TIME * CHARACTERS_PER_SECOND;
-
-            if (tutorial->currentCharacter > tutorial->currentStepCharacterCount + CHARACTER_ANIMATION_OFFSET) {
-                tutorial->currentCharacter = tutorial->currentStepCharacterCount + CHARACTER_ANIMATION_OFFSET;
-            }
-        }
-    }
-
-    struct TutorialScriptStep* step = tutorialCurrentStep(tutorial);
+    struct TutorialDialogStep* step = tutorialCurrentDialog(tutorial);
 
     if (step) {
         if (controllerGetButtonDown(0, A_BUTTON)) {
-            if (tutorial->currentCharacter < tutorial->currentStepCharacterCount + CHARACTER_ANIMATION_OFFSET) {
-                tutorial->currentCharacter = tutorial->currentStepCharacterCount + CHARACTER_ANIMATION_OFFSET;
+            if (tutorial->currentCharacter < tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET) {
+                tutorial->currentCharacter = tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET;
             } else {
-                ++tutorial->currentStep;
+                ++tutorial->currentDialogIndex;
 
-                if (tutorial->currentStep == tutorial->currentScript->count) {
-                    tutorialSetNextState(tutorial, tutorial->currentScript->nextState);
+                if (tutorial->currentDialogIndex == tutorial->currentStep->dialogCount) {
+                    tutorialSetNextStep(tutorial, tutorial->currentStep->nextState);
                 } else {
                     tutorialInitCurrentMessage(tutorial);
                 }
@@ -250,9 +247,11 @@ int tutorialUpdate(struct Tutorial* tutorial) {
         }
     }
     
-    return tutorial->state != TutorialStatePickup && 
-        tutorial->state != TutorialStateDrop &&
-        tutorial->state != TutorialStateSecondDrop;
+    return step != NULL;
+}
+
+int tutorialIsImmute(struct Tutorial* tutorial) {
+    return tutorial->currentStep && tutorial->currentStep->isImmune;
 }
 
 struct Coloru8 gDialogBack = {0, 0, 0, 255};
@@ -347,7 +346,7 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
         IMAGE_HEIGHT
     );
 
-    struct TutorialScriptStep* step = tutorialCurrentStep(tutorial);
+    struct TutorialDialogStep* step = tutorialCurrentDialog(tutorial);
 
     if (tutorial->animationLerp >= 1.0f && step) {
         fontRenderText(
@@ -399,7 +398,14 @@ void tutorialModifyActionPrompt(void* data, int index, char character, int* x, i
 
 #define BUTTON_TEXT_BOX_WIDTH  128
 
+char* gPromptText[] = {
+    "",
+    "Pickup",
+    "Drop"
+};
+
 struct SpriteTile gButtonSprites[] = {
+    {0, 0, 0, 0},
     {0, 0, 32, 32},
     {32, 0, 32, 32},
 };
@@ -470,19 +476,17 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, cha
 }
 
 void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState) {
-    if (tutorial->state == TutorialStateWait) {
-        return;
-    }
-    
-    if (tutorial->currentScript) {
+    if (tutorial->animationLerp) {
         tutorialRenderTextBacking(tutorial, tutorial->animationLerp, renderState);
     }
 
-    if (tutorial->state == TutorialStatePickup) {
-        tutorialRenderButtonPrompt(tutorial, tutorial->animationLerp, "Pickup", &gButtonSprites[0], renderState);
-    }
-
-    if (tutorial->state == TutorialStateDrop) {
-        tutorialRenderButtonPrompt(tutorial, tutorial->animationLerp, "Drop", &gButtonSprites[1], renderState);
+    if (tutorial->promptBoxLerp && tutorial->currentPrompt) {
+        tutorialRenderButtonPrompt(
+            tutorial, 
+            tutorial->promptBoxLerp, 
+            gPromptText[tutorial->currentPrompt], 
+            &gButtonSprites[tutorial->currentPrompt], 
+            renderState
+        );
     }
 }

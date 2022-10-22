@@ -7,17 +7,28 @@
 
 #define MAX_PLAYERS     4
 
-enum TutorialState {
-    TutorialStateWait,
-    TutorialStateIntro,
-    TutorialStatePickup,
-    TutorialStatePortalDialog,
-    TutorialStateDrop,
-    TutorialStateWrongDrop,
-    TutorialStateTable,
-    TutorialStateSecondDrop,
-    TutorialStatePlay,
-    TutorialStateCount,
+#define TUTORAL_NO_STEP -1
+
+enum TutorialPromptType {
+    TutorialPromptTypeNone,
+    TutorialPromptTypePickup,
+    TutorialPromptTypeDrop,
+};
+
+struct TutorialDialogStep {
+    char* message;
+};
+
+struct TutorialStep {
+    struct TutorialDialogStep* dialog;
+    short dialogCount;
+    short nextState;
+    short onSuccess;
+    short onFail;
+    short onTable;
+    short onPickup;
+    short prompt;
+    short isImmune;
 };
 
 enum ItemType {
@@ -131,7 +142,8 @@ struct LevelDefinition {
     struct BoundarySegment* boundary;
     short boundaryCount;
 
-    enum TutorialState tutorial;
+    struct TutorialStep* tutorial;
+    short tutorialOnStart;
 };
 
 struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);

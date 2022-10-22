@@ -138,11 +138,9 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     }
 
     bezosInit(&scene->bezos);
-    tutorialInit(&scene->tutorial);
+    tutorialInit(&scene->tutorial, definition->tutorial, definition->tutorialOnStart);
     endScreenInit(&scene->endScreen);
     itemInitIdleAnimators();
-
-    tutorialSetNextState(&scene->tutorial, definition->tutorial);
 }
 
 unsigned ignoreInputFrames = 10;
@@ -220,7 +218,7 @@ void sceneUpdate(struct Scene* scene) {
 
                 itemDrop(player->holdingItem);
 
-                if (scene->tutorial.state == TutorialStateWait) {
+                if (!tutorialIsImmute(&scene->tutorial)) {
                     scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
 
                     if (scene->dropPenalty > 1.0f) {

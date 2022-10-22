@@ -2,7 +2,7 @@
     "name": "orientation",
     "script": [
         {
-            "item_pool": ["Hand"],
+            "item_pool": ["Pumpkin"],
             "success_count": 1
         },
         {
@@ -18,5 +18,127 @@
             "success_count": 8
         }
     ],
-    "tutorial": "TutorialStateIntro"
+    "tutorialOnStart": "intro",
+    "tutorial": {
+        "intro": {
+            "dialog": [
+                {
+                    "message": "Welcome to your first day of\norientation\"I am Tony\nYour floor manager"
+                },
+                {
+                    "message": "Your job is to fulfill orders"
+                },
+                {
+                    "message": "Products come in on the conveyor\nBelts and you carry them to\nthe portals"
+                }
+            ],
+            "next": "pickup",
+            "isImmune": true
+        },
+        "pickup": {
+            "onPickup": "usePortal",
+            "prompt": "pickup",
+            "isImmune": true
+        },
+        "usePortal": {
+            "dialog": [
+                {
+                    "message": "Great\nNow place the pumpkin in\nthe portal"
+                }
+            ],
+            "next": "drop",
+            "isImmune": true
+        },
+        "drop": {
+            "onSuccess": "table",
+            "onFail": "wrongDrop",
+            "onTable": "wrongTable",
+            "prompt": "drop",
+            "isImmune": true
+        },
+        "wrongDrop": {
+            "dialog": [
+                {
+                    "message": "No\nYou need to drop the pumpkin\nin the the portal"
+                }
+            ],
+            "next": "pickup",
+            "isImmune": true
+        },
+        "wrongTable": {
+            "dialog": [
+                {
+                    "message": "No\nDo not use a table\nuse the portal"
+                }
+            ],
+            "next": "pickup",
+            "isImmune": true
+        },
+        "table": {
+            "dialog": [
+                {
+                    "message": "Excellent work\nNow the shipments coming in\nwont always match the requests\nthat come from the portals"
+                },
+                {
+                    "message": "You can store objects on the\ntables that are not needed\nright away"
+                }
+            ],
+            "next": "tableDrop",
+            "isImmune": true
+        },
+        "tableDrop": {
+            "onTable": "play",
+            "onFail": "tableFail",
+            "onSuccess": "tableSkip",
+            "isImmune": true
+        },
+        "tableFail": {
+            "dialog": [
+                {
+                    "message": "No\ndo not waste product\nyou can store them\non the table"
+                }
+            ],
+            "next": "tableDrop",
+            "isImmune": true
+        },
+        "tableSkip": {
+            "dialog": [
+                {
+                    "message": "That is one way to\ndo it"
+                },
+                {
+                    "message": "I do not recommend\nyou keep wasting product\nif you do"
+                }
+            ],
+            "next": "heWillCome",
+            "isImmune": true
+        },
+        "play": {
+            "dialog": [
+                {
+                    "message": "Thats all you need to know\nComplete your shift today\ntomorrow we will assign you to\na larger warehouse"
+                },
+                {
+                    "message": "Oh and do not drop too many\nitems on the floor or fail\nto fulfill requests\nif you do"
+                }
+            ],
+            "next": "heWillCome"
+        },
+        "heWillCome": {
+            "dialog": [
+                {
+                    "message": "He will come"
+                },
+                {
+                    "message": "and if he catches you\nyou will be ..."
+                },
+                {
+                    "message": "terminated"
+                },
+                {
+                    "message": "have a nice shift"
+                }
+            ]
+        }
+    }
 }

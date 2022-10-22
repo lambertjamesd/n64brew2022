@@ -12,6 +12,64 @@ local json_body = lunajson.decode(file_contents)
 local script_items = {}
 local script_steps = {}
 
+local tutorial_step_mapping = {}
+local tutoral_steps_count = 0
+
+local tutorial_json = json_body.tutorial or {}
+
+for name, step in pairs(tutorial_json) do
+    tutorial_step_mapping[name] = tutoral_steps_count
+    tutoral_steps_count = tutoral_steps_count + 1
+end
+
+local function tutorial_name_to_index(name)
+    if (not name or name == "") then
+        return -1
+    end
+
+    local result = tutorial_step_mapping[name]
+
+    if (result == nil) then
+        error("could not find script step named " .. name)
+    end
+
+    return result
+end
+
+local function translate_prompt(prompt)
+    if (prompt == "pickup") then
+        return raw("TutorialPromptTypePickup")
+    end
+
+    if (prompt == "drop") then
+        return raw("TutorialPromptTypeDrop")
+    end
+end
+
+local tutorial_data = {}
+
+for name, step in pairs(tutorial_json) do
+    local dialog_ref = nil
+    local dialog_count = 0
+
+    if (step.dialog) then
+        add_definition("dialog_" .. name, "struct TutorialDialogStep[]", "_geo", step.dialog);
+        dialog_ref = reference_to(step.dialog, 1)
+        dialog_count = #step.dialog
+    end
+
+    table.insert(tutorial_data, {
+        dialog = dialog_ref,
+        dialogCount = dialog_count,
+        nextState = tutorial_name_to_index(step.next),
+        onSuccess = tutorial_name_to_index(step.onSuccess),
+        onFail = tutorial_name_to_index(step.onFail),
+        onTable = tutorial_name_to_index(step.onTable),
+        prompt = translate_prompt(step.prompt),
+        isImmune = step.isImmune and 1 or 0,
+    })
+end
+
 for _, script_entry in pairs(json_body.script) do
     local current_step = {
         itemPool = reference_to(script_items, #script_items + 1),
@@ -35,8 +93,10 @@ level_json_exports.script = {
     stepCount = #script_steps,
 }
 
-level_json_exports.tutorial = raw(json_body.tutorial or "TutorialStateWait");
+level_json_exports.tutorial = reference_to(tutorial_data, 0);
+level_json_exports.tutorial_on_start = tutorial_name_to_index(json_body.tutorialOnStart)
 
+add_definition("tutorial", "struct TutorialStep[]", "_geo", tutorial_data);
 add_definition("script_step_items", "u8[]", "_geo", script_items);
 add_definition("script_steps", "struct ItemScriptStep[]", "_geo", script_steps);
 add_definition("script", "struct ItemScript", "_geo", level_json_exports.script);

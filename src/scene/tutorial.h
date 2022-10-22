@@ -4,37 +4,35 @@
 #include "../graphics/renderstate.h"
 #include "../level/level_definition.h"
 
-struct TutorialScriptStep {
-    char* message;
-};
-
-struct TutorialScript {
-    struct TutorialScriptStep* steps;
-    short count;
-    short nextState;
-};
-
 struct Tutorial {
-    enum TutorialState state;
-    enum TutorialState nextState;
+    struct TutorialStep* tutorial;
 
-    struct TutorialScript* currentScript;
-    short currentStep;
-    short currentStepCharacterCount;
+    struct TutorialStep* currentStep;
+    short currentDialogIndex;
+
+    short currentDialogCharacterCount;
     float currentCharacter;
 
+    enum TutorialPromptType currentPrompt;
+
     float animationLerp;
+    float promptBoxLerp;
 };
 
-void tutorialInit(struct Tutorial* tutorial);
+enum TutorialDropType {
+    TutorialDropTypeSuccess,
+    TutorialDropTypeFail,
+    TutorialDropTypeTable,
+};
 
-void tutorialSetNextState(struct Tutorial* tutorial, enum TutorialState state);
+void tutorialInit(struct Tutorial* tutorial, struct TutorialStep* script, short tutorialOnStart);
 
 void tutorialItemPickedUp(struct Tutorial* tutorial);
-void tutorialItemDropped(struct Tutorial* tutorial, int success);
-void tutorialItemTabled(struct Tutorial* tutorial);
+void tutorialItemDropped(struct Tutorial* tutorial, enum TutorialDropType dropType);
 
 int tutorialUpdate(struct Tutorial* tutorial);
+
+int tutorialIsImmute(struct Tutorial* tutorial);
 
 void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState);
 
