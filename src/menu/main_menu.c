@@ -30,6 +30,10 @@ void mainMenuInit(struct MainMenu* mainMenu) {
     mainMenu->selectedLevel = 0;
 }
 
+int mainMenuCanPlayerLevel(struct MainMenu* mainMenu, int levelIndex) {
+    return levelIndex == 0 || saveFileIsLevelComplete(levelIndex - 1);
+}
+
 void mainMenuUpdate(struct MainMenu* mainMenu) {
     if (mainMenu->levelToLoad == NO_QUEUED_LEVEL) {
         mainMenu->fadeAmount = mathfMoveTowards(mainMenu->fadeAmount, 1.0f, FIXED_DELTA_TIME * (1.0f / FADE_TIME));
@@ -60,7 +64,7 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
     }
 
     if (mainMenu->currentState == MainMenuLevelList) {
-        if (controllerGetButtonDown(0, A_BUTTON)) {
+        if (controllerGetButtonDown(0, A_BUTTON) && mainMenuCanPlayerLevel(mainMenu, mainMenu->selectedLevel)) {
             mainMenu->levelToLoad = mainMenu->selectedLevel;
             mainMenu->currentState = MainMenuLoading;
         }
@@ -116,7 +120,7 @@ void mainMenuRender(struct MainMenu* mainMenu, struct RenderState* renderState, 
     if (mainMenu->windowOpenAnimation == 1.0f) {
         struct LevelMetadata* levelMetadata = levelGetMetadata(mainMenu->selectedLevel);
 
-        int isEnabled = mainMenu->selectedLevel == 0 || saveFileIsLevelComplete(mainMenu->selectedLevel - 1);
+        int isEnabled = mainMenuCanPlayerLevel(mainMenu, mainMenu->selectedLevel);
 
         spriteSetColor(renderState, NIGHTCHILDE_INDEX, gTextDrop);
         fontRenderText(renderState, &gNightChilde, levelMetadata->name, 388, 182, 1, NULL, NULL);

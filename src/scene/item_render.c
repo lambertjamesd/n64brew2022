@@ -10,6 +10,8 @@
 #include "../graphics/graphics.h"
 #include "../util/time.h"
 
+#include "./item.h"
+
 static Vp gItemRenderViewport = {
   .vp = {
     .vscale = {ITEM_RENDER_SIZE*2, ITEM_RENDER_SIZE*2, G_MAXZ/2, 0},	/* scale */
@@ -65,10 +67,6 @@ void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, s
         );
         gSPMatrix(renderState->dl++, projection, G_MTX_LOAD | G_MTX_PROJECTION | G_MTX_NOPUSH);
     }
-
-    Mtx* modelMtx = renderStateRequestMatrices(renderState, 1);
-    guRotate(modelMtx, gTimePassed * 30.0f, 0.0f, 1.0f, 0.0f);
-    gSPMatrix(renderState->dl++, modelMtx, G_MTX_PUSH | G_MTX_MODELVIEW | G_MTX_MUL);
     
     // set item material
     gDPPipeSync(renderState->dl++);
@@ -97,18 +95,11 @@ void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, s
 
     // setup item armature
     if (itemDef->boneCount) {
-        Mtx* armature = renderStateRequestMatrices(renderState, itemDef->boneCount);
-
-        for (int i = 0; i < itemDef->boneCount; ++i) {
-            transformToMatrixL(&itemDef->defaultBones[i], &armature[i], 1.0f);
-        }
-
-        gSPSegment(renderState->dl++, MATRIX_TRANSFORM_SEGMENT, armature);
+        gSPSegment(renderState->dl++, MATRIX_TRANSFORM_SEGMENT, itemGetIdle(itemType, renderState));
     }
 
     // render item
     gSPDisplayList(renderState->dl++, itemDef->dl);
-    gSPPopMatrix(renderState->dl++, G_MTX_MODELVIEW);
 }
 
 Gfx* itemRenderUseImage(int itemIndex, struct RenderState* renderState, Gfx* promptGfx) {

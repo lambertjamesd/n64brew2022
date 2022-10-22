@@ -38,6 +38,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &pumpkin_camera,
         &pumpkin_light,
+        NULL,
     },
     [ItemTypeHat] = {
         hat_model_gfx,
@@ -48,6 +49,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &hat_camera,
         &hat_light,
+        NULL,
     },
     [ItemTypeBrain] = {
         brain_model_gfx,
@@ -58,6 +60,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &brain_camera,
         &brain_light,
+        NULL,
     },
     [ItemTypeBroom] = {
         broom_model_gfx,
@@ -68,6 +71,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &broom_camera,
         &broom_light,
+        NULL,
     },
     [ItemTypeCandle] = {
         candle_model_gfx,
@@ -78,16 +82,18 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &candle_camera,
         &candle_light,
+        NULL,
     },
     [ItemTypeCat] = {
         cat_model_gfx,
-        ANIMAL_MAT_INDEX,
+        ITEMS_INDEX,
         CAT_DEFAULT_BONES_COUNT,
         CAT_ATTACHMENT_COUNT,
         cat_default_bones,
         cat_bone_parent,
         &cat_camera,
         &cat_light,
+        &cat_animations[CAT_CAT_CAT_ARMATURE_CATIDLE_INDEX],
     },
     [ItemTypeCobweb] = {
         cobweb_model_gfx,
@@ -98,6 +104,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &cobweb_camera,
         &cobweb_light,
+        NULL,
     },
     [ItemTypeCrow] = {
         crow_model_gfx,
@@ -108,16 +115,18 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         crow_bone_parent,
         &crow_camera,
         &crow_light,
+        NULL,
     },
     [ItemTypeHand] = {
         hand_model_gfx,
-        ITEMS_INDEX,
+        RATHAND_INDEX,
         HAND_DEFAULT_BONES_COUNT,
         HAND_ATTACHMENT_COUNT,
         hand_default_bones,
         hand_bone_parent,
         &hand_camera,
         &hand_light,
+        &hand_animations[HAND_HAND__HAND_0_HANDWALK_INDEX],
     },
     [ItemTypeRat] = {
         rat_model_gfx,
@@ -128,6 +137,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         rat_bone_parent,
         &rat_camera,
         &rat_light,
+        &rat_animations[RAT_RAT_RATIDLE_INDEX],
     },
     [ItemTypeScarecrow] = {
         scarecrow_model_gfx,
@@ -138,6 +148,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &rat_camera,
         &rat_light,
+        NULL,
     },
     [ItemTypeSkull] = {
         skull_model_gfx,
@@ -148,6 +159,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &skull_camera,
         &skull_light,
+        NULL,
     },
     [ItemTypeSpider] = {
         spider_model_gfx,
@@ -158,8 +170,79 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         spider_bone_parent,
         &spider_camera,
         &spider_light,
+        &spider_animations[SPIDER_SPIDER_SPIDERIDLE_INDEX],
     },
 };
+
+struct ItemIdleAnimators gIdleAnimators[ItemTypeCount];
+
+void itemInitIdleAnimators() {
+    for (int i = 0; i < ItemTypeCount; ++i) {
+        struct ItemTypeDefinition* definition = &gItemDefinitions[i];
+        struct ItemIdleAnimators* animator = &gIdleAnimators[i];
+
+        if (!definition->idleAnimation) {
+            continue;
+        }
+
+        skArmatureInit(
+            &animator->armature, 
+            definition->dl, 
+            definition->boneCount, 
+            definition->defaultBones, 
+            definition->boneParent, 
+            definition->attachmentCount
+        );
+
+        skAnimatorInit(&animator->animator, definition->boneCount, NULL, NULL);
+
+        skAnimatorRunClip(&animator->animator, definition->idleAnimation, SKAnimatorFlagsLoop);
+
+        animator->mtxArmature = NULL;
+    }
+}
+
+void itemMarkNeedsUpdate() {
+    for (int i = 0; i < ItemTypeCount; ++i) {
+        gIdleAnimators[i].hasUpdated = 0;
+    }
+}
+
+void itemMarkNeedsRender() {
+    for (int i = 0; i < ItemTypeCount; ++i) {
+        gIdleAnimators[i].mtxArmature = NULL;
+    }
+}
+
+void itemUpdateAnimations(enum ItemType itemType) {
+    struct ItemTypeDefinition* definition = &gItemDefinitions[itemType];
+    struct ItemIdleAnimators* animator = &gIdleAnimators[itemType];
+
+    if (!definition->idleAnimation || animator->hasUpdated) {
+        return;
+    }
+
+    skAnimatorUpdate(&animator->animator, animator->armature.boneTransforms, 1.0f);
+    animator->hasUpdated = 1;
+}
+
+Mtx* itemGetIdle(enum ItemType itemType, struct RenderState* renderState) {
+    struct ItemTypeDefinition* definition = &gItemDefinitions[itemType];
+    struct ItemIdleAnimators* animator = &gIdleAnimators[itemType];
+
+    if (!definition->idleAnimation) {
+        return NULL;
+    }
+
+    if (animator->mtxArmature) {
+        return animator->mtxArmature;
+    }
+
+    animator->mtxArmature = renderStateRequestMatrices(renderState, definition->boneCount);
+    skCalculateTransforms(&animator->armature, animator->mtxArmature);
+
+    return animator->mtxArmature;
+}
 
 void itemInit(struct Item* item, enum ItemType itemType, struct Transform* initialPose) {
     item->next = NULL;
@@ -196,6 +279,7 @@ void itemUpdate(struct Item* item) {
     }
 
     if (item->flags & ITEM_FLAGS_HAS_ARMATURE) {
+        itemUpdateAnimations(item->type);
         skAnimatorUpdate(&item->animator, item->armature.boneTransforms, 1.0f);
     }
 
@@ -241,17 +325,10 @@ void itemUpdate(struct Item* item) {
 }
 
 void itemPreRender(struct Item* item, struct RenderState* renderState) {
-    struct ItemTypeDefinition* definition = &gItemDefinitions[item->type];
-
     item->mtxTransform = renderStateRequestMatrices(renderState, 1);
     transformToMatrixL(&item->transform, item->mtxTransform, SCENE_SCALE);
 
-    item->mtxArmature = NULL;
-
-    if (definition->boneCount) {
-        item->mtxArmature = renderStateRequestMatrices(renderState, definition->boneCount);
-        skCalculateTransforms(&item->armature, item->mtxArmature);
-    }
+    item->mtxArmature = itemGetIdle(item->type, renderState);
 }
 
 void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene) {

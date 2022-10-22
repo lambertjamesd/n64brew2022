@@ -5,8 +5,8 @@
 
 #include "color.h"
 
-#define MAX_DL_LENGTH           4000
-#define MAX_RENDER_STATE_MEMORY 8800
+#define MAX_DL_LENGTH           6000
+#define MAX_RENDER_STATE_MEMORY 10000
 #define MAX_RENDER_STATE_MEMORY_CHUNKS (MAX_RENDER_STATE_MEMORY / sizeof(u64))
 #define MAX_DYNAMIC_LIGHTS      128
 #define MAX_LAYER_COUNT     16

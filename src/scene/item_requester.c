@@ -55,6 +55,8 @@ void itemRequesterUpdate(struct ItemRequester* requester) {
             requester->requestDelay = 0.0f;
         }
     }
+
+    itemUpdateAnimations(requester->requestedType);
 }
 
 void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType itemType, float duration) {

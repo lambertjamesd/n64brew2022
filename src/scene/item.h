@@ -19,6 +19,7 @@ struct ItemTypeDefinition {
     unsigned short* boneParent;
     struct CameraDefinition* cameraDefinition;
     struct Vector3* lightDir;
+    struct SKAnimationHeader* idleAnimation;
 };
 
 #define ITEM_FLAGS_ATTACHED         (1 << 0)
@@ -32,6 +33,13 @@ struct ItemTypeDefinition {
 #define ITEM_DROP_PICKUP_RADIUS  1.0f
 
 extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
+
+struct ItemIdleAnimators {
+    struct SKAnimator animator;
+    struct SKArmature armature;
+    Mtx* mtxArmature;
+    int hasUpdated;
+};
 
 struct Item {
     struct Item* next;
@@ -55,6 +63,12 @@ struct Item {
 
     unsigned short flags;
 };
+
+void itemInitIdleAnimators();
+void itemMarkNeedsUpdate();
+void itemMarkNeedsRender();
+void itemUpdateAnimations(enum ItemType itemType);
+Mtx* itemGetIdle(enum ItemType itemType, struct RenderState* renderState);
 
 void itemInit(struct Item* item, enum ItemType itemType, struct Transform* initialPose);
 

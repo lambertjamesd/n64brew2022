@@ -2,7 +2,7 @@
     "name": "orientation",
     "script": [
         {
-            "item_pool": ["Pumpkin"],
+            "item_pool": ["Hand"],
             "success_count": 1
         },
         {

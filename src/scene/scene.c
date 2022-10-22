@@ -140,6 +140,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     bezosInit(&scene->bezos);
     tutorialInit(&scene->tutorial);
     endScreenInit(&scene->endScreen);
+    itemInitIdleAnimators();
 
     tutorialSetNextState(&scene->tutorial, definition->tutorial);
 }
@@ -178,6 +179,8 @@ void sceneUpdate(struct Scene* scene) {
 
         return;
     }
+
+    itemMarkNeedsUpdate();
 
     int isEnding = scene->endScreen.success != EndScreenTypeNone;
 
@@ -325,6 +328,7 @@ struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
 void sceneRender(struct Scene* scene, struct RenderState* renderState, struct GraphicsTask* task) {
     uiInitSpirtes(renderState);
+    itemMarkNeedsRender();
 
     Mtx* identity = renderStateRequestMatrices(renderState, 1);
     guMtxIdent(identity);

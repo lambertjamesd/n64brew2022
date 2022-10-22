@@ -174,6 +174,7 @@ void gameProc(void *arg) {
                 if (levelGetQueued() != NO_QUEUED_LEVEL) {
                     if (pendingGFX == 0) {
                         heapInit(_heapStart, memoryEnd);
+                        skResetDataPool();
 
                         if (levelGetQueued() == MAIN_MENU_LEVEL) {
                             mainMenuInit(&gMainMenu);
