@@ -1,0 +1,66 @@
+{
+    "name": "level 02",
+    "script": [
+        {
+            "item_pool": ["Candle", "Cat", "Scarecrow", "Skull"],
+            "success_count": 4,
+            "item_delay": 1,
+            "item_timeout": 20,
+            "item_spawn_delay": 4
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 9,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
+            "success_count": 6,
+            "item_delay": 1,
+            "item_timeout": 9,
+            "item_spawn_delay": 4
+        },
+        {
+            "item_pool": ["Cat", "Scarecrow", "Hand"],
+            "success_count": 8,
+            "item_delay": 1,
+            "item_timeout": 12,
+            "item_spawn_delay": 4
+        },
+        {
+            "item_pool": ["Cat", "Scarecrow", "Hand", "Hat"],
+            "success_count": 8,
+            "item_delay": 5,
+            "item_timeout": 12,
+            "item_spawn_delay": 3
+        },
+        {
+            "item_pool": ["Cat", "Scarecrow", "Hand", "Hat"],
+            "success_count": 8,
+            "item_delay": 1,
+            "item_timeout": 8,
+            "item_spawn_delay": 4
+        }
+    ],
+    "tutorialOnStart": "intro",
+    "tutorial": {
+        "intro": {
+            "dialog": [
+                {
+                    "message": "Welcome back"
+                },
+                {
+                    "message": "You will notice that\nthis warehouse has a\nreturn bin"
+                },
+                {
+                    "message": "If you need to get\nrid of something drop\nit in the return bin\nwith no penalty"
+                },
+                {
+                    "message": "I will see you tomorrow"
+                }
+            ]
+        }
+    }
+}

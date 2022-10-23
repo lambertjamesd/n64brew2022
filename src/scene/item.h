@@ -9,6 +9,7 @@
 #include "../math/transform.h"
 #include "../level/level_definition.h"
 #include "spot_light.h"
+#include "tutorial.h"
 
 struct ItemTypeDefinition {
     Gfx* dl;
@@ -28,6 +29,7 @@ struct ItemTypeDefinition {
 #define ITEM_FLAGS_POOFED           (1 << 3)
 #define ITEM_FLAGS_GONE             (1 << 4)
 #define ITEM_FLAGS_SUCCESS          (1 << 5)
+#define ITEM_FLAGS_RETURNED         (1 << 6)
 
 #define ITEM_PICKUP_RADIUS  1.0f
 #define ITEM_DROP_PICKUP_RADIUS  1.0f
@@ -83,7 +85,8 @@ void itemUpdateTarget(struct Item* item, struct Transform* transform);
 void itemMarkNewTarget(struct Item* item);
 
 void itemDrop(struct Item* item);
-void itemSuccess(struct Item* item);
+void itemSuccess(struct Item* item, struct Vector3* portalAt);
+void itemReturn(struct Item* item, struct Vector3* binAt);
 
 struct ItemPool {
     struct Item* itemHead;
@@ -96,7 +99,7 @@ void itemPoolInit(struct ItemPool* itemPool);
 struct Item* itemPoolNew(struct ItemPool* itemPool, enum ItemType itemType, struct Transform* initialPose);
 void itemPoolFree(struct ItemPool* itemPool, struct Item* item);
 
-void itemPoolUpdate(struct ItemPool* itemPool);
+void itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial);
 
 void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene);
 

@@ -3,19 +3,27 @@
     "script": [
         {
             "item_pool": ["Pumpkin"],
-            "success_count": 1
+            "success_count": 1,
+            "item_spawn_delay": 1,
+            "item_timeout": 60
         },
         {
             "item_pool": ["Hat"],
-            "success_count": 1
+            "success_count": 1,
+            "item_spawn_delay": 1,
+            "item_timeout": 60
         },
         {
             "item_pool": ["Pumpkin", "Hat", "Hat"],
-            "success_count": 8
+            "success_count": 8,
+            "item_spawn_delay": 0,
+            "item_timeout": 60
         },
         {
             "item_pool": ["Pumpkin", "Hat", "Candle"],
-            "success_count": 8
+            "success_count": 8,
+            "item_spawn_delay": 0,
+            "item_timeout": 30
         }
     ],
     "tutorialOnStart": "intro",

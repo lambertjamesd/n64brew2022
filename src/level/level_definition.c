@@ -7,7 +7,6 @@ struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int point
 
     result->staticContent = ADJUST_POINTER_POS(result->staticContent, pointerOffset);
     result->groundContent = ADJUST_POINTER_POS(result->groundContent, pointerOffset);
-    result->itemSlots = ADJUST_POINTER_POS(result->itemSlots, pointerOffset);
     result->spotLights = ADJUST_POINTER_POS(result->spotLights, pointerOffset);
     result->conveyors = ADJUST_POINTER_POS(result->conveyors, pointerOffset);
     result->tables = ADJUST_POINTER_POS(result->tables, pointerOffset);
@@ -34,6 +33,8 @@ struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int point
             dialog[j].message = ADJUST_POINTER_POS(dialog[j].message, pointerOffset);
         }
     }
+
+    result->returnBins = ADJUST_POINTER_POS(result->returnBins, pointerOffset);
 
     return result;
 }

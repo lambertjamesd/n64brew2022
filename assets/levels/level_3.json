@@ -1,0 +1,20 @@
+{
+    "name": "level 03",
+    "script": [
+        {
+            "item_pool": ["Candle", "Cat", "Scarecrow", "Skull"],
+            "success_count": 4,
+            "item_delay": 1,
+            "item_timeout": 20,
+            "item_spawn_delay": 4
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 9,
+            "item_spawn_delay": 1
+        }
+    ],
+    "tutorial": {}
+}

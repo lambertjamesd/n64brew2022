@@ -58,7 +58,7 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
     );
 
     if (mainMenu->currentState == MainMenuTitleScreen) {
-        if (controllerGetButtonDown(0, START_BUTTON)) {
+        if (controllerGetButtonDown(0, START_BUTTON) && !controllerGetButtonDown(0, A_BUTTON)) {
             mainMenu->currentState = MainMenuLevelList;
         }
     }

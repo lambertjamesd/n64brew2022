@@ -109,6 +109,7 @@ for _, script_entry in pairs(json_body.script) do
         successCount = script_entry.success_count,
         itemTimeout = script_entry.item_timeout or 30,
         itemDelay = script_entry.item_delay or 0,
+        itemSpawnDelay = script_entry.item_spawn_delay or 0,
     }
 
     for _, item in pairs(script_entry.item_pool) do

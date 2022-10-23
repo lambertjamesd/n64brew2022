@@ -13,9 +13,9 @@
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
 
-#define BEZOS_MOVE_SPEED   0.5f
+#define BEZOS_MOVE_SPEED   0.35f
 
-#define BEZOS_ACCELERATION 2.0f
+#define BEZOS_ACCELERATION 1.0f
 
 
 void bezosColliderCallback(void* data, struct Vector3* normal, float depth, struct CollisionObject* other) {

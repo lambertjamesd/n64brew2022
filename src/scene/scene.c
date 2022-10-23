@@ -46,10 +46,10 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 #define LIGHT_ORBIT_PERIOD  3.0f
 
 #define DROPS_PER_FULL_BAR          5
-#define TIME_TO_DECAY_FULL_BAR      120
+#define TIME_TO_DECAY_FULL_BAR      50
 
-#define APPEAR_FLAG_PERIOD  0.75f
-#define APPEAR_FLAG_COUNT   3
+#define APPEAR_FLASH_PERIOD  0.1f
+#define APPEAR_FLASH_COUNT   2
 
 #define FADE_IN_DURATION    2.0f
 
@@ -69,6 +69,8 @@ void materialSetOutline(struct RenderState* renderState, int objectIndex) {
 
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount) {
+    randomSeed((int)gTimePassed, (int)(13.0f * gTimePassed));
+
     itemPoolInit(&scene->itemPool);
     collisionSceneInit(&gCollisionScene, 
         definition->tableCount + 
@@ -76,6 +78,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
         definition->boundaryCount + 
         definition->conveyorCount + 
         definition->itemRequesterCount +
+        definition->returnBinCount +
         1 // bezos
     );
     
@@ -94,12 +97,6 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     scene->playerCount = (u8)playerCount;
     for (int i = 0; i < playerCount; ++i) {
         playerInit(&scene->players[i], &definition->playerStart[i], i, gPlayerShadowBuffers[i]);
-    }
-
-    scene->itemSlotCount = definition->itemSlotCount;
-    scene->itemSlots = malloc(sizeof(struct ItemSlot) * scene->itemSlotCount);
-    for (int i = 0; i < scene->itemSlotCount; ++i) {
-        itemSlotInit(&scene->itemSlots[i], &definition->itemSlots[i]);
     }
 
     scene->spotLightCount = definition->spotLightCount;
@@ -124,6 +121,12 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     scene->itemRequesters = malloc(sizeof(struct ItemRequester) * scene->itemRequesterCount);
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         itemRequesterInit(&scene->itemRequesters[i], &definition->itemRequesters[i]);
+    }
+
+    scene->returnBinCount = definition->returnBinCount;
+    scene->returnBins = malloc(sizeof(struct ReturnBin) * scene->returnBinCount);
+    for (int i = 0; i < scene->returnBinCount; ++i) {
+        returnBinInit(&scene->returnBins[i], &definition->returnBins[i]);
     }
 
     scene->dropPenalty = 0.0f;
@@ -266,7 +269,7 @@ void sceneUpdate(struct Scene* scene) {
         conveyorUpdate(&scene->conveyors[i]);
     }
 
-    itemPoolUpdate(&scene->itemPool);
+    itemPoolUpdate(&scene->itemPool, &scene->tutorial);
 
     for (int i = 0; i < scene->spotLightCount; ++i) {
         spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
@@ -315,8 +318,8 @@ void sceneUpdate(struct Scene* scene) {
 }
 
 struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
-struct Colorf32 gAmbientScale = {0.5f, 0.5f, 0.5f, 255};
-struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
+struct Colorf32 gAmbientScale = {0.75f, 0.75f, 0.75f, 255};
+struct Colorf32 gLightColor = {0.2f, 0.2f, 0.15f, 255};
 
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
@@ -442,6 +445,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     for (unsigned i = 0; i < scene->spotLightCount; ++i) {
         spotLightRender(&scene->spotLights[i], renderScene);
     }
+    
+    for (int i = 0; i < scene->returnBinCount; ++i) {
+        returnBinRender(&scene->returnBins[i], renderScene);
+    }
 
     bezosRender(&scene->bezos, scene->spotLights, scene->spotLightCount, renderScene);
 
@@ -562,8 +569,8 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     float timeSinceBezos = gTimePassed - scene->appearTime;
 
-    if (timeSinceBezos > 0.0f && timeSinceBezos < APPEAR_FLAG_PERIOD * APPEAR_FLAG_COUNT) {
-        if (mathfMod(timeSinceBezos, APPEAR_FLAG_PERIOD) < APPEAR_FLAG_PERIOD * 0.5f) {
+    if (timeSinceBezos > 0.0f && timeSinceBezos < APPEAR_FLASH_PERIOD * APPEAR_FLASH_COUNT) {
+        if (mathfMod(timeSinceBezos, APPEAR_FLASH_PERIOD) < APPEAR_FLASH_PERIOD * 0.5f) {
             effects |= PalleteEffectsInvert;
         }
 
@@ -628,21 +635,17 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
         enum ItemDropResult dropResult = itemRequesterDrop(&scene->itemRequesters[i], item, dropAt);
         if (dropResult) {
             if (dropResult == ItemDropResultSuccess) {
-                tutorialItemDropped(&scene->tutorial, TutorialDropTypeSuccess);
-
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
 
                 if (itemCoordinatorDidWin(&scene->itemCoordinator)) {
                     endScreenEndGame(&scene->endScreen, EndScreenTypeSuccess);
                     saveFileMarkLevelComplete(gCurrentLevelIndex, scene->currentLevelTime);
                 }
-            } else {
-                tutorialItemDropped(&scene->tutorial, TutorialDropTypeFail);
             }
 
             scene->itemRequesters[i].requestDelay = itemCoordinatorPreDelay(&scene->itemCoordinator);
 
-            return 1;
+            return dropResult == ItemDropResultSuccess;
         }
     }
 
@@ -652,8 +655,13 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
             return 1;
         }
     }
-    
-    tutorialItemDropped(&scene->tutorial, TutorialDropTypeFail);
+
+
+    for (int i = 0; i < scene->returnBinCount; ++i) {
+        if (returnBinDropItem(&scene->returnBins[i], item, dropAt)) {
+            return 1;
+        }
+    }
 
     return 0;
 }
@@ -682,6 +690,13 @@ int sceneItemHover(struct Scene* scene, struct Item* item, struct Vector3* dropA
         int result = tableHoverItem(&scene->tables[i], dropAt, hoverOutput);
         if (result) {
             return result;
+        }
+    }
+
+
+    for (int i = 0; i < scene->returnBinCount; ++i) {
+        if (returnBinHover(&scene->returnBins[i], dropAt, hoverOutput)) {
+            return 1;
         }
     }
 

@@ -13,7 +13,9 @@
 #define BELT_SPEED  1.0f
 #define BELT_OFFSET_GAP     1.0f
 
-#define START_BELT_OFFSET   3.0f
+#define START_BELT_OFFSET   1.5f
+
+#define BELT_SPAWN_DELAY    4.0f
 
 struct Vector3 gBeltEnd = {0.0f, 0.7f, 0.3f};
 
@@ -21,6 +23,7 @@ void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definiti
     conveyor->transform.position = definition->position;
     conveyor->transform.rotation = definition->rotation;
     conveyor->transform.scale = gOneVec; 
+    conveyor->spawnDelay = 0.0f;
 
     conveyor->pendingItems[0] = NULL;
     conveyor->pendingItems[1] = NULL;
@@ -35,6 +38,7 @@ void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definiti
 }
 
 void conveyorUpdate(struct Conveyor* conveyor) {
+    
     struct Transform transform;
 
     quatIdent(&transform.rotation);
@@ -58,6 +62,14 @@ void conveyorUpdate(struct Conveyor* conveyor) {
             conveyor->beltOffset[i] = i * BELT_OFFSET_GAP;
         }
     }
+
+    if (conveyor->spawnDelay > 0.0f) {
+        conveyor->spawnDelay -= FIXED_DELTA_TIME;
+
+        if (conveyor->spawnDelay < 0.0f) {
+            conveyor->spawnDelay = 0.0f;
+        }
+    }
 }
 
 void conveyorRender(struct Conveyor* conveyor, struct RenderScene* renderScene) {
@@ -68,7 +80,7 @@ void conveyorRender(struct Conveyor* conveyor, struct RenderScene* renderScene) 
 }
 
 int conveyorCanAcceptItem(struct Conveyor* conveyor) {
-    return conveyor->pendingItems[1] == NULL && (conveyor->pendingItems[0] == NULL || conveyor->beltOffset[0] == 0.0f);
+    return conveyor->spawnDelay == 0.0f && conveyor->pendingItems[1] == NULL && (conveyor->pendingItems[0] == NULL || conveyor->beltOffset[0] == 0.0f);
 }
 
 void conveyorAcceptItem(struct Conveyor* conveyor, struct Item* item) {
@@ -99,6 +111,8 @@ struct Item* conveyorReleaseItem(struct Conveyor* conveyor) {
     conveyor->beltOffset[1] = 0.0f;
 
     itemMarkNewTarget(result);
+
+    conveyor->spawnDelay = BELT_SPAWN_DELAY;
 
     return result;
 }

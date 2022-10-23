@@ -124,7 +124,7 @@ enum ItemDropResult itemRequesterDrop(struct ItemRequester* requester, struct It
         enum ItemDropResult result = item->type == requester->requestedType ? ItemDropResultSuccess : ItemDropResultFail;
 
         if (result == ItemDropResultSuccess) {
-            itemSuccess(item);
+            itemSuccess(item, &requester->transform.position);
         } else {
             itemDrop(item);
         }

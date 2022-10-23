@@ -10,7 +10,7 @@
 void endScreenInit(struct EndScreen* endScreen) { 
     endScreen->animationLerp = 0.0f;
     endScreen->success = EndScreenTypeNone;
-    endScreen->preDelay = 1.0f;
+    endScreen->preDelay = 2.0f;
     endScreen->textAnimation = 0.0f;
 }
 

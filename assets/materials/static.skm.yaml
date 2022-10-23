@@ -224,3 +224,14 @@ materials:
       bypassEffects: true
     gSPGeometryMode:
       clear: [G_SHADE, G_LIGHTING]
+
+
+  return_bin_rim:
+    gDPSetCombineMode:
+      color: ["0", "0", "0", "PRIMITIVE"]
+    gSPGeometryMode:
+      clear: [G_SHADE, G_LIGHTING]
+    gDPSetPrimColor:
+      r: 255
+      g: 255
+      b: 0

@@ -24,9 +24,11 @@
 
 #define DROP_GRAVITY        -9.8f
 
-#define POOF_TIME           0.5f
-#define POOF_DAMPING        0.95f
-#define POOF_SCALING        1.05f
+#define POOF_TIME           1.5f
+#define POOF_DAMPING        0.92f
+#define POOF_SCALING        1.01f
+
+#define TRANSLATE_SPEED     2.0f
 
 struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
     [ItemTypePumpkin] = {
@@ -146,8 +148,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         0,
         NULL,
         NULL,
-        &rat_camera,
-        &rat_light,
+        &scarecrow_camera,
+        &scarecrow_light,
         NULL,
     },
     [ItemTypeSkull] = {
@@ -299,13 +301,19 @@ void itemUpdate(struct Item* item) {
 
         vector3AddScaled(&item->transform.position, &item->dropInfo.velocity, FIXED_DELTA_TIME, &item->transform.position);
 
+        if (item->flags & (ITEM_FLAGS_SUCCESS | ITEM_FLAGS_RETURNED)) {
+            struct Vector3 targetHorizontal = item->target.position;
+            targetHorizontal.y = item->transform.position.y;
+            vector3MoveTowards(&item->transform.position, &targetHorizontal, FIXED_DELTA_TIME * TRANSLATE_SPEED, &item->transform.position);
+        }
+
         if (item->transform.position.y < 0.0f) {
             item->transform.position.y = 0.0f;
             item->dropInfo.velocity.x = 0.0f;
-            item->dropInfo.velocity.y = -item->dropInfo.velocity.y;
+            item->dropInfo.velocity.y = -item->dropInfo.velocity.y * 0.5f;
             item->dropInfo.velocity.z = 0.0f;
 
-            if (item->flags & ITEM_FLAGS_SUCCESS) {
+            if (item->flags & (ITEM_FLAGS_SUCCESS | ITEM_FLAGS_RETURNED)) {
                 item->flags |= ITEM_FLAGS_GONE;
             } else {
                 item->flags |= ITEM_FLAGS_POOFED;
@@ -369,10 +377,19 @@ void itemDrop(struct Item* item) {
     item->dropInfo.pooftimer = 0.0f;
 }
 
-void itemSuccess(struct Item* item) {
+void itemSuccess(struct Item* item, struct Vector3* portalAt) {
     item->flags |= ITEM_FLAGS_DROPPED | ITEM_FLAGS_SUCCESS;
     item->dropInfo.velocity = gZeroVec;
     item->dropInfo.pooftimer = 0.0f;
+    item->target.position = *portalAt;
+}
+
+void itemReturn(struct Item* item, struct Vector3* binAt) {
+    item->flags |= ITEM_FLAGS_DROPPED | ITEM_FLAGS_RETURNED;
+    item->dropInfo.velocity = gZeroVec;
+    item->dropInfo.pooftimer = 0.0f;
+    item->target.position = *binAt;
+
 }
 
 void itemPoolInit(struct ItemPool* itemPool) {
@@ -428,7 +445,7 @@ void itemPoolFree(struct ItemPool* itemPool, struct Item* item) {
     --itemPool->itemCount;
 }
 
-void itemPoolUpdate(struct ItemPool* itemPool) {
+void itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial) {
     struct Item* current = itemPool->itemHead;
     struct Item* prev = NULL;
 
@@ -438,7 +455,17 @@ void itemPoolUpdate(struct ItemPool* itemPool) {
         struct Item* next = current->next;
 
         if (current->flags & ITEM_FLAGS_GONE) {
-            prev->next = next;
+            if (current->flags & ITEM_FLAGS_SUCCESS) {
+                tutorialItemDropped(tutorial, TutorialDropTypeSuccess);
+            } else if (!(current->flags & ITEM_FLAGS_RETURNED)) {
+                tutorialItemDropped(tutorial, TutorialDropTypeFail);
+            }
+            
+            if (prev) {
+                prev->next = next;
+            } else {
+                itemPool->itemHead = next;
+            }
 
             current->next = itemPool->unusedHead;
             itemPool->unusedHead = current;

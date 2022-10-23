@@ -81,6 +81,8 @@ build/%.o: %.s
 ####################
 
 LEVEL_LIST = assets/levels/tutorial.blend \
+	assets/levels/level_2.blend \
+	assets/levels/level_3.blend \
 	assets/levels/test_level.blend \
 	assets/levels/warehouse.blend
 
@@ -102,6 +104,7 @@ MODEL_LIST = assets/models/conveyor.blend \
 	assets/models/crow.blend \
 	assets/models/hand.blend \
 	assets/models/rat.blend \
+	assets/models/return_bin.blend \
 	assets/models/scarecrow.blend \
 	assets/models/skull.blend \
 	assets/models/spider.blend \
@@ -174,6 +177,7 @@ build/src/scene/item_requester.o: build/assets/models/ui/item_prompt.h build/ass
 build/src/scene/shadow_volume_group.o: build/assets/materials/static.h 
 build/src/scene/tutorial.o: build/assets/materials/ui.h 
 build/src/scene/end_screen.o: build/assets/materials/ui.h 
+build/src/scene/return_bin.o: build/assets/models/return_bin.h build/assets/materials/static.h 
 
 build/src/scene/item.o: build/assets/materials/static.h \
 	build/assets/models/pumpkin.h \

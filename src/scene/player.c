@@ -35,11 +35,21 @@ struct Vector3 gPlayerGrabFrom = {0.0f, 0.0f, 0.4f};
 struct Vector3 gAttachmentPosition = {0.0f, 0.0f, 0.0f};
 struct Quaternion gAttachementRotation = {0.0f, 0.0f, 0.0f, 1.0f};
 
-struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float* playbackSpeed) {
+struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float* playbackSpeed, int* loop) {
     float speedSqrd = sqrtf(player->velocity.x * player->velocity.x + player->velocity.z * player->velocity.z);
+    *loop = 1;
 
-    if (speedSqrd < 0.00001f) {
-        *playbackSpeed = 0.0f;
+    if (player->isDead) {
+        *playbackSpeed = 1.0f;
+        *loop = 0;
+        return &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERDEAD_INDEX];
+    } else if (speedSqrd < 0.00001f) {
+        *playbackSpeed = 1.0f;
+
+        if (player->holdingItem) {
+            return &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERIDLE_W_ITEM_INDEX];
+        }
+
         return &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERIDLE_INDEX];
     } else if (speedSqrd < PLAYER_MAX_WALK_SPEED) {
         *playbackSpeed = speedSqrd * (1.0f / PLAYER_MAX_WALK_SPEED);
@@ -172,10 +182,11 @@ void playerUpdate(struct Player* player) {
         player->velocity.y = 0.0f;
     }
 
-    struct SKAnimationHeader* nextAnimation = playerDetermineAnimation(player, &player->animationSpeed);
+    int loop;
+    struct SKAnimationHeader* nextAnimation = playerDetermineAnimation(player, &player->animationSpeed, &loop);
 
     if (nextAnimation != player->animator.currentAnimation && nextAnimation) {
-        skAnimatorRunClip(&player->animator, nextAnimation, SKAnimatorFlagsLoop);
+        skAnimatorRunClip(&player->animator, nextAnimation, loop ? SKAnimatorFlagsLoop : 0);
     }
 
     if (player->holdingItem) {
@@ -299,4 +310,9 @@ void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* targ
 
 void playerKill(struct Player* player) {
     player->isDead = 1;
+
+    if (player->holdingItem) {
+        itemDrop(player->holdingItem);
+        player->holdingItem = NULL;
+    }
 }

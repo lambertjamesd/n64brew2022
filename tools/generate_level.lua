@@ -6,7 +6,6 @@ package.cpath = 'lua_modules/lib/lua/' .. version .. '/?.so;' .. package.cpath
 local staticContentOutput = require('tools.generate_level.static')
 local playerOutput = require('tools.generate_level.player')
 local cameraOutput = require('tools.generate_level.camera')
-local itemSlotOutput = require('tools.generate_level.item_slots')
 local cameraOutput = require('tools.generate_level.camera')
 local spotLightOutput = require('tools.generate_level.spot_light')
 local conveyorOutput = require('tools.generate_level.conveyor')
@@ -16,15 +15,14 @@ local boundaryOutput = require('tools.generate_level.boundary')
 
 local levelJson = require('tools.generate_level.level_json')
 
+local return_bin_output = require('tools.generate_level.return_bin')
+
 add_definition("level", "struct LevelDefinition", "_geo", {
     staticContent = reference_to(staticContentOutput.staticContent[1]),
     staticContentCount = #staticContentOutput.staticContent,
 
     groundContent = reference_to(staticContentOutput.groundContent[1]),
     groundContentCount = #staticContentOutput.groundContent,
-
-    itemSlots = reference_to(itemSlotOutput.itemSlots[1]),
-    itemSlotCount = itemSlotOutput.itemSlotCount,
 
     spotLights = reference_to(spotLightOutput.lanterns[1]),
     spotLightCount = #spotLightOutput.lanterns,
@@ -50,4 +48,7 @@ add_definition("level", "struct LevelDefinition", "_geo", {
     tutorial = levelJson.tutorial,
     tutorialStepCount = levelJson.tutorial_step_count,
     tutorialOnStart = levelJson.tutorial_on_start,
+
+    returnBins = reference_to(return_bin_output.return_bins, 1),
+    returnBinCount = #return_bin_output.return_bins,
 })

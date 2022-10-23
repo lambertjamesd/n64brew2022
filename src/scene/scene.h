@@ -9,7 +9,6 @@
 #include "point_light.h"
 #include "camera.h"
 #include "player.h"
-#include "item_slot.h"
 #include "spot_light.h"
 #include "conveyor.h"
 #include "item.h"
@@ -19,6 +18,7 @@
 #include "item_coordinator.h"
 #include "tutorial.h"
 #include "end_screen.h"
+#include "return_bin.h"
 
 #include "../collision/collision_boundary.h"
 
@@ -50,12 +50,14 @@ struct Scene {
     struct ItemCoordinator itemCoordinator;
     struct Tutorial tutorial;
     struct EndScreen endScreen;
+    struct ReturnBin* returnBins;
     u8 itemSlotCount;
     u8 playerCount;
     u8 spotLightCount;
     u8 conveyorCount;
     u8 tableCount;
     u8 itemRequesterCount;
+    u8 returnBinCount;
 
     float dropPenalty;
     float appearTime;

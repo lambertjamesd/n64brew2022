@@ -58,10 +58,6 @@ struct PlayerStartLocation {
     struct Vector3 position;
 };
 
-struct ItemSlotDefinition {
-    struct Vector3 position;
-};
-
 struct CameraDefinition {
     struct Vector3 position;
     struct Quaternion rotation;
@@ -100,6 +96,7 @@ struct ItemScriptStep {
     u8* itemPool;
     float itemTimeout;
     float itemDelay;
+    float itemSpawnDelay;
 };
 
 struct ItemScript {
@@ -112,15 +109,16 @@ struct BoundarySegment {
     struct Vector2 b;
 };
 
+struct ReturnBinDefinition {
+    struct Vector3 position;
+};
+
 struct LevelDefinition {
     struct StaticContentElement* staticContent;
     short staticContentCount;
 
     struct StaticContentElement* groundContent;
     short groundContentCount;
-
-    struct ItemSlotDefinition* itemSlots;
-    short itemSlotCount;
 
     struct SpotLightDefinition* spotLights;
     short spotLightCount;
@@ -145,6 +143,9 @@ struct LevelDefinition {
     struct TutorialStep* tutorial;
     short tutorialStepCount;
     short tutorialOnStart;
+
+    struct ReturnBinDefinition* returnBins;
+    short returnBinCount;
 };
 
 struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);

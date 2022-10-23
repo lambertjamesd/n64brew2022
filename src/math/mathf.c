@@ -1,25 +1,28 @@
 
 #include "mathf.h"
 
-unsigned int gRandomSeed = 1;
+unsigned int gRandomSeedZ = 1;
+unsigned int gRandomSeedW = 3;
 
-#define MAX_INT_VALUE   0x7fff
+#define MAX_INT_VALUE   0xffffffff
 
-void randomSeed(int seed) {
-    gRandomSeed = seed;
+void randomSeed(int seedz, int seedw) {
+    gRandomSeedZ = seedz;
+    gRandomSeedW = seedw;
 }
 
-int randomInt() {
-    gRandomSeed = gRandomSeed * 22695477 + 1;
-    return (gRandomSeed >> 16) & MAX_INT_VALUE;
+unsigned int randomInt() {
+    gRandomSeedZ = 36969 * (gRandomSeedZ & 65535) + (gRandomSeedZ >> 16);
+    gRandomSeedW = 18000 * (gRandomSeedW & 65535) + (gRandomSeedW >> 16);
+    return (gRandomSeedZ << 16) + gRandomSeedW;
 }
 
 int randomInRange(int min, int maxPlusOne) {
-    return randomInt() * (maxPlusOne - min) / (MAX_INT_VALUE + 1) + min;
+    return (int)((long long)randomInt() * (maxPlusOne - min) / ((long long)MAX_INT_VALUE + 1) + min);
 }
 
 float randomInRangef(float min, float maxPlusOne) {
-    return randomInt() * (maxPlusOne - min) / (MAX_INT_VALUE + 1) + min;
+    return (float)randomInt() * (maxPlusOne - min) / ((float)MAX_INT_VALUE + 1) + min;
 }
 
 float fabsf(float input) {

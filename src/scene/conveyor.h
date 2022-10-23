@@ -14,6 +14,7 @@ struct Conveyor {
     struct CollisionObject collisionObject;
     struct Item* pendingItems[2];
     float beltOffset[2];
+    float spawnDelay;
 };
 
 void conveyorInit(struct Conveyor* conveyor, struct ConveyorDefinition* definition);
