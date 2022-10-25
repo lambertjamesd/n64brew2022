@@ -10,15 +10,19 @@
 #include "table_type.h"
 #include "../collision/collision_object.h"
 
+#define TABLE_FLAGS_NEED_TO_CHECK_ATTACKS   (1 << 0)
+
 struct Table {
     struct Vector3 position;
     struct TableType* tableType;
     struct Item** itemSlots;
     struct CollisionObject collisionObject;
+    int flags;
 };
 
 void tableInit(struct Table* table, struct TableDefinition* def);
 
+void tableUpdate(struct Table* table);
 void tableRender(struct Table* table, struct RenderScene* renderScene);
 
 struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom);

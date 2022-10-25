@@ -32,7 +32,7 @@ void tutorialItemDropped(struct Tutorial* tutorial, enum TutorialDropType dropTy
 
 int tutorialUpdate(struct Tutorial* tutorial);
 
-int tutorialIsImmute(struct Tutorial* tutorial);
+int tutorialIsImmune(struct Tutorial* tutorial);
 
 void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState);
 

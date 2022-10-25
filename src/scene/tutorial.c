@@ -252,7 +252,7 @@ int tutorialUpdate(struct Tutorial* tutorial) {
     return step != NULL;
 }
 
-int tutorialIsImmute(struct Tutorial* tutorial) {
+int tutorialIsImmune(struct Tutorial* tutorial) {
     return tutorial->currentStep && tutorial->currentStep->isImmune;
 }
 

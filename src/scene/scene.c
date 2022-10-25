@@ -53,6 +53,8 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 
 #define FADE_IN_DURATION    2.0f
 
+#define RED_FLASH_TIME      0.75f
+
 void materialSetBasicLit(struct RenderState* renderState, int objectIndex) {
     gSPDisplayList(renderState->dl++, gBasicLitMaterial);
 }
@@ -133,6 +135,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     scene->appearTime = -10.0f;
     scene->fadeInTime = FADE_IN_DURATION;
     scene->currentLevelTime = 0.0f;
+    scene->penaltyTime = 0.0f;
 
     struct CollisionBoundary* boundaries = malloc(sizeof(struct CollisionBoundary) * definition->boundaryCount);
     for (int i = 0; i < definition->boundaryCount; ++i) {
@@ -147,6 +150,24 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 }
 
 unsigned ignoreInputFrames = 10;
+
+void sceneApplyPenalty(struct Scene* scene, struct Vector3* at) {
+    if (!tutorialIsImmune(&scene->tutorial) && !bezosIsActive(&scene->bezos)) {
+        scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
+
+        if (scene->dropPenalty > 1.0f) {
+            scene->dropPenalty = 1.0f;
+        }
+
+        if (mathfRandomFloat() < scene->dropPenalty) {
+            bezosActivate(&scene->bezos, at);
+            scene->appearTime = gTimePassed;
+            scene->dropPenalty = mathfMoveTowards(scene->dropPenalty, 1.0f, 0.5f);
+        }
+        
+        scene->penaltyTime = RED_FLASH_TIME;
+    }
+}
 
 void sceneUpdate(struct Scene* scene) {
     if (ignoreInputFrames) {
@@ -215,22 +236,7 @@ void sceneUpdate(struct Scene* scene) {
 
         if (!didReplace && controllerGetButtonDown(i, B_BUTTON) && player->holdingItem) {
             if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
-                struct Item* item = player->holdingItem;
-
                 itemDrop(player->holdingItem);
-
-                if (!tutorialIsImmute(&scene->tutorial)) {
-                    scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
-
-                    if (scene->dropPenalty > 1.0f) {
-                        scene->dropPenalty = 1.0f;
-                    }
-
-                    if (mathfRandomFloat() < scene->dropPenalty) {
-                        bezosActivate(&scene->bezos, &item->transform.position);
-                        scene->appearTime = gTimePassed;
-                    }
-                }
             }
 
             player->holdingItem = NULL;
@@ -269,10 +275,18 @@ void sceneUpdate(struct Scene* scene) {
         conveyorUpdate(&scene->conveyors[i]);
     }
 
-    itemPoolUpdate(&scene->itemPool, &scene->tutorial);
+    struct Vector3 bezosSpawn;
+
+    if (itemPoolUpdate(&scene->itemPool, &scene->tutorial, &bezosSpawn)) {
+        sceneApplyPenalty(scene, &bezosSpawn);
+    }
 
     for (int i = 0; i < scene->spotLightCount; ++i) {
         spotLightUpdate(&scene->spotLights[i], &scene->camera.transform.position);
+    }
+
+    for (int i = 0; i < scene->tableCount; ++i) {
+        tableUpdate(&scene->tables[i]);
     }
 
     int activeRequesterCount = 0;
@@ -293,7 +307,9 @@ void sceneUpdate(struct Scene* scene) {
             }
         }
         
-        itemRequesterUpdate(&scene->itemRequesters[i]);
+        if (itemRequesterUpdate(&scene->itemRequesters[i])) {
+            sceneApplyPenalty(scene, &scene->itemRequesters[i].transform.position);
+        }
     }
 
     if (scene->dropPenalty > 0.0f) {
@@ -315,11 +331,14 @@ void sceneUpdate(struct Scene* scene) {
     collisionSceneCollide(&gCollisionScene);
     
     scene->currentLevelTime += FIXED_DELTA_TIME;
+
+    scene->penaltyTime = mathfMoveTowards(scene->penaltyTime, 0.0f, FIXED_DELTA_TIME);
 }
 
-struct Colorf32 gAmbientLight = {0.0f, 0.2f, 0.4f, 255};
-struct Colorf32 gAmbientScale = {0.75f, 0.75f, 0.75f, 255};
-struct Colorf32 gLightColor = {0.2f, 0.2f, 0.15f, 255};
+struct Colorf32 gAmbientLight = {0.0f, 0.15f, 0.3f, 255};
+struct Colorf32 gAmbientScale = {0.65f, 0.65f, 0.65f, 255};
+struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
+struct Colorf32 gRedLightColor = {1.5f, 0.1f, 0.1f, 255};
 
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
@@ -577,11 +596,13 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
         effects &= ~PalleteEffectsGrayscaleRed;
     }
 
+    int isFlashingRed = mathfMod(scene->penaltyTime, RED_FLASH_TIME * 0.5f) > RED_FLASH_TIME * 0.25f;
+
     u16* pallete = palleteGenerateLit(
         (struct Coloru8*)ADJUST_POINTER_FOR_SEGMENT(pallete_half_pallete_rgba_32b, gMaterialSegment, MATERIAL_SEGMENT), 
         &gAmbientLight,
         &gAmbientScale, 
-        &gLightColor, 
+        isFlashingRed ? &gRedLightColor : &gLightColor, 
         effects,
         scene->fadeInTime ? 1.0f - scene->fadeInTime * (1.0f / FADE_IN_DURATION) : endScreenFadeAmount(&scene->endScreen),
         renderState

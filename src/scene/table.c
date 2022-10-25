@@ -10,10 +10,75 @@
 
 #include "../defs.h"
 
+struct FightingPair {
+    enum ItemType attacker;
+    enum ItemType attacked;
+};
+
+#define ITEM_FLAG(itemType) (1 << (itemType))
+
+struct FightingPair gFightingPairs[] = {
+    {ItemTypeCat, ItemTypeRat},
+    {ItemTypeScarecrow, ItemTypeCrow},
+};
+
 struct TableType* gTableTypes[] = {
     [TABLE_HORIZONTAL] = &table_definition,
     [TABLE_VERTICAL] = &table_vertical_definition,
 };
+
+void tableUpdate(struct Table* table) {
+    if ((table->flags & TABLE_FLAGS_NEED_TO_CHECK_ATTACKS) == 0) {
+        return;
+    }
+
+    int itemFlags = 0;
+
+    for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
+        if (table->itemSlots[i]) {
+            if (!(table->itemSlots[i]->flags & ITEM_FLAGS_ATTACHED)) {
+                return;
+            }
+
+            itemFlags |= ITEM_FLAG(table->itemSlots[i]->type);
+        }
+    }
+
+    table->flags &= ~TABLE_FLAGS_NEED_TO_CHECK_ATTACKS;
+
+    int attacker = 0;
+    int attacked = 0;
+
+    for (int i = 0; i < sizeof(gFightingPairs) / sizeof(*gFightingPairs); ++i) {
+        int attackerFlags = ITEM_FLAG(gFightingPairs[i].attacker);
+        int attackedFlags = ITEM_FLAG(gFightingPairs[i].attacked);
+        
+        if ((itemFlags & (attackerFlags | attackedFlags)) == (attackerFlags | attackedFlags)) {
+            attacker |= attackerFlags;
+            attacked |= attackedFlags;
+        }
+    }
+
+    if (!attacker || !attacked) {
+        return;
+    }
+
+    struct Vector3 attackPosition;
+
+    for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
+        if (table->itemSlots[i] && (ITEM_FLAG(table->itemSlots[i]->type) & attacked) != 0) {
+            itemAttacked(table->itemSlots[i]);
+            attackPosition = table->itemSlots[i]->target.position;
+            table->itemSlots[i] = NULL;
+        }
+    }
+
+    for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
+        if (table->itemSlots[i] && (ITEM_FLAG(table->itemSlots[i]->type) & attacker) != 0) {
+            itemAttack(table->itemSlots[i], &attackPosition);
+        }
+    }
+}
 
 void tableInit(struct Table* table, struct TableDefinition* def) {
     table->position = def->position;
@@ -29,6 +94,7 @@ void tableInit(struct Table* table, struct TableDefinition* def) {
     table->collisionObject.data = &table->collisionObject;
     table->collisionObject.minkowskiSum = collisionObjectBoundingBox;
     table->collisionObject.flags = 0;
+    table->flags = 0;
 
     collisionSceneAddStatic(&gCollisionScene, &table->collisionObject);
 }
@@ -117,6 +183,8 @@ int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt
 
     itemUpdateTarget(item, &transform);
 
+    table->flags |= TABLE_FLAGS_NEED_TO_CHECK_ATTACKS;
+
     return 1;
 }
 
@@ -158,6 +226,8 @@ int tableSwapItem(struct Table* table, struct Item* item, struct Vector3* dropAt
     transform.scale = gOneVec;
 
     itemUpdateTarget(item, &transform);
+
+    table->flags |= TABLE_FLAGS_NEED_TO_CHECK_ATTACKS;
 
     return 1;
 }

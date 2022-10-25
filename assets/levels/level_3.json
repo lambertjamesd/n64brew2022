@@ -2,19 +2,90 @@
     "name": "level 03",
     "script": [
         {
-            "item_pool": ["Candle", "Cat", "Scarecrow", "Skull"],
-            "success_count": 4,
+            "item_pool": ["Candle", "Cat", "Rat", "Skull", "Candle", "Cat", "Rat", "Skull"],
+            "success_count": 10,
             "item_delay": 1,
             "item_timeout": 20,
-            "item_spawn_delay": 4
+            "item_spawn_delay": 3
         },
         {
-            "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
+            "item_pool": ["Candle", "Cat", "Rat", "Skull"],
             "success_count": 1,
             "item_delay": 30,
-            "item_timeout": 9,
+            "item_timeout": 10,
+            "item_spawn_delay": 2
+        },
+        {
+            "item_pool": ["Candle", "Cat", "Rat", "Skull"],
+            "success_count": 6,
+            "item_delay": 1,
+            "item_timeout": 10,
+            "item_spawn_delay": 3
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
+            "success_count": 4,
+            "item_delay": 5,
+            "item_timeout": 45,
             "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 10,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
+            "success_count": 9,
+            "item_delay": 2,
+            "item_timeout": 10,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 5,
+            "item_delay": 2,
+            "item_timeout": 45,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 10,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 6,
+            "item_delay": 1,
+            "item_timeout": 10,
+            "item_spawn_delay": 5
         }
     ],
-    "tutorial": {}
+    "tutorialOnStart": "intro",
+    "tutorial": {
+        
+        "intro": {
+            "dialog": [
+                {
+                    "message": "Good work yesterday"
+                },
+                {
+                    "message": "Something you should\nknow for today"
+                },
+                {
+                    "message": "Do not put a cat and\na rat or a crow and\na scarecrow on the\nsame table"
+                },
+                {
+                    "message": "They dont get along"
+                },
+                {
+                    "message": "Keep up the good work"
+                }
+            ]
+        }
+    }
 }

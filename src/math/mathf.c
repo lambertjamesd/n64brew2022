@@ -73,8 +73,12 @@ float mathfBounceBackLerp(float t) {
     return -t + t * t;
 }
 
+float mathfEaseIn(float t, float overEase) {
+    return (1.0f + overEase) * t - overEase * t * t;
+}
+
 float mathfRandomFloat() {
-    return (float)randomInt() / (float)0x7fff;
+    return (float)randomInt() / (float)0xffffffff;
 }
 
 float clampf(float input, float min, float max) {

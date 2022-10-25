@@ -10,6 +10,7 @@ float randomInRangef(float min, float maxPlusOne);
 float mathfLerp(float from, float to, float t);
 float mathfMoveTowards(float from, float to, float maxMove);
 float mathfBounceBackLerp(float t);
+float mathfEaseIn(float t, float overEase);
 float mathfRandomFloat();
 float mathfMod(float input, float divisor);
 float clampf(float input, float min, float max);

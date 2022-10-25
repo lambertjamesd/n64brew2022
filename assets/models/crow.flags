@@ -1,1 +1,1 @@
---script tools/item_export.lua -r 0,0,0 -m assets/materials/static.skm.yaml --default-material items
+--model-scale 0.013 --script tools/item_export.lua -r 0,0,0 -m assets/materials/static.skm.yaml --default-material items

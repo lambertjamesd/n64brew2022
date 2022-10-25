@@ -20,6 +20,8 @@
 
 #define ITEM_ANIMATE_DELAY    0.5f
 
+#define ITEM_DROP_COYOTE_TIME   1.0f
+
 void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefinition* definition) {
     requester->transform.position = definition->position;
     requester->transform.rotation = definition->rotation;
@@ -38,13 +40,16 @@ void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefi
     collisionSceneAddStatic(&gCollisionScene, &requester->collisionCapsule.collisionObject);
 }
 
-void itemRequesterUpdate(struct ItemRequester* requester) {
+int itemRequesterUpdate(struct ItemRequester* requester) {
+    int didFail = 0;
+
     if (requester->timeLeft > 0.0f) {
         requester->timeLeft -= FIXED_DELTA_TIME;
 
         if (requester->timeLeft <= 0.0f) {
             requester->timeLeft = 0.0f;
             requester->requestedType = ItemTypeCount;
+            didFail = 1;
         }
     }
 
@@ -57,11 +62,13 @@ void itemRequesterUpdate(struct ItemRequester* requester) {
     }
 
     itemUpdateAnimations(requester->requestedType);
+
+    return didFail;
 }
 
 void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType itemType, float duration) {
     requester->duration = duration;
-    requester->timeLeft = duration;
+    requester->timeLeft = duration + ITEM_DROP_COYOTE_TIME;
     requester->requestedType = itemType;
 }
 
@@ -71,7 +78,7 @@ int itemRequesterIsActive(struct ItemRequester* requester) {
 
 void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex, struct RenderState* renderState) {
     if (requester->requestedType < ItemTypeCount) {
-        itemRenderGenerate(itemIndex, requester->requestedType, requester->timeLeft / requester->duration, renderState);
+        itemRenderGenerate(itemIndex, requester->requestedType, MAX((requester->timeLeft - ITEM_DROP_COYOTE_TIME) / requester->duration, 0.0f), renderState);
     }
 }
 
@@ -94,6 +101,26 @@ void itemRequesterRender(struct ItemRequester* requester, int itemIndex, struct 
 
     if (requester->flags & ItemRequesterFlagsHover) {
         vector3Scale(&signTransform.scale, &signTransform.scale, 1.25f);
+    }
+
+    float timeLeft = requester->timeLeft;
+
+    if (timeLeft > ITEM_DROP_COYOTE_TIME) {
+        float timeSinceStart = requester->duration + ITEM_DROP_COYOTE_TIME - timeLeft;
+
+        if (timeSinceStart < ITEM_DROP_COYOTE_TIME) {
+            timeLeft = timeSinceStart;
+        } else {
+            timeLeft = ITEM_DROP_COYOTE_TIME;
+        }
+    }
+
+    if (timeLeft < ITEM_DROP_COYOTE_TIME) {
+        vector3Scale(
+            &signTransform.scale, 
+            &signTransform.scale, 
+            mathfEaseIn(timeLeft * (1.0f / ITEM_DROP_COYOTE_TIME), 3.0f)
+        );
     }
 
     transformToMatrixL(&signTransform, matrix, SCENE_SCALE);

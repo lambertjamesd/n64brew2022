@@ -30,6 +30,8 @@
 
 #define TRANSLATE_SPEED     2.0f
 
+#define ATTACKED_DELAY      1.5f
+
 struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
     [ItemTypePumpkin] = {
         pumpkin_model_gfx,
@@ -40,6 +42,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &pumpkin_camera,
         &pumpkin_light,
+        NULL,
         NULL,
     },
     [ItemTypeHat] = {
@@ -52,6 +55,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &hat_camera,
         &hat_light,
         NULL,
+        NULL,
     },
     [ItemTypeBrain] = {
         brain_model_gfx,
@@ -62,6 +66,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &brain_camera,
         &brain_light,
+        NULL,
         NULL,
     },
     [ItemTypeBroom] = {
@@ -74,6 +79,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &broom_camera,
         &broom_light,
         NULL,
+        NULL,
     },
     [ItemTypeCandle] = {
         candle_model_gfx,
@@ -84,6 +90,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &candle_camera,
         &candle_light,
+        NULL,
         NULL,
     },
     [ItemTypeCat] = {
@@ -96,6 +103,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &cat_camera,
         &cat_light,
         &cat_animations[CAT_CAT_CAT_ARMATURE_CATIDLE_INDEX],
+        &cat_animations[CAT_CAT_CAT_ARMATURE_CATHISS_INDEX],
     },
     [ItemTypeCobweb] = {
         cobweb_model_gfx,
@@ -106,6 +114,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &cobweb_camera,
         &cobweb_light,
+        NULL,
         NULL,
     },
     [ItemTypeCrow] = {
@@ -118,6 +127,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &crow_camera,
         &crow_light,
         NULL,
+        NULL,
     },
     [ItemTypeHand] = {
         hand_model_gfx,
@@ -129,10 +139,11 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &hand_camera,
         &hand_light,
         &hand_animations[HAND_HAND__HAND_0_HANDWALK_INDEX],
+        NULL,
     },
     [ItemTypeRat] = {
         rat_model_gfx,
-        ITEMS_INDEX,
+        RATHAND_INDEX,
         RAT_DEFAULT_BONES_COUNT,
         RAT_ATTACHMENT_COUNT,
         rat_default_bones,
@@ -140,6 +151,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &rat_camera,
         &rat_light,
         &rat_animations[RAT_RAT_RATIDLE_INDEX],
+        NULL,
     },
     [ItemTypeScarecrow] = {
         scarecrow_model_gfx,
@@ -151,6 +163,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &scarecrow_camera,
         &scarecrow_light,
         NULL,
+        NULL,
     },
     [ItemTypeSkull] = {
         skull_model_gfx,
@@ -161,6 +174,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         NULL,
         &skull_camera,
         &skull_light,
+        NULL,
         NULL,
     },
     [ItemTypeSpider] = {
@@ -183,7 +197,7 @@ void itemInitIdleAnimators() {
         struct ItemTypeDefinition* definition = &gItemDefinitions[i];
         struct ItemIdleAnimators* animator = &gIdleAnimators[i];
 
-        if (!definition->idleAnimation) {
+        if (!definition->boneCount) {
             continue;
         }
 
@@ -198,7 +212,9 @@ void itemInitIdleAnimators() {
 
         skAnimatorInit(&animator->animator, definition->boneCount, NULL, NULL);
 
-        skAnimatorRunClip(&animator->animator, definition->idleAnimation, SKAnimatorFlagsLoop);
+        if (definition->idleAnimation) {
+            skAnimatorRunClip(&animator->animator, definition->idleAnimation, SKAnimatorFlagsLoop);
+        }
 
         animator->mtxArmature = NULL;
     }
@@ -220,7 +236,7 @@ void itemUpdateAnimations(enum ItemType itemType) {
     struct ItemTypeDefinition* definition = &gItemDefinitions[itemType];
     struct ItemIdleAnimators* animator = &gIdleAnimators[itemType];
 
-    if (!definition->idleAnimation || animator->hasUpdated) {
+    if (!definition->boneCount || animator->hasUpdated) {
         return;
     }
 
@@ -232,7 +248,7 @@ Mtx* itemGetIdle(enum ItemType itemType, struct RenderState* renderState) {
     struct ItemTypeDefinition* definition = &gItemDefinitions[itemType];
     struct ItemIdleAnimators* animator = &gIdleAnimators[itemType];
 
-    if (!definition->idleAnimation) {
+    if (!definition->boneCount) {
         return NULL;
     }
 
@@ -285,7 +301,17 @@ void itemUpdate(struct Item* item) {
         skAnimatorUpdate(&item->animator, item->armature.boneTransforms, 1.0f);
     }
 
-    if (item->flags & ITEM_FLAGS_POOFED) {
+    if (item->flags & ITEM_FLAGS_ATTACKED) {
+        item->attackedInfo.attackedDelayTimer -= FIXED_DELTA_TIME;
+
+        if (item->attackedInfo.attackedDelayTimer < 0.0f) {
+            item->flags &= ~ITEM_FLAGS_ATTACKED;
+            item->flags |= ITEM_FLAGS_POOFED;
+            item->dropInfo.velocity = gZeroVec;
+            item->dropInfo.velocity.y = 1.0f;
+            item->dropInfo.pooftimer = POOF_TIME;
+        }
+    } else if (item->flags & ITEM_FLAGS_POOFED) {
         vector3Scale(&item->dropInfo.velocity, &item->dropInfo.velocity, POOF_DAMPING);
         vector3AddScaled(&item->transform.position, &item->dropInfo.velocity, FIXED_DELTA_TIME, &item->transform.position);
         vector3Scale(&item->transform.scale, &item->transform.scale, POOF_SCALING);
@@ -336,7 +362,12 @@ void itemPreRender(struct Item* item, struct RenderState* renderState) {
     item->mtxTransform = renderStateRequestMatrices(renderState, 1);
     transformToMatrixL(&item->transform, item->mtxTransform, SCENE_SCALE);
 
-    item->mtxArmature = itemGetIdle(item->type, renderState);
+    if ((item->flags & ITEM_FLAGS_HAS_ARMATURE) && skAnimatorIsRunning(&item->animator)) {
+        item->mtxArmature = renderStateRequestMatrices(renderState, item->animator.boneCount);
+        skCalculateTransforms(&item->armature, item->mtxArmature);
+    } else {
+        item->mtxArmature = itemGetIdle(item->type, renderState);
+    }
 }
 
 void itemRender(struct Item* item, Light* light, struct RenderScene* renderScene) {
@@ -375,6 +406,26 @@ void itemDrop(struct Item* item) {
 
     item->dropInfo.velocity = gZeroVec;
     item->dropInfo.pooftimer = 0.0f;
+}
+
+void itemAttacked(struct Item* item) {
+    item->flags |= ITEM_FLAGS_ATTACKED;
+    item->attackedInfo.attackedDelayTimer = ATTACKED_DELAY;
+}
+
+void itemAttack(struct Item* item, struct Vector3* target) {
+    struct Vector3 offset;
+    vector3Sub(target, &item->target.position, &offset);
+    offset.y = 0.0f;
+
+    quatLook(&offset, &gUp, &item->target.rotation);
+    item->flags &= ~ITEM_FLAGS_ATTACHED;
+
+    struct ItemTypeDefinition* definition = &gItemDefinitions[item->type];
+
+    if (definition->attackAnimation) {
+        skAnimatorRunClip(&item->animator, definition->attackAnimation, 0);
+    }
 }
 
 void itemSuccess(struct Item* item, struct Vector3* portalAt) {
@@ -445,9 +496,11 @@ void itemPoolFree(struct ItemPool* itemPool, struct Item* item) {
     --itemPool->itemCount;
 }
 
-void itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial) {
+int itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos) {
     struct Item* current = itemPool->itemHead;
     struct Item* prev = NULL;
+
+    int hadFailure = 0;
 
     while (current != NULL) {
         itemUpdate(current);
@@ -459,6 +512,8 @@ void itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial) {
                 tutorialItemDropped(tutorial, TutorialDropTypeSuccess);
             } else if (!(current->flags & ITEM_FLAGS_RETURNED)) {
                 tutorialItemDropped(tutorial, TutorialDropTypeFail);
+                hadFailure = 1;
+                *itemPos = current->transform.position;
             }
             
             if (prev) {
@@ -475,6 +530,8 @@ void itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial) {
 
         current = next;
     }
+
+    return hadFailure;
 }
 
 void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene) {
