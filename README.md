@@ -4,9 +4,7 @@
 ## TODO
 
 * polish
-  * spawn bezos after item falls
-  * "coyote time" for item drops
-  * flash red on penalty
+  * darken player white
 * balancing
   * bezos spawn probability 
   * bezos decay rate

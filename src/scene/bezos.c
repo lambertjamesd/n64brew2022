@@ -27,11 +27,12 @@ void bezosColliderCallback(void* data, struct Vector3* normal, float depth, stru
         vector3ProjectPlane(&bezos->velocity, normal, &bezos->velocity);
     }
 
-    bezos->flags |= BezosFlagsTouchingWall;
-
     if (other->flags & CollisionObjectFlagsIsPlayer) {
         bezos->flags |= BezosFlagsCaughtPlayer;
+    } else {
+        bezos->flags |= BezosFlagsTouchingWall;
     }
+
 }
 
 void bezosUpdateColliderPos(struct Bezos* bezos) {
@@ -89,8 +90,12 @@ void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
         return;
     }
 
-    if (bezos->flags & BezosFlagsCaughtPlayer) {
-        skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX], SKAnimatorFlagsLoop);
+
+    if ((bezos->flags & BezosFlagsCaughtPlayer) != 0) {
+        struct SKAnimationHeader* attackAnimation = &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX];
+        if (bezos->animator.currentAnimation != attackAnimation) {
+            skAnimatorRunClip(&bezos->animator, attackAnimation, SKAnimatorFlagsLoop);
+        }
         return;
     }
 

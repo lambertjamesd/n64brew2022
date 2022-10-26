@@ -22,6 +22,7 @@ struct ItemTypeDefinition {
     struct Vector3* lightDir;
     struct SKAnimationHeader* idleAnimation;
     struct SKAnimationHeader* attackAnimation;
+    struct Transform* grabTransform;
 };
 
 #define ITEM_FLAGS_ATTACHED         (1 << 0)

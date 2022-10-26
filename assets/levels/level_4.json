@@ -1,0 +1,91 @@
+{
+    "name": "level 04",
+    "script": [
+        {
+            "item_pool": ["Broom", "Candle", "Skull"],
+            "success_count": 1,
+            "item_delay": 10,
+            "item_timeout": 45,
+            "item_spawn_delay": 3
+        },
+        {
+            "item_pool": ["Candle", "Cat", "Rat", "Skull"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 10,
+            "item_spawn_delay": 2
+        },
+        {
+            "item_pool": ["Candle", "Cat", "Rat", "Skull"],
+            "success_count": 6,
+            "item_delay": 1,
+            "item_timeout": 10,
+            "item_spawn_delay": 3
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
+            "success_count": 4,
+            "item_delay": 5,
+            "item_timeout": 45,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 10,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
+            "success_count": 9,
+            "item_delay": 2,
+            "item_timeout": 10,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 5,
+            "item_delay": 2,
+            "item_timeout": 45,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 10,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 6,
+            "item_delay": 1,
+            "item_timeout": 10,
+            "item_spawn_delay": 5
+        }
+    ],
+    "tutorialOnStart": "intro",
+    "tutorial": {
+        
+        "intro": {
+            "dialog": [
+                {
+                    "message": "A special item will\ncome through the warehouse\ntoday"
+                },
+                {
+                    "message": "The broom"
+                },
+                {
+                    "message": "You can use it to\nmove around faster"
+                },
+                {
+                    "message": "But dont have too\nmuch fun"
+                },
+                {
+                    "message": "You still need to\nfulfill order"
+                }
+            ]
+        }
+    }
+}

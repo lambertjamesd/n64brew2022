@@ -44,6 +44,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &pumpkin_light,
         NULL,
         NULL,
+        .grabTransform = &pumpkin_grab_transform,
     },
     [ItemTypeHat] = {
         hat_model_gfx,
@@ -56,6 +57,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &hat_light,
         NULL,
         NULL,
+        .grabTransform = &hat_grab_transform,
     },
     [ItemTypeBrain] = {
         brain_model_gfx,
@@ -68,6 +70,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &brain_light,
         NULL,
         NULL,
+        .grabTransform = &brain_grab_transform,
     },
     [ItemTypeBroom] = {
         broom_model_gfx,
@@ -92,6 +95,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &candle_light,
         NULL,
         NULL,
+        .grabTransform = &candle_grab_transform,
     },
     [ItemTypeCat] = {
         cat_model_gfx,
@@ -104,6 +108,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &cat_light,
         &cat_animations[CAT_CAT_CAT_ARMATURE_CATIDLE_INDEX],
         &cat_animations[CAT_CAT_CAT_ARMATURE_CATHISS_INDEX],
+        .grabTransform = &cat_grab_transform,
     },
     [ItemTypeCobweb] = {
         cobweb_model_gfx,
@@ -116,6 +121,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &cobweb_light,
         NULL,
         NULL,
+        .grabTransform = &cat_grab_transform,
     },
     [ItemTypeCrow] = {
         crow_model_gfx,
@@ -128,6 +134,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &crow_light,
         NULL,
         NULL,
+        .grabTransform = &crow_grab_transform,
     },
     [ItemTypeHand] = {
         hand_model_gfx,
@@ -140,6 +147,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &hand_light,
         &hand_animations[HAND_HAND__HAND_0_HANDWALK_INDEX],
         NULL,
+        .grabTransform = &hand_grab_transform,
     },
     [ItemTypeRat] = {
         rat_model_gfx,
@@ -152,6 +160,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &rat_light,
         &rat_animations[RAT_RAT_RATIDLE_INDEX],
         NULL,
+        .grabTransform = &rat_grab_transform,
     },
     [ItemTypeScarecrow] = {
         scarecrow_model_gfx,
@@ -164,6 +173,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &scarecrow_light,
         NULL,
         NULL,
+        .grabTransform = &scarecrow_grab_transform,
     },
     [ItemTypeSkull] = {
         skull_model_gfx,
@@ -176,6 +186,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &skull_light,
         NULL,
         NULL,
+        .grabTransform = &skull_grab_transform,
     },
     [ItemTypeSpider] = {
         spider_model_gfx,
@@ -187,6 +198,7 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &spider_camera,
         &spider_light,
         &spider_animations[SPIDER_SPIDER_SPIDERIDLE_INDEX],
+        .grabTransform = &spider_grab_transform,
     },
 };
 

@@ -11,8 +11,9 @@
 
 #include "../collision/collision_scene.h"
 
+#define PLAYER_BROOM_SPEED  2.8f
 
-#define PLAYER_MOVE_SPEED   1.6f
+#define PLAYER_MOVE_SPEED   1.4f
 
 #define PLAYER_MAX_SPRINT_SPEED 4.0f
 #define PLAYER_MAX_WALK_SPEED   1.0f
@@ -144,12 +145,15 @@ void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
     quatAxisComplex(&gUp, &player->lookDir, &player->transform.rotation);
 }
 
+#define DEAD_ZONE   0.2f
+
 void playerUpdate(struct Player* player) {
     skAnimatorUpdate(&player->animator, player->armature.boneTransforms, player->animationSpeed);
 
     OSContPad* input = controllersGetControllerData(player->playerIndex);
 
     struct Vector3 moveDir;
+    struct Vector3 rotateDir;
     moveDir.x = input->stick_x * (1.0f / 80.0f);
     moveDir.y = 0.0f;
     moveDir.z = -input->stick_y * (1.0f / 80.0f);
@@ -160,10 +164,17 @@ void playerUpdate(struct Player* player) {
 
     float magSqrd = vector3MagSqrd(&moveDir);
 
+    float moveSpeed = player->holdingItem && player->holdingItem->type == ItemTypeBroom ? PLAYER_BROOM_SPEED : PLAYER_MOVE_SPEED;
+
     if (magSqrd > 1.0f) {
-        vector3Scale(&moveDir, &moveDir, PLAYER_MOVE_SPEED / sqrtf(magSqrd));
+        vector3Scale(&moveDir, &moveDir, moveSpeed / sqrtf(magSqrd));
+        rotateDir = moveDir;
+    } else if (magSqrd < DEAD_ZONE * DEAD_ZONE) {
+        rotateDir = moveDir;
+        moveDir = gZeroVec;
     } else {
-        vector3Scale(&moveDir, &moveDir, PLAYER_MOVE_SPEED);
+        vector3Scale(&moveDir, &moveDir, moveSpeed);
+        rotateDir = moveDir;
     }
 
     moveDir.y = player->velocity.y;
@@ -174,7 +185,7 @@ void playerUpdate(struct Player* player) {
     vector3AddScaled(&player->transform.position, &player->velocity, FIXED_DELTA_TIME, &player->transform.position);
 
     if (magSqrd > 0.0f) {
-        playerHandleRotation(player, &moveDir);
+        playerHandleRotation(player, &rotateDir);
     }
 
     if (player->transform.position.y < 0.0f) {
@@ -202,6 +213,16 @@ void playerUpdate(struct Player* player) {
         vector3Scale(&targetTransform.position, &targetTransform.position, 1.0f / SCENE_SCALE);
 
         transformConcat(&player->transform, &targetTransform, &combined);
+
+        struct Transform* relativeTransform = gItemDefinitions[player->holdingItem->type].grabTransform;
+
+        if (relativeTransform) {
+            struct Transform holdingTransform;
+            struct Transform relativeInverse;
+            transformInvert(relativeTransform, &relativeInverse);
+            transformConcat(&combined, &relativeInverse, &holdingTransform);
+            combined = holdingTransform;
+        }
 
         itemUpdateTarget(player->holdingItem, &combined);
     }

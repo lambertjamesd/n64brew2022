@@ -83,6 +83,7 @@ build/%.o: %.s
 LEVEL_LIST = assets/levels/tutorial.blend \
 	assets/levels/level_2.blend \
 	assets/levels/level_3.blend \
+	assets/levels/level_4.blend \
 	assets/levels/test_level.blend \
 	assets/levels/warehouse.blend
 
