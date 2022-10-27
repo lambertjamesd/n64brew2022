@@ -19,111 +19,6 @@
 
 #define SHAKE_PERIOD    0.1f
 
-// struct TutorialScriptStep gIntroScript[] = {
-//     {
-//         "Welcome to your first day of\norientation\n" 
-//         "I am Tony\n"
-//         "Your floor manager"
-//     },
-//     {
-//         "Your job is to fulfill orders"
-//     },
-//     {
-//         "Products come in on the conveyor\n" 
-//         "Belts and you carry them to\n"
-//         "the portals"
-//     },
-// };
-
-// struct TutorialScriptStep gPortalPrompt[] = {
-//     {
-//         "Great\n"
-//         "Now place the pumpkin in\n"
-//         "the portal"
-//     }
-// };
-
-// struct TutorialScriptStep gWrongDrop[] = {
-//     {
-//         "No\n"
-//         "You need to drop the pumpkin\n"
-//         "in the the portal"
-//     }
-// };
-
-// struct TutorialScriptStep gTables[] = {
-//     {
-//         "Excellent work\n"
-//         "Now the shipments coming in\n"
-//         "wont always match the requests\n"
-//         "that come from the portals"
-//     },
-//     {
-//         "You can store objects on the\n"
-//         "tables that are not needed\n"
-//         "right away"
-//     }
-// };
-
-// struct TutorialScriptStep gCompleteShift[] = {
-//     {
-//         "Thats all you need to know\n"
-//         "Complete your shift today\n"
-//         "tomorrow we will assign you to\n"
-//         "a larger warehouse"
-//     },
-//     {
-//         "Oh and do not drop too many\n"
-//         "items on the floor or fail\n"
-//         "to fulfill requests\n"
-//         "if you do"
-//     },
-//     {
-//         "He will come"
-//     },
-//     {
-//         "and if he catches you\n"
-//         "you will be..."
-//     },
-//     {
-//         "terminated"
-//     },
-//     {
-//         "..."
-//     },
-//     {
-//         "have a nice shift"
-//     },
-// };
-
-// struct TutorialScript gTutorialScripts[TutorialStateCount] = {
-//     [TutorialStateIntro] = {
-//         gIntroScript,
-//         sizeof(gIntroScript) / sizeof(gIntroScript[0]),
-//         TutorialStatePickup,
-//     },
-//     [TutorialStatePortalDialog] = {
-//         gPortalPrompt,
-//         sizeof(gPortalPrompt) / sizeof(gPortalPrompt[0]),
-//         TutorialStateDrop,
-//     },
-//     [TutorialStateWrongDrop] = {
-//         gWrongDrop,
-//         sizeof(gWrongDrop) / sizeof(gWrongDrop[0]),
-//         TutorialStatePickup,
-//     },
-//     [TutorialStateTable] = {
-//         gTables,
-//         sizeof(gTables) / sizeof(gTables[0]),
-//         TutorialStateSecondDrop,
-//     },
-//     [TutorialStatePlay] = {
-//         gCompleteShift,
-//         sizeof(gCompleteShift) / sizeof(gCompleteShift[0]),
-//         TutorialStateWait,
-//     },
-// };
-
 struct TutorialDialogStep* tutorialCurrentDialogStep(struct Tutorial* tutorial) {
     if (!tutorial->currentStep) {
         return NULL;
@@ -256,7 +151,7 @@ int tutorialIsImmune(struct Tutorial* tutorial) {
     return tutorial->currentStep && tutorial->currentStep->isImmune;
 }
 
-struct Coloru8 gDialogBack = {0, 0, 0, 255};
+struct Coloru8 gDialogBlack = {0, 0, 0, 255};
 struct Coloru8 gDialogPurple = {76, 3, 73, 255};
 
 #define SIDE_PADDING    80
@@ -338,7 +233,7 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
         );
     }
 
-    spriteSetColor(renderState, SOLID_UI_INDEX, gDialogBack);
+    spriteSetColor(renderState, SOLID_UI_INDEX, gDialogBlack);
     spriteSolid(
         renderState, 
         SOLID_UI_INDEX, 
@@ -442,7 +337,7 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, cha
         );
     }
 
-    spriteSetColor(renderState, SOLID_UI_INDEX, gDialogBack);
+    spriteSetColor(renderState, SOLID_UI_INDEX, gDialogBlack);
     spriteSolid(
         renderState, 
         SOLID_UI_INDEX, 

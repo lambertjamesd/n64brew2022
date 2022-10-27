@@ -34,8 +34,8 @@ struct ItemTypeDefinition {
 #define ITEM_FLAGS_RETURNED         (1 << 6)
 #define ITEM_FLAGS_ATTACKED         (1 << 7)
 
-#define ITEM_PICKUP_RADIUS  1.0f
-#define ITEM_DROP_PICKUP_RADIUS  1.0f
+#define ITEM_PICKUP_RADIUS  0.75f
+#define ITEM_DROP_PICKUP_RADIUS  0.75f
 
 extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
 

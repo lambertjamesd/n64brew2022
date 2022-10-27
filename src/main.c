@@ -156,6 +156,7 @@ void gameProc(void *arg) {
 
     controllersInit();
     saveFileLoad();
+    mainMenuInit(&gMainMenu);
 
 #ifdef WITH_DEBUGGER
     OSThread* debugThreads[2];
@@ -177,8 +178,8 @@ void gameProc(void *arg) {
                         skResetDataPool();
 
                         if (levelGetQueued() == MAIN_MENU_LEVEL) {
-                            mainMenuInit(&gMainMenu);
                             gCurrentLevelIndex = MAIN_MENU_LEVEL;
+                            mainMenuEnter(&gMainMenu);
                             levelQueueLoad(NO_QUEUED_LEVEL);
                         } else {
                             loadLevel(levelGetQueued());

@@ -19,6 +19,7 @@
 #include "tutorial.h"
 #include "end_screen.h"
 #include "return_bin.h"
+#include "pause_menu.h"
 
 #include "../collision/collision_boundary.h"
 
@@ -50,6 +51,7 @@ struct Scene {
     struct ItemCoordinator itemCoordinator;
     struct Tutorial tutorial;
     struct EndScreen endScreen;
+    struct PauseMenu pauseMenu;
     struct ReturnBin* returnBins;
     u8 itemSlotCount;
     u8 playerCount;

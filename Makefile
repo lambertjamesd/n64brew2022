@@ -84,8 +84,7 @@ LEVEL_LIST = assets/levels/tutorial.blend \
 	assets/levels/level_2.blend \
 	assets/levels/level_3.blend \
 	assets/levels/level_4.blend \
-	assets/levels/test_level.blend \
-	assets/levels/warehouse.blend
+	assets/levels/level_5.blend
 
 LEVEL_LIST_FBX = $(LEVEL_LIST:%.blend=build/%.fbx)
 LEVEL_LIST_HEADERS = $(LEVEL_LIST:%.blend=build/%.h)
@@ -152,6 +151,8 @@ build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/
 build/src/menu/ui.o: build/assets/materials/ui.h
 
 build/src/ui/nightchilde.o: build/assets/materials/ui.h
+
+build/src/scene/pause_menu.o: build/assets/materials/ui.h
 
 ####################
 ## Models

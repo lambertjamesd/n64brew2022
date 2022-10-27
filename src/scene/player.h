@@ -37,6 +37,7 @@ struct Player {
     float animationSpeed;
 
     struct Item* holdingItem;
+    struct Item* usingItem;
 
     struct CollisionCapsule collider;
 
@@ -60,5 +61,8 @@ Gfx* playerGenerateShadowMapGfx(struct Player* player, struct RenderState* rende
 void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* target, Light* light);
 
 void playerKill(struct Player* player);
+
+int playerIsUsingItem(struct Player* player);
+void playerStopUsingItem(struct Player* player);
 
 #endif

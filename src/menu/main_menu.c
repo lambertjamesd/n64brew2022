@@ -30,6 +30,17 @@ void mainMenuInit(struct MainMenu* mainMenu) {
     mainMenu->selectedLevel = 0;
 }
 
+void mainMenuEnter(struct MainMenu* mainMenu) {
+    if (mainMenu->currentState == MainMenuLoading) {
+        mainMenu->currentState = MainMenuLevelList;
+    }
+
+    mainMenu->fadeAmount = 0.0f;
+    mainMenu->titleAnimation = 0.0f;
+    mainMenu->windowOpenAnimation = 0.0f;
+    mainMenu->levelToLoad = NO_QUEUED_LEVEL;
+}
+
 int mainMenuCanPlayerLevel(struct MainMenu* mainMenu, int levelIndex) {
     return levelIndex == 0 || saveFileIsLevelComplete(levelIndex - 1);
 }

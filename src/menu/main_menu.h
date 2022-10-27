@@ -23,6 +23,7 @@ struct MainMenu {
 extern struct MainMenu gMainMenu;
 
 void mainMenuInit(struct MainMenu* mainMenu);
+void mainMenuEnter(struct MainMenu* mainMenu);
 void mainMenuUpdate(struct MainMenu* mainMenu);
 void mainMenuRender(struct MainMenu* mainMenu, struct RenderState* renderState, struct GraphicsTask* graphicsTask);
 

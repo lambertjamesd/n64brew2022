@@ -8,3 +8,5 @@
 * balancing
   * bezos spawn probability 
   * bezos decay rate
+
+* playthrough feedback

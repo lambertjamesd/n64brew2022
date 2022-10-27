@@ -147,6 +147,33 @@ void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
 
 #define DEAD_ZONE   0.2f
 
+void playerAttachedItemToBone(struct Player* player, struct Item* item, int boneIndex) {
+    struct Transform targetTransform;
+    skCalculateBoneTransform(
+        &player->armature, 
+        boneIndex, 
+        &targetTransform
+    );
+
+    struct Transform combined;
+
+    vector3Scale(&targetTransform.position, &targetTransform.position, 1.0f / SCENE_SCALE);
+
+    transformConcat(&player->transform, &targetTransform, &combined);
+
+    struct Transform* relativeTransform = gItemDefinitions[item->type].grabTransform;
+
+    if (relativeTransform) {
+        struct Transform holdingTransform;
+        struct Transform relativeInverse;
+        transformInvert(relativeTransform, &relativeInverse);
+        transformConcat(&combined, &relativeInverse, &holdingTransform);
+        combined = holdingTransform;
+    }
+
+    itemUpdateTarget(item, &combined);
+}
+
 void playerUpdate(struct Player* player) {
     skAnimatorUpdate(&player->animator, player->armature.boneTransforms, player->animationSpeed);
 
@@ -164,7 +191,7 @@ void playerUpdate(struct Player* player) {
 
     float magSqrd = vector3MagSqrd(&moveDir);
 
-    float moveSpeed = player->holdingItem && player->holdingItem->type == ItemTypeBroom ? PLAYER_BROOM_SPEED : PLAYER_MOVE_SPEED;
+    float moveSpeed = player->usingItem && player->usingItem->type == ItemTypeBroom ? PLAYER_BROOM_SPEED : PLAYER_MOVE_SPEED;
 
     if (magSqrd > 1.0f) {
         vector3Scale(&moveDir, &moveDir, moveSpeed / sqrtf(magSqrd));
@@ -200,31 +227,27 @@ void playerUpdate(struct Player* player) {
         skAnimatorRunClip(&player->animator, nextAnimation, loop ? SKAnimatorFlagsLoop : 0);
     }
 
-    if (player->holdingItem) {
-        struct Transform targetTransform;
-        skCalculateBoneTransform(
-            &player->armature, 
-            PLAYER_ATTACHEMENT_RIGHTHAND_BONE, 
-            &targetTransform
-        );
+    if (controllerGetButtonDown(player->playerIndex, Z_TRIG)) {
+        if (player->usingItem) {
+            if (player->holdingItem) {
+                itemDrop(player->usingItem);
+            } else {
+                player->holdingItem = player->usingItem;
+            }
 
-        struct Transform combined;
-
-        vector3Scale(&targetTransform.position, &targetTransform.position, 1.0f / SCENE_SCALE);
-
-        transformConcat(&player->transform, &targetTransform, &combined);
-
-        struct Transform* relativeTransform = gItemDefinitions[player->holdingItem->type].grabTransform;
-
-        if (relativeTransform) {
-            struct Transform holdingTransform;
-            struct Transform relativeInverse;
-            transformInvert(relativeTransform, &relativeInverse);
-            transformConcat(&combined, &relativeInverse, &holdingTransform);
-            combined = holdingTransform;
+            player->usingItem = NULL;
+        } else if (player->holdingItem) {
+            player->usingItem = player->holdingItem;
+            player->holdingItem = NULL;
         }
+    }
 
-        itemUpdateTarget(player->holdingItem, &combined);
+    if (player->usingItem) {
+        playerAttachedItemToBone(player, player->usingItem, PLAYER_ATTACHEMENT_LEFTHAND_BONE);
+    }
+
+    if (player->holdingItem) {
+        playerAttachedItemToBone(player, player->holdingItem, PLAYER_ATTACHEMENT_RIGHTHAND_BONE);
     }
 
     playerUpdateColliderPos(player);
@@ -335,5 +358,16 @@ void playerKill(struct Player* player) {
     if (player->holdingItem) {
         itemDrop(player->holdingItem);
         player->holdingItem = NULL;
+    }
+}
+
+int playerIsUsingItem(struct Player* player) {
+    return player->usingItem != NULL;
+}
+
+void playerStopUsingItem(struct Player* player) {
+    if (player->usingItem) {
+        itemDrop(player->usingItem);
+        player->usingItem = NULL;
     }
 }

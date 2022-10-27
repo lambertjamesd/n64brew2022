@@ -26,9 +26,11 @@ struct Coloru8 palleteApplyEffects(struct Coloru8 color, enum PalleteEffects eff
         if (srcIndex % 12 != 4) {
             int grayscale = (54 * color.r + 182 * color.g + 18) >> 8;
 
-            color.r = grayscale;
-            color.g = grayscale;
-            color.b = grayscale;
+            color.r = (grayscale + color.r) >> 1;
+            color.g = (grayscale + color.g) >> 1;
+            color.b = (grayscale + color.b) >> 1;
+        } else {
+            color.r = (color.r + 255) >> 1;
         }
     }
 
