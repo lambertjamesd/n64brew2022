@@ -132,7 +132,7 @@ void shadowVolumeGroupRender(struct ShadowVolumeGroup* group, struct RenderState
         MAX(0, (int)group->screenClip.min.x),
         MAX(0, (int)group->screenClip.min.y),
         MIN(SCREEN_WD, (int)group->screenClip.max.x),
-        MIN(SCREEN_WD, (int)group->screenClip.max.y)
+        MIN(SCREEN_HT, (int)group->screenClip.max.y)
     );
 
     gSPDisplayList(renderState->dl++, levelMaterialDefault());

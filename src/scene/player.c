@@ -11,23 +11,23 @@
 
 #include "../collision/collision_scene.h"
 
-#define PLAYER_BROOM_SPEED  2.8f
+#define PLAYER_BROOM_SPEED  2.4f
 
-#define PLAYER_MOVE_SPEED   1.4f
+#define PLAYER_MOVE_SPEED   1.6f
 
-#define PLAYER_MAX_SPRINT_SPEED 4.0f
-#define PLAYER_MAX_WALK_SPEED   1.0f
+#define PLAYER_CARRY_SPEED   1.2f
+
+#define PLAYER_MAX_SPRINT_SPEED 3.0f
+#define PLAYER_MAX_WALK_SPEED   0.8f
 
 #define PLAYER_ACCELERATION 8.0f
 
-#define PLAYER_ROTATE_RATE  (M_PI * 1.5f)
+#define PLAYER_ROTATE_RATE  (M_PI * 2.5f)
 
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
 
 #define PLAYER_GRAVITY      -9.8f
-
-struct Vector2 gMaxRotateVector;
 
 struct Vector3 gPlayerCenter = {0.0f, 0.8f, 0.0f};
 
@@ -98,6 +98,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
 
     player->hoverLocation = gZeroVec;
     player->hoverLocation.y = -1.0f;
+    player->dropAnimationTime = 0.0f;
 
     skArmatureInit(
         &player->armature, 
@@ -115,9 +116,6 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
         NULL
     );
 
-    gMaxRotateVector.x = cosf(PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
-    gMaxRotateVector.y = sinf(PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
-
     player->lookDir.x = 1.0f;
     player->lookDir.y = 0.0f;
 
@@ -131,7 +129,7 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     collisionSceneAddDynamic(&gCollisionScene, &player->collider.collisionObject, playerColliderCallback, player);
 }
 
-void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
+void playerHandleRotation(struct Player* player, struct Vector3* moveDir, float strength) {
     struct Vector2 rotateTowards;
     rotateTowards.x = moveDir->z;
     rotateTowards.y = moveDir->x;
@@ -140,12 +138,18 @@ void playerHandleRotation(struct Player* player, struct Vector3* moveDir) {
         return;
     }
 
-    vector2RotateTowards(&player->lookDir, &rotateTowards, &gMaxRotateVector, &player->lookDir);
+    struct Vector2 maxRotateVector;
+    maxRotateVector.x = cosf(strength * PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
+    maxRotateVector.y = sinf(strength * PLAYER_ROTATE_RATE * FIXED_DELTA_TIME);
+
+    vector2RotateTowards(&player->lookDir, &rotateTowards, &maxRotateVector, &player->lookDir);
 
     quatAxisComplex(&gUp, &player->lookDir, &player->transform.rotation);
 }
 
-#define DEAD_ZONE   0.2f
+#define DEAD_ZONE   0.3f
+
+#define ROTATION_DEAD_ZONE   0.15f
 
 void playerAttachedItemToBone(struct Player* player, struct Item* item, int boneIndex) {
     struct Transform targetTransform;
@@ -191,13 +195,27 @@ void playerUpdate(struct Player* player) {
 
     float magSqrd = vector3MagSqrd(&moveDir);
 
-    float moveSpeed = player->usingItem && player->usingItem->type == ItemTypeBroom ? PLAYER_BROOM_SPEED : PLAYER_MOVE_SPEED;
+    float moveSpeed = PLAYER_MOVE_SPEED;
+    
+    if (player->holdingItem) {
+        moveSpeed = PLAYER_CARRY_SPEED;
+    }
+
+    if (player->usingItem && player->usingItem->type == ItemTypeBroom) {
+        moveSpeed = PLAYER_BROOM_SPEED;
+    }
+
+    float rotateStrength = sqrtf(magSqrd);
 
     if (magSqrd > 1.0f) {
         vector3Scale(&moveDir, &moveDir, moveSpeed / sqrtf(magSqrd));
         rotateDir = moveDir;
+        rotateStrength = 1.0f;
     } else if (magSqrd < DEAD_ZONE * DEAD_ZONE) {
         rotateDir = moveDir;
+        moveDir = gZeroVec;
+    } else if (magSqrd < ROTATION_DEAD_ZONE * ROTATION_DEAD_ZONE) {
+        rotateDir = gZeroVec;
         moveDir = gZeroVec;
     } else {
         vector3Scale(&moveDir, &moveDir, moveSpeed);
@@ -211,8 +229,8 @@ void playerUpdate(struct Player* player) {
     player->velocity.y += PLAYER_GRAVITY * FIXED_DELTA_TIME;
     vector3AddScaled(&player->transform.position, &player->velocity, FIXED_DELTA_TIME, &player->transform.position);
 
-    if (magSqrd > 0.0f) {
-        playerHandleRotation(player, &rotateDir);
+    if (magSqrd > 0.0f && !vector3IsZero(&rotateDir)) {
+        playerHandleRotation(player, &rotateDir, rotateStrength);
     }
 
     if (player->transform.position.y < 0.0f) {
@@ -237,8 +255,10 @@ void playerUpdate(struct Player* player) {
 
             player->usingItem = NULL;
         } else if (player->holdingItem) {
-            player->usingItem = player->holdingItem;
-            player->holdingItem = NULL;
+            if (player->holdingItem->type == ItemTypeBroom) {
+                player->usingItem = player->holdingItem;
+                player->holdingItem = NULL;
+            }
         }
     }
 
@@ -251,6 +271,8 @@ void playerUpdate(struct Player* player) {
     }
 
     playerUpdateColliderPos(player);
+
+    player->dropAnimationTime += FIXED_DELTA_TIME;
 }
 
 void playerSetupTransforms(struct Player* player, struct RenderState* renderState) {
@@ -292,8 +314,8 @@ void playerRender(struct Player* player, Light* light, struct RenderScene* rende
     if (player->hoverLocation.y >= 0.0f) {
         struct Transform hoverTransform;
         hoverTransform.position = player->hoverLocation;
-        hoverTransform.position.y += (sinf(gTimePassed) + 1.0f) * 0.25f;
-        quatAxisAngle(&gUp, gTimePassed * 5.0f, &hoverTransform.rotation);
+        hoverTransform.position.y += (sinf(player->dropAnimationTime) + 1.0f) * 0.25f;
+        quatAxisAngle(&gUp, player->dropAnimationTime * 5.0f, &hoverTransform.rotation);
         hoverTransform.scale = gOneVec;
 
 

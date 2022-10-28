@@ -34,6 +34,8 @@ struct TutorialDialogStep* tutorialCurrentDialogStep(struct Tutorial* tutorial) 
 void tutorialInitCurrentMessage(struct Tutorial* tutorial) {
     tutorial->currentDialogCharacterCount = 0;
     tutorial->currentCharacter = 0.0f;
+    tutorial->currentTextDelay = 0.0f;
+    tutorial->textEffects = 0;
 
     struct TutorialDialogStep* dialog = tutorialCurrentDialogStep(tutorial);
 
@@ -41,6 +43,8 @@ void tutorialInitCurrentMessage(struct Tutorial* tutorial) {
         return;
     }
 
+    tutorial->currentTextDelay = dialog->preDelay;
+    tutorial->textEffects = dialog->effects;
     tutorial->currentDialogCharacterCount = strlen(dialog->message);
 }
 
@@ -62,6 +66,7 @@ void tutorialInit(struct Tutorial* tutorial, struct TutorialStep* script, short 
     tutorial->currentDialogIndex = 0;
     tutorial->currentDialogCharacterCount = 0;
     tutorial->currentCharacter = 0;
+    tutorial->currentTextDelay = 0;
     tutorial->animationLerp = 0.0f;
     tutorial->promptBoxLerp = 0.0f;
 
@@ -141,7 +146,15 @@ int tutorialUpdate(struct Tutorial* tutorial) {
             }
         }
 
-        tutorial->currentCharacter = mathfMoveTowards(tutorial->currentCharacter, tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET, FIXED_DELTA_TIME * CHARACTERS_PER_SECOND);
+        if (tutorial->currentTextDelay > 0.0f) {
+            tutorial->currentTextDelay = mathfMoveTowards(tutorial->currentTextDelay, 0.0f, FIXED_DELTA_TIME);
+        } else {
+            if (tutorial->textEffects & TutorialPromptEffectInstant) {
+                tutorial->currentCharacter = tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET;
+            } else {
+                tutorial->currentCharacter = mathfMoveTowards(tutorial->currentCharacter, tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET, FIXED_DELTA_TIME * CHARACTERS_PER_SECOND);
+            }
+        }
     }
     
     return step != NULL;
@@ -187,8 +200,13 @@ void tutorialModifyColor(void* data, int index, char character, int* x, int* y, 
         return;
     }
 
-    // *x += randomInRange(-1, 2);
-    // *y += randomInRange(-1, 2);
+    struct TutorialDialogStep* step = tutorialCurrentDialog(tutorial);
+
+    if (step && (step->effects & TutorialPromptEffectShake) != 0) {
+        *x += randomInRange(-1, 2);
+        *y += randomInRange(-1, 2);
+    }
+
 
     if (characterLerp >= 1.0f) {
         return;
@@ -246,13 +264,19 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
     struct TutorialDialogStep* step = tutorialCurrentDialog(tutorial);
 
     if (tutorial->animationLerp >= 1.0f && step) {
+        int textScale = 0;
+
+        if (step->effects & TutorialPromptEffectScale) {
+            textScale = 1;
+        }
+
         fontRenderText(
             renderState, 
             &gNightChilde, 
             step->message, 
             SIDE_PADDING + IMAGE_HEIGHT,
             SCREEN_HT - BOTTOM_PADDING - IMAGE_HEIGHT + TEXT_PADDING, 
-            0,
+            textScale,
             tutorial,
             tutorialModifyColor
         );

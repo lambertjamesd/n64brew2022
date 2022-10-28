@@ -308,8 +308,9 @@ void itemUpdate(struct Item* item) {
         return;
     }
 
+    itemUpdateAnimations(item->type);
+    
     if (item->flags & ITEM_FLAGS_HAS_ARMATURE) {
-        itemUpdateAnimations(item->type);
         skAnimatorUpdate(&item->animator, item->armature.boneTransforms, 1.0f);
     }
 
@@ -508,11 +509,12 @@ void itemPoolFree(struct ItemPool* itemPool, struct Item* item) {
     --itemPool->itemCount;
 }
 
-int itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos) {
+enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos) {
     struct Item* current = itemPool->itemHead;
     struct Item* prev = NULL;
 
     int hadFailure = 0;
+    int hadSuccess = 0;
 
     while (current != NULL) {
         itemUpdate(current);
@@ -522,6 +524,7 @@ int itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct 
         if (current->flags & ITEM_FLAGS_GONE) {
             if (current->flags & ITEM_FLAGS_SUCCESS) {
                 tutorialItemDropped(tutorial, TutorialDropTypeSuccess);
+                hadSuccess = 1;
             } else if (!(current->flags & ITEM_FLAGS_RETURNED)) {
                 tutorialItemDropped(tutorial, TutorialDropTypeFail);
                 hadFailure = 1;
@@ -543,7 +546,15 @@ int itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct 
         current = next;
     }
 
-    return hadFailure;
+    if (hadSuccess) {
+        return ItemPoolUpdateResultSuccess;
+    }
+    
+    if (hadFailure) {
+        return ItemPoolUpdateResultFail;
+    }
+
+    return ItemPoolUpdateResultNone;
 }
 
 void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene) {

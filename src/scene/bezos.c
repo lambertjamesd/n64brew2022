@@ -18,6 +18,25 @@
 #define BEZOS_ACCELERATION 1.0f
 
 
+float gBezosSpeeds[] = {
+    0.35f,
+    0.5f,
+    0.85f,
+    1.25f,
+    1.6f,
+    2.0f,
+};
+
+float gBezosAcceleration[] = {
+    1.0f,
+    1.2f,
+    1.8f,
+    2.6f,
+    3.4f,
+    4.4f,
+};
+
+
 void bezosColliderCallback(void* data, struct Vector3* normal, float depth, struct CollisionObject* other) {
     struct Bezos* bezos = (struct Bezos*)data;
 
@@ -48,6 +67,7 @@ void bezosInit(struct Bezos* bezos) {
 
     bezos->flags = 0;
     bezos->velocity = gZeroVec;
+    bezos->speedTeir = 0;
 
     collisionCapsuleInit(&bezos->collider, COLLIDER_HEIGHT, COLLIDER_RADIUS);
     bezosUpdateColliderPos(bezos);
@@ -64,6 +84,15 @@ void bezosActivate(struct Bezos* bezos, struct Vector3* at) {
     skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX], 0);
 
     bezos->flags |= BezosFlagsWaking;
+}
+
+
+void bezosSpeedUp(struct Bezos* bezos) {
+    ++bezos->speedTeir;
+
+    if (bezos->speedTeir == sizeof(gBezosSpeeds) / sizeof(*gBezosSpeeds)) {
+        --bezos->speedTeir;
+    }
 }
 
 void bezosDeactivate(struct Bezos* bezos) {
@@ -108,9 +137,11 @@ void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
     vector3Negate(&moveDir, &backDir);
     quatLook(&backDir, &gUp, &bezos->transform.rotation);
 
+    vector3Scale(&moveDir, &moveDir, gBezosSpeeds[bezos->speedTeir]);
+
     moveDir.y = bezos->velocity.y;
 
-    vector3MoveTowards(&bezos->velocity, &moveDir, BEZOS_MOVE_SPEED * BEZOS_ACCELERATION * FIXED_DELTA_TIME, &bezos->velocity);
+    vector3MoveTowards(&bezos->velocity, &moveDir, gBezosAcceleration[bezos->speedTeir] * FIXED_DELTA_TIME, &bezos->velocity);
 
     if (bezos->flags & BezosFlagsTouchingWall) {
         bezos->velocity.y = 0.5f;

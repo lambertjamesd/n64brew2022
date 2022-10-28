@@ -35,6 +35,7 @@ struct Player {
     Mtx* mtxArmature;
 
     float animationSpeed;
+    float dropAnimationTime;
 
     struct Item* holdingItem;
     struct Item* usingItem;

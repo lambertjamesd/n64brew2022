@@ -66,6 +66,7 @@ struct Scene {
     float fadeInTime;
     float currentLevelTime;
     float penaltyTime;
+    float successTime;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);

@@ -15,8 +15,16 @@ enum TutorialPromptType {
     TutorialPromptTypeDrop,
 };
 
+enum TutorialPromptEffect {
+    TutorialPromptEffectInstant = (1 << 0),
+    TutorialPromptEffectShake = (1 << 1),
+    TutorialPromptEffectScale = (1 << 2),
+};
+
 struct TutorialDialogStep {
     char* message;
+    enum TutorialPromptEffect effects;
+    float preDelay;
 };
 
 struct TutorialStep {
@@ -97,6 +105,7 @@ struct ItemScriptStep {
     float itemTimeout;
     float itemDelay;
     float itemSpawnDelay;
+    short onStart;
 };
 
 struct ItemScript {

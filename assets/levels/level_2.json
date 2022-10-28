@@ -6,9 +6,10 @@
             "success_count": 4,
             "item_delay": 1,
             "item_timeout": 20,
-            "item_spawn_delay": 4
+            "item_spawn_delay": 1
         },
         {
+            "on_start": "delay",
             "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
             "success_count": 1,
             "item_delay": 30,
@@ -26,7 +27,7 @@
             "item_pool": ["Cat", "Scarecrow", "Hand"],
             "success_count": 8,
             "item_delay": 1,
-            "item_timeout": 12,
+            "item_timeout": 20,
             "item_spawn_delay": 4
         },
         {
@@ -56,6 +57,19 @@
                 },
                 {
                     "message": "If you need to get\nrid of something drop\nit in the return bin\nwith no penalty"
+                }
+            ]
+        },
+        "delay": {
+            "dialog": [
+                {
+                    "message": "It looks like there will be a\ndelay in requests but dont\nlet you think you can take\na break"
+                },
+                {
+                    "message": "when there is a delay\nuse that as a chance\nfill tables with product"
+                },
+                {
+                    "message": "there likely a burst\nof urgent requests about\nto happen"
                 },
                 {
                     "message": "I will see you tomorrow"

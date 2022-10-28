@@ -22,7 +22,7 @@ struct Table {
 
 void tableInit(struct Table* table, struct TableDefinition* def);
 
-void tableUpdate(struct Table* table);
+int tableUpdate(struct Table* table);
 void tableRender(struct Table* table, struct RenderScene* renderScene);
 
 struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom);

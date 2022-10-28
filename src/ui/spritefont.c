@@ -2,6 +2,33 @@
 #include "spritefont.h"
 #include "sprite.h"
 
+int fontParseHexDigit(char digit) {
+    if (digit >= '0' && digit <= '9') {
+        return digit - '0';
+    }
+    
+    if (digit >= 'a' && digit <= 'f') {
+        return digit - 'a' + 10;
+    }
+
+    if (digit >= 'A' && digit <= 'F') {
+        return digit - 'A' + 10;
+    }
+
+    return 0;
+}
+
+int fontParseHexByte(const char* at) {
+    return (fontParseHexDigit(at[0]) << 4) | fontParseHexDigit(at[1]);
+}
+
+void fontParseColor(const char* at, struct Coloru8* output) {
+    output->r = fontParseHexByte(&at[1]);
+    output->g = fontParseHexByte(&at[3]);
+    output->b = fontParseHexByte(&at[5]);
+    output->a = fontParseHexByte(&at[7]);
+}
+
 void fontInit(struct Font* font, int spaceWidth, int lineHeight, struct CharacterDefinition* chars, int charCount)
 {
     font->spaceWidth = spaceWidth;
@@ -24,6 +51,13 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
 
     int index = 0;
 
+    if (!*str) {
+        return;
+    }
+
+    struct CharacterDefinition* firstChar = &font->characters[(int)*str];
+    struct Coloru8 color = spriteGetColor(renderState, firstChar->spriteLayer);
+
     while (*str)
     {
         unsigned charValue = (unsigned)*str;
@@ -32,14 +66,14 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
         {
             int finalX = x;
             int finalY = y;
-            struct Coloru8 color = spriteGetColor(renderState, curr->spriteLayer);
+            struct Coloru8 colorCopy = color;
 
             if (characterModifier) {
-                characterModifier(data, index, charValue, &finalX, &finalY, &color);
+                characterModifier(data, index, charValue, &finalX, &finalY, &colorCopy);
             }
 
-            if (color.a) {
-                spriteSetColor(renderState, curr->spriteLayer, color);
+            if (colorCopy.a) {
+                spriteSetColor(renderState, curr->spriteLayer, colorCopy);
 
                 spriteDraw(
                     renderState, 
@@ -74,6 +108,10 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
             } else {
                 y += font->lineHeight >> -scaleShift;
             }
+        } else if (*str == '#')
+        {
+            fontParseColor(str, &color);
+            str += 8;
         }
 
         ++str;
@@ -98,6 +136,8 @@ int fontMeasure(struct Font* font, const char* str, int scaleShift) {
         } else if (*str == '\n') {
             result = MAX(result, currentRow);
             currentRow = 0;
+        } else if (*str == '#') {
+            str += 8;
         } else {
             if (scaleShift >= 0) {
                 currentRow += (curr->data.w + curr->kerning) << scaleShift;

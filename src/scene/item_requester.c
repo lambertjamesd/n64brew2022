@@ -15,8 +15,8 @@
 
 #include "item_render.h"
 
-#define OSCILATE_PERIOD     2.0f
-#define OSCILATE_HEIGHT     0.25f
+#define OSCILATE_PERIOD     4.0f
+#define OSCILATE_HEIGHT     0.15f
 
 #define ITEM_ANIMATE_DELAY    0.5f
 
@@ -78,7 +78,7 @@ int itemRequesterIsActive(struct ItemRequester* requester) {
 
 void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex, struct RenderState* renderState) {
     if (requester->requestedType < ItemTypeCount) {
-        itemRenderGenerate(itemIndex, requester->requestedType, MAX((requester->timeLeft - ITEM_DROP_COYOTE_TIME) / requester->duration, 0.0f), renderState);
+        itemRenderGenerate(itemIndex, requester->requestedType, MAX((requester->timeLeft - ITEM_DROP_COYOTE_TIME) / requester->duration, 0.0f), requester->duration, renderState);
     }
 }
 
@@ -95,7 +95,7 @@ void itemRequesterRender(struct ItemRequester* requester, int itemIndex, struct 
 
     struct Transform signTransform;
     signTransform.position = requester->transform.position;
-    signTransform.position.y += OSCILATE_HEIGHT + OSCILATE_HEIGHT * sinf(gTimePassed * (M_PI * 2.0f / OSCILATE_PERIOD));
+    signTransform.position.y += OSCILATE_HEIGHT + OSCILATE_HEIGHT * sinf(requester->timeLeft * (M_PI * 2.0f / OSCILATE_PERIOD));
     signTransform.rotation = renderScene->cameraTransform.rotation;
     signTransform.scale = gOneVec;
 

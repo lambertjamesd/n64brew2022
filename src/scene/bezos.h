@@ -27,11 +27,13 @@ struct Bezos {
 
     struct CollisionCapsule collider;
     short flags;
+    short speedTeir;
 };
 
 void bezosInit(struct Bezos* bezos);
 
 void bezosActivate(struct Bezos* bezos, struct Vector3* at);
+void bezosSpeedUp(struct Bezos* bezos);
 void bezosDeactivate(struct Bezos* bezos);
 
 void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos);

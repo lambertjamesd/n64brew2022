@@ -6,7 +6,7 @@
             "success_count": 3,
             "item_delay": 4,
             "item_timeout": 45,
-            "item_spawn_delay": 3
+            "item_spawn_delay": 0
         },
         {
             "item_pool": ["Candle", "Cat", "Skull"],

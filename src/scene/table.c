@@ -27,9 +27,9 @@ struct TableType* gTableTypes[] = {
     [TABLE_VERTICAL] = &table_vertical_definition,
 };
 
-void tableUpdate(struct Table* table) {
+int tableUpdate(struct Table* table) {
     if ((table->flags & TABLE_FLAGS_NEED_TO_CHECK_ATTACKS) == 0) {
-        return;
+        return 0;
     }
 
     int itemFlags = 0;
@@ -37,7 +37,7 @@ void tableUpdate(struct Table* table) {
     for (int i = 0; i < table->tableType->itemSlotCount; ++i) {
         if (table->itemSlots[i]) {
             if (!(table->itemSlots[i]->flags & ITEM_FLAGS_ATTACHED)) {
-                return;
+                return 0;
             }
 
             itemFlags |= ITEM_FLAG(table->itemSlots[i]->type);
@@ -60,7 +60,7 @@ void tableUpdate(struct Table* table) {
     }
 
     if (!attacker || !attacked) {
-        return;
+        return itemFlags != 0;
     }
 
     struct Vector3 attackPosition;
@@ -78,6 +78,8 @@ void tableUpdate(struct Table* table) {
             itemAttack(table->itemSlots[i], &attackPosition);
         }
     }
+
+    return itemFlags != 0;
 }
 
 void tableInit(struct Table* table, struct TableDefinition* def) {

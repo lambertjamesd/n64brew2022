@@ -3,6 +3,8 @@
 #include "../math/mathf.h"
 #include "../util/time.h"
 
+#include "scene.h"
+
 void itemDeckInit(struct ItemDeck* deck) {
     deck->deckSize = 0;
     deck->readIndex = 0;
@@ -47,6 +49,8 @@ int itemDeckNeedsShuffle(struct ItemDeck* deck) {
     return deck->readIndex >= deck->deckSize;
 }
 
+extern struct Scene gScene;
+
 void itemCoordinatorInitCurrentStep(struct ItemCoordinator* itemCoordinator) {
     if (itemCoordinator->currentScriptStep >= itemCoordinator->script->stepCount) {
         return;
@@ -66,6 +70,10 @@ void itemCoordinatorInitCurrentStep(struct ItemCoordinator* itemCoordinator) {
     itemDeckShuffle(&itemCoordinator->itemDrop);
 
     itemCoordinator->currentSuccessCount = 0;
+
+    if (currentStep->onStart != TUTORAL_NO_STEP) {
+        tutorialSetNextStep(&gScene.tutorial, currentStep->onStart);
+    }
 }
 
 void itemCoordinatorInit(struct ItemCoordinator* itemCoordinator, struct ItemScript* script) {

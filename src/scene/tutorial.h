@@ -12,6 +12,8 @@ struct Tutorial {
 
     short currentDialogCharacterCount;
     float currentCharacter;
+    float currentTextDelay;
+    enum TutorialPromptEffect textEffects;
 
     enum TutorialPromptType currentPrompt;
 
@@ -33,6 +35,7 @@ void tutorialItemDropped(struct Tutorial* tutorial, enum TutorialDropType dropTy
 int tutorialUpdate(struct Tutorial* tutorial);
 
 int tutorialIsImmune(struct Tutorial* tutorial);
+void tutorialSetNextStep(struct Tutorial* tutorial, short index);
 
 void tutorialRender(struct Tutorial* tutorial, struct RenderState* renderState);
 

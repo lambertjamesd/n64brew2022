@@ -31,7 +31,7 @@
         "intro": {
             "dialog": [
                 {
-                    "message": "Welcome to your first day of\norientation\"I am Tony\nYour floor manager"
+                    "message": "Welcome to your first day of\norientation I am Tony\nYour floor manager"
                 },
                 {
                     "message": "Your job is to fulfill orders"
@@ -141,10 +141,13 @@
                     "message": "and if he catches you\nyou will be ..."
                 },
                 {
-                    "message": "terminated"
+                    "message": "#dd3311ffterminated",
+                    "pre_delay": 1,
+                    "effects": ["instant", "shake", "scale"]
                 },
                 {
-                    "message": "have a nice shift"
+                    "message": "have a nice shift",
+                    "pre_delay": 1.5
                 }
             ]
         }

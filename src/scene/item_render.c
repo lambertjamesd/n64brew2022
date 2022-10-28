@@ -27,7 +27,18 @@ int gItemImagesRendered = 0;
 
 extern u8 __attribute__((aligned(64))) indexColorBuffer[SCREEN_HT * SCREEN_WD];
 
-void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, struct RenderState* renderState) {
+struct ColorThreshold {
+    int colorIndex;
+    float durationThreshold;
+};
+
+struct ColorThreshold thresholds[] = {
+    {0x39393939, 24.0f},
+    {0x01010101, 12.0f},
+    {0x41414141, 0.0f},
+};
+
+void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, float duration, struct RenderState* renderState) {
     struct ItemTypeDefinition* itemDef = &gItemDefinitions[itemType];
 
     gDPSetColorImage(renderState->dl++, G_IM_FMT_I, G_IM_SIZ_8b, ITEM_RENDER_SIZE, gItemImages[itemIndex]);
@@ -36,9 +47,17 @@ void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, s
     
     gDPSetCycleType(renderState->dl++, G_CYC_FILL);
     gDPSetFillColor(renderState->dl++, 0x25252525);
+
     gDPFillRectangle(renderState->dl++, 0, 0, progressX-1, ITEM_RENDER_SIZE-1);
     gDPPipeSync(renderState->dl++);
-    gDPSetFillColor(renderState->dl++, 0x11111111);
+
+    for (int i = 0; i < sizeof(thresholds) / sizeof(*thresholds); ++i) {
+        if (thresholds[i].durationThreshold <= duration) {
+            gDPSetFillColor(renderState->dl++, thresholds[i].colorIndex);
+            break;
+        }
+    }
+
     gDPFillRectangle(renderState->dl++, progressX, 0, ITEM_RENDER_SIZE-1, ITEM_RENDER_SIZE-1);
     gSPViewport(renderState->dl++, &gItemRenderViewport);
     gDPSetScissor(renderState->dl++, G_SC_NON_INTERLACE, 0, 0, ITEM_RENDER_SIZE, ITEM_RENDER_SIZE);

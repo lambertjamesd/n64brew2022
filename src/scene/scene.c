@@ -26,6 +26,7 @@
 #include "../util/rom.h"
 #include "../menu/ui.h"
 #include "../savefile/savefile.h"
+#include "../menu/main_menu.h"
 
 #include "../build/assets/materials/ui.h"
 #include "../build/assets/materials/static.h"
@@ -47,8 +48,9 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 
 #define DROPS_PER_FULL_BAR          5
 #define TIME_TO_DECAY_FULL_BAR      50
-#define TIME_TO_FILL_USE_BAR        110
+#define TIME_TO_FILL_USE_BAR        140
 #define USE_ITEM_CHECK_INTERVAL     7.0f
+#define MIN_ITEM_SPAWN_THRESHOLD    0.3f
 
 #define APPEAR_FLASH_PERIOD  0.1f
 #define APPEAR_FLASH_COUNT   2
@@ -56,6 +58,8 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 #define FADE_IN_DURATION    2.0f
 
 #define RED_FLASH_TIME      0.75f
+
+#define GREEN_FLASH_TIME    0.55f
 
 
 void materialSetBasicLit(struct RenderState* renderState, int objectIndex) {
@@ -139,6 +143,7 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     scene->fadeInTime = FADE_IN_DURATION;
     scene->currentLevelTime = 0.0f;
     scene->penaltyTime = 0.0f;
+    scene->successTime = 0.0f;
 
     struct CollisionBoundary* boundaries = malloc(sizeof(struct CollisionBoundary) * definition->boundaryCount);
     for (int i = 0; i < definition->boundaryCount; ++i) {
@@ -155,8 +160,13 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
 
 unsigned ignoreInputFrames = 10;
 
-void sceneCheckSpawn(struct Scene* scene, struct Vector3* at) {
-    if (mathfRandomFloat() < scene->dropPenalty && !bezosIsActive(&scene->bezos)) {
+void sceneCheckSpawn(struct Scene* scene, struct Vector3* at, float minThreshold) {
+    if (bezosIsActive(&scene->bezos)) {
+        bezosSpeedUp(&scene->bezos);
+        return;
+    }
+
+    if (scene->dropPenalty > minThreshold && mathfRandomFloat() < scene->dropPenalty) {
         bezosActivate(&scene->bezos, at);
         scene->appearTime = gTimePassed;
         scene->dropPenalty = mathfMoveTowards(scene->dropPenalty, 1.0f, 0.5f);
@@ -165,14 +175,16 @@ void sceneCheckSpawn(struct Scene* scene, struct Vector3* at) {
 }
 
 void sceneApplyPenalty(struct Scene* scene, struct Vector3* at) {
-    if (!tutorialIsImmune(&scene->tutorial) && !bezosIsActive(&scene->bezos)) {
-        scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
+    if (!tutorialIsImmune(&scene->tutorial)) {
+        if (!bezosIsActive(&scene->bezos)) {
+            scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
 
-        if (scene->dropPenalty > 1.0f) {
-            scene->dropPenalty = 1.0f;
+            if (scene->dropPenalty > 1.0f) {
+                scene->dropPenalty = 1.0f;
+            }
         }
 
-        sceneCheckSpawn(scene, at);
+        sceneCheckSpawn(scene, at, 0.0f);
         
         scene->penaltyTime = RED_FLASH_TIME;
     }
@@ -205,7 +217,11 @@ void sceneUpdate(struct Scene* scene) {
     if (endScreenUpdate(&scene->endScreen)) {
         if (endScreenIsDone(&scene->endScreen)) {
             if (scene->endScreen.success == EndScreenTypeSuccess) {
-                levelQueueLoad(NEXT_LEVEL);
+                if (gCurrentLevelIndex + 1 == levelGetCount()) {
+                    mainMenuShowCredits(&gMainMenu);
+                } else {
+                    levelQueueLoad(NEXT_LEVEL);
+                }
             } else {
                 levelQueueLoad(gCurrentLevelIndex);
             }
@@ -259,9 +275,12 @@ void sceneUpdate(struct Scene* scene) {
             struct Item* item = scenePickupItem(scene, &grabFrom);
 
             if (item) {
-                tutorialItemPickedUp(&scene->tutorial);
                 playerHandObject(player, item);
             }
+        }
+
+        if (player->holdingItem && (player->holdingItem->flags & ITEM_FLAGS_ATTACHED) != 0) {
+            tutorialItemPickedUp(&scene->tutorial);
         }
     }
 
@@ -290,8 +309,12 @@ void sceneUpdate(struct Scene* scene) {
 
     struct Vector3 bezosSpawn;
 
-    if (itemPoolUpdate(&scene->itemPool, &scene->tutorial, &bezosSpawn)) {
+    enum ItemPoolUpdateResult itemPoolResult = itemPoolUpdate(&scene->itemPool, &scene->tutorial, &bezosSpawn);
+
+    if (itemPoolResult == ItemPoolUpdateResultFail) {
         sceneApplyPenalty(scene, &bezosSpawn);
+    } else if (itemPoolResult == ItemPoolUpdateResultSuccess) {
+        scene->successTime = GREEN_FLASH_TIME;
     }
 
     for (int i = 0; i < scene->spotLightCount; ++i) {
@@ -299,7 +322,9 @@ void sceneUpdate(struct Scene* scene) {
     }
 
     for (int i = 0; i < scene->tableCount; ++i) {
-        tableUpdate(&scene->tables[i]);
+        if (tableUpdate(&scene->tables[i])) {
+            tutorialItemDropped(&scene->tutorial, TutorialDropTypeTable);
+        }
     }
 
     int activeRequesterCount = 0;
@@ -329,7 +354,7 @@ void sceneUpdate(struct Scene* scene) {
         scene->dropPenalty = mathfMoveTowards(scene->dropPenalty, 1.0f, FIXED_DELTA_TIME / TIME_TO_FILL_USE_BAR);
 
         if (mathfMod(scene->currentLevelTime, USE_ITEM_CHECK_INTERVAL) + FIXED_DELTA_TIME >= USE_ITEM_CHECK_INTERVAL) {
-            sceneCheckSpawn(scene, &gZeroVec);
+            sceneCheckSpawn(scene, &gZeroVec, MIN_ITEM_SPAWN_THRESHOLD);
         }
     } else if (scene->dropPenalty > 0.0f) {
         scene->dropPenalty -= FIXED_DELTA_TIME / TIME_TO_DECAY_FULL_BAR;
@@ -347,13 +372,15 @@ void sceneUpdate(struct Scene* scene) {
     scene->currentLevelTime += FIXED_DELTA_TIME;
 
     scene->penaltyTime = mathfMoveTowards(scene->penaltyTime, 0.0f, FIXED_DELTA_TIME);
+    scene->successTime = mathfMoveTowards(scene->successTime, 0.0f, FIXED_DELTA_TIME);
 }
 
-struct Colorf32 gAmbientLight = {0.0f, 0.15f, 0.3f, 255};
-struct Colorf32 gAmbientScale = {0.65f, 0.65f, 0.65f, 255};
-struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 255};
-struct Colorf32 gRedLightColor = {1.5f, 0.1f, 0.1f, 255};
-struct Colorf32 gOrangeLightColor = {1.0f, 0.2f, 0.1f, 255};
+struct Colorf32 gAmbientLight = {0.0f, 0.15f, 0.3f, 1.0f};
+struct Colorf32 gAmbientScale = {0.65f, 0.65f, 0.65f, 1.0f};
+struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 1.0f};
+struct Colorf32 gGreenLightColor = {0.3f, 0.5f, 0.3f, 1.0f};
+struct Colorf32 gRedLightColor = {1.5f, 0.1f, 0.1f, 1.0f};
+struct Colorf32 gOrangeLightColor = {1.0f, 0.2f, 0.1f, 1.0f};
 
 struct Plane gGroundPlane = {{0.0f, 1.0f, 0.0}, -0.05f};
 
@@ -613,7 +640,9 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 
     struct Colorf32* lightColor = &gLightColor;
 
-    if (mathfMod(scene->penaltyTime, RED_FLASH_TIME * 0.5f) > RED_FLASH_TIME * 0.25f) {
+    if (scene->successTime) {
+        lightColor = &gGreenLightColor;
+    } else if (mathfMod(scene->penaltyTime, RED_FLASH_TIME * 0.5f) > RED_FLASH_TIME * 0.25f) {
         lightColor = &gRedLightColor;
     } else if (playerIsUsingItem(&scene->players[0])) {
         lightColor = &gOrangeLightColor;
@@ -697,7 +726,6 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 
     for (int i = 0; i < scene->tableCount; ++i) {
         if (tableDropItem(&scene->tables[i], item, dropAt)) {
-            tutorialItemDropped(&scene->tutorial, TutorialDropTypeTable);
             return 1;
         }
     }

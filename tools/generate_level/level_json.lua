@@ -59,6 +59,26 @@ end
 
 local tutorial_data = {}
 
+local function parse_tutorial_effects(effects)
+    if effects == nil then
+        return 0
+    end
+
+    local result = "0"
+
+    for _, entry in pairs(effects) do
+        if (entry == "shake") then
+            result = result .. " | TutorialPromptEffectShake"
+        elseif (entry == "instant") then
+            result = result .. " | TutorialPromptEffectInstant"
+        elseif (entry == "scale") then
+            result = result .. " | TutorialPromptEffectScale"
+        end
+    end
+
+    return raw(result)
+end
+
 for _, pair in pairs(ordered_tutorial) do
     local name = pair.name
     local step = pair.step
@@ -73,7 +93,9 @@ for _, pair in pairs(ordered_tutorial) do
 
         for _, dialogEntry in pairs(step.dialog) do
             table.insert(mapped_dialog, {
-                message = reference_to(text_array, #text_array + 1)
+                message = reference_to(text_array, #text_array + 1),
+                effects = parse_tutorial_effects(dialogEntry.effects),
+                preDelay = dialogEntry.pre_delay,
             })
 
             for i = 1, #dialogEntry.message do
@@ -110,6 +132,7 @@ for _, script_entry in pairs(json_body.script) do
         itemTimeout = script_entry.item_timeout or 30,
         itemDelay = script_entry.item_delay or 0,
         itemSpawnDelay = script_entry.item_spawn_delay or 0,
+        onStart = tutorial_name_to_index(script_entry.on_start),
     }
 
     for _, item in pairs(script_entry.item_pool) do

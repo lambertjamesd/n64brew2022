@@ -25,6 +25,12 @@ struct ItemTypeDefinition {
     struct Transform* grabTransform;
 };
 
+enum ItemPoolUpdateResult {
+    ItemPoolUpdateResultNone,
+    ItemPoolUpdateResultSuccess,
+    ItemPoolUpdateResultFail,
+};
+
 #define ITEM_FLAGS_ATTACHED         (1 << 0)
 #define ITEM_FLAGS_HAS_ARMATURE     (1 << 1)
 #define ITEM_FLAGS_DROPPED          (1 << 2)
@@ -34,8 +40,8 @@ struct ItemTypeDefinition {
 #define ITEM_FLAGS_RETURNED         (1 << 6)
 #define ITEM_FLAGS_ATTACKED         (1 << 7)
 
-#define ITEM_PICKUP_RADIUS  0.75f
-#define ITEM_DROP_PICKUP_RADIUS  0.75f
+#define ITEM_PICKUP_RADIUS  0.9f
+#define ITEM_DROP_PICKUP_RADIUS  0.9f
 
 extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
 
@@ -107,7 +113,7 @@ void itemPoolInit(struct ItemPool* itemPool);
 struct Item* itemPoolNew(struct ItemPool* itemPool, enum ItemType itemType, struct Transform* initialPose);
 void itemPoolFree(struct ItemPool* itemPool, struct Item* item);
 
-int itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos);
+enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos);
 
 void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene);
 
