@@ -112,6 +112,7 @@ void pauseMenuRender(struct PauseMenu* pauseMenu, struct RenderState* renderStat
         320 - 130,
         blackY + 20,
         2,
+        0,
         NULL,
         NULL
     );
@@ -124,6 +125,7 @@ void pauseMenuRender(struct PauseMenu* pauseMenu, struct RenderState* renderStat
         320 - 100,
         blackY + 100,
         1,
+        0,
         NULL,
         NULL
     );
@@ -136,6 +138,7 @@ void pauseMenuRender(struct PauseMenu* pauseMenu, struct RenderState* renderStat
         320 - 100,
         blackY + 150,
         1,
+        0,
         NULL,
         NULL
     );

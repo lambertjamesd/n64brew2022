@@ -25,3 +25,15 @@ if (grab_transform) then
         scale
     })
 end
+
+local use_transform = nodes_for_type('@use_transform')[1]
+
+if (use_transform) then 
+    local scale, rotation, position = use_transform.node.full_transformation:decompose()
+
+    add_definition("use_transform", "struct Transform", "_geo", {
+        position,
+        rotation,
+        scale
+    })
+end

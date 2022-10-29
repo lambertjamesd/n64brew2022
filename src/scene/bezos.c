@@ -20,11 +20,11 @@
 
 float gBezosSpeeds[] = {
     0.35f,
-    0.5f,
-    0.85f,
-    1.25f,
+    0.4f,
+    0.7f,
+    1.0f,
+    1.2f,
     1.6f,
-    2.0f,
 };
 
 float gBezosAcceleration[] = {

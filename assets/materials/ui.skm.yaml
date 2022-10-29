@@ -66,9 +66,9 @@ materials:
 
     sortOrder: 5
   
-  floor_manager_ui_00:
+  floor_manager_ui:
     gDPSetTile:
-      filename: "./ui/floor_manager_00.png"
+      filename: "./ui/floor_manager.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
     gDPSetRenderMode: G_RM_OPA_SURF
@@ -77,60 +77,37 @@ materials:
       alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
     sortOrder: 4
 
-  floor_manager_ui_10:
+  floor_manager_angry_ui:
     gDPSetTile:
-      filename: "./ui/floor_manager_10.png"
+      filename: "./ui/floor_manager_angry.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
     gDPSetRenderMode: G_RM_OPA_SURF
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", TEXEL0]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
     sortOrder: 4
 
-  floor_manager_ui_01:
+  floor_manager_annoyed_ui:
     gDPSetTile:
-      filename: "./ui/floor_manager_01.png"
+      filename: "./ui/floor_manager_annoyed.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
     gDPSetRenderMode: G_RM_OPA_SURF
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", TEXEL0]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
     sortOrder: 4
 
-  floor_manager_ui_11:
+  floor_manager_confused_ui:
     gDPSetTile:
-      filename: "./ui/floor_manager_11.png"
+      filename: "./ui/floor_manager_confused.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
     gDPSetRenderMode: G_RM_OPA_SURF
-    sortOrder: 4
-
-  floor_manager_ui_02:
-    gDPSetTile:
-      filename: "./ui/floor_manager_02.png"
-      siz: G_IM_SIZ_16b
-      fmt: G_IM_FMT_RGBA
-    gDPSetRenderMode: G_RM_OPA_SURF
-    sortOrder: 4
-
-  floor_manager_ui_12:
-    gDPSetTile:
-      filename: "./ui/floor_manager_12.png"
-      siz: G_IM_SIZ_16b
-      fmt: G_IM_FMT_RGBA
-    gDPSetRenderMode: G_RM_OPA_SURF
-    sortOrder: 4
-
-  floor_manager_ui_03:
-    gDPSetTile:
-      filename: "./ui/floor_manager_03.png"
-      siz: G_IM_SIZ_16b
-      fmt: G_IM_FMT_RGBA
-    gDPSetRenderMode: G_RM_OPA_SURF
-    sortOrder: 4
-
-  floor_manager_ui_13:
-    gDPSetTile:
-      filename: "./ui/floor_manager_13.png"
-      siz: G_IM_SIZ_16b
-      fmt: G_IM_FMT_RGBA
-    gDPSetRenderMode: G_RM_OPA_SURF
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", TEXEL0]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
     sortOrder: 4
 
   title_screen:
@@ -151,3 +128,37 @@ materials:
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
 
+  tutorial_thumb:
+    gDPSetTile:
+      filename: "./ui/tutorial_thumb.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    sortOrder: 5
+
+  level_02_thumb:
+    gDPSetTile:
+      filename: "./ui/level_02_thumb.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    sortOrder: 5
+
+  level_03_thumb:
+    gDPSetTile:
+      filename: "./ui/level_03_thumb.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    sortOrder: 5
+
+  level_04_thumb:
+    gDPSetTile:
+      filename: "./ui/level_04_thumb.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    sortOrder: 5
+
+  level_05_thumb:
+    gDPSetTile:
+      filename: "./ui/level_05_thumb.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    sortOrder: 5

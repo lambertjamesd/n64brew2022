@@ -38,13 +38,22 @@ void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefi
     collisionCapsuleUpdateBB(&requester->collisionCapsule);
 
     collisionSceneAddStatic(&gCollisionScene, &requester->collisionCapsule.collisionObject);
+
+    skAnimatorInit(&requester->animator, PORTAL_DEFAULT_BONES_COUNT, NULL, NULL);
+    skArmatureInit(&requester->armature, portal_model_gfx, PORTAL_DEFAULT_BONES_COUNT, portal_default_bones, portal_bone_parent, 0);
 }
 
-int itemRequesterUpdate(struct ItemRequester* requester) {
+int itemRequesterUpdate(struct ItemRequester* requester, float timeScale) {
     int didFail = 0;
 
+    skAnimatorUpdate(&requester->animator, requester->armature.boneTransforms, 1.0f);
+
+    if (!skAnimatorIsRunning(&requester->animator)) {
+        skAnimatorRunClip(&requester->animator, &portal_animations[PORTAL_PORTAL_PORTALSLOWLOOP_INDEX], SKAnimatorFlagsLoop);
+    }
+
     if (requester->timeLeft > 0.0f) {
-        requester->timeLeft -= FIXED_DELTA_TIME;
+        requester->timeLeft -= FIXED_DELTA_TIME * timeScale;
 
         if (requester->timeLeft <= 0.0f) {
             requester->timeLeft = 0.0f;
@@ -85,7 +94,11 @@ void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex,
 void itemRequesterRender(struct ItemRequester* requester, int itemIndex, struct RenderScene* renderScene) {
     Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
     transformToMatrixL(&requester->transform, mtx, SCENE_SCALE);
-    renderSceneAdd(renderScene, portal_model_gfx, mtx, ITEMS_EMMISIVE_INDEX, &requester->transform.position, NULL, NULL);
+
+    Mtx* armature = renderStateRequestMatrices(renderScene->renderState, PORTAL_DEFAULT_BONES_COUNT);
+    skCalculateTransforms(&requester->armature, armature);
+
+    renderSceneAdd(renderScene, portal_model_gfx, mtx, ITEMS_EMMISIVE_INDEX, &requester->transform.position, armature, NULL);
 
     if (requester->timeLeft <= 0.0f) {
         return;
@@ -135,7 +148,9 @@ int itemRequesterHover(struct ItemRequester* requester, struct Item* item, struc
     vector3Sub(&requester->transform.position, dropAt, &offset);
     offset.y = 0.0f;
 
-    int result = vector3MagSqrd(&offset) < ITEM_DROP_PICKUP_RADIUS * ITEM_DROP_PICKUP_RADIUS;
+    int wasThrown = (item->flags & ITEM_FLAGS_THROWN) != 0;
+
+    int result = vector3MagSqrd(&offset) < (wasThrown ? ITEM_THROW_RADIUS * ITEM_THROW_RADIUS : ITEM_DROP_PICKUP_RADIUS * ITEM_DROP_PICKUP_RADIUS);
 
     if (result && item && requester->requestedType == item->type) {
         requester->flags |= ItemRequesterFlagsHover;
@@ -148,10 +163,16 @@ int itemRequesterHover(struct ItemRequester* requester, struct Item* item, struc
 
 enum ItemDropResult itemRequesterDrop(struct ItemRequester* requester, struct Item* item, struct Vector3* dropAt) {
     if (itemRequesterHover(requester, item, dropAt)) {
+        // thrown items cant trigger a wrong drop
+        if (item->type != requester->requestedType && (item->flags & ITEM_FLAGS_THROWN)) {
+            return ItemDropResultNone;
+        }
+
         enum ItemDropResult result = item->type == requester->requestedType ? ItemDropResultSuccess : ItemDropResultFail;
 
         if (result == ItemDropResultSuccess) {
             itemSuccess(item, &requester->transform.position);
+            skAnimatorRunClip(&requester->animator, &portal_animations[PORTAL_PORTAL_PORTAL_ARMATURE_PORTALITEMDROPPED_INDEX], 0);
         } else {
             itemDrop(item);
         }

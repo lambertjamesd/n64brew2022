@@ -23,12 +23,14 @@ struct ItemTypeDefinition {
     struct SKAnimationHeader* idleAnimation;
     struct SKAnimationHeader* attackAnimation;
     struct Transform* grabTransform;
+    struct Transform* useTransform;
 };
 
 enum ItemPoolUpdateResult {
     ItemPoolUpdateResultNone,
     ItemPoolUpdateResultSuccess,
     ItemPoolUpdateResultFail,
+    ItemPoolUpdateResultFailThrow,
 };
 
 #define ITEM_FLAGS_ATTACHED         (1 << 0)
@@ -39,9 +41,12 @@ enum ItemPoolUpdateResult {
 #define ITEM_FLAGS_SUCCESS          (1 << 5)
 #define ITEM_FLAGS_RETURNED         (1 << 6)
 #define ITEM_FLAGS_ATTACKED         (1 << 7)
+#define ITEM_FLAGS_THROWN           (1 << 8)
+#define ITEM_FLAGS_THROWN_SUCCESS   (1 << 9)
 
 #define ITEM_PICKUP_RADIUS  0.9f
 #define ITEM_DROP_PICKUP_RADIUS  0.9f
+#define ITEM_THROW_RADIUS  0.6f
 
 extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
 
@@ -97,10 +102,12 @@ void itemUpdateTarget(struct Item* item, struct Transform* transform);
 void itemMarkNewTarget(struct Item* item);
 
 void itemDrop(struct Item* item);
+void itemThrow(struct Item* item, struct Vector3* horizontalDir);
 void itemAttacked(struct Item* item);
 void itemAttack(struct Item* item, struct Vector3* target);
 void itemSuccess(struct Item* item, struct Vector3* portalAt);
 void itemReturn(struct Item* item, struct Vector3* binAt);
+
 
 struct ItemPool {
     struct Item* itemHead;
@@ -113,7 +120,10 @@ void itemPoolInit(struct ItemPool* itemPool);
 struct Item* itemPoolNew(struct ItemPool* itemPool, enum ItemType itemType, struct Transform* initialPose);
 void itemPoolFree(struct ItemPool* itemPool, struct Item* item);
 
-enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos);
+struct Scene;
+typedef int (*SceneDropCallback)(struct Scene* scene, struct Item* item, struct Vector3* dropAt);
+
+enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos, SceneDropCallback dropCallback, struct Scene* scene);
 
 void itemPoolRender(struct ItemPool* itemPool, struct SpotLight* spotLights, int spotLightCount, struct RenderScene* renderScene);
 

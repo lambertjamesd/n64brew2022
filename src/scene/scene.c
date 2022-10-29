@@ -47,7 +47,7 @@ u16 __attribute__((aligned(64))) gPlayerShadowBuffers[MAX_PLAYERS][SHADOW_MAP_WI
 #define LIGHT_ORBIT_PERIOD  3.0f
 
 #define DROPS_PER_FULL_BAR          5
-#define TIME_TO_DECAY_FULL_BAR      50
+#define TIME_TO_DECAY_FULL_BAR      40
 #define TIME_TO_FILL_USE_BAR        140
 #define USE_ITEM_CHECK_INTERVAL     7.0f
 #define MIN_ITEM_SPAWN_THRESHOLD    0.3f
@@ -174,10 +174,10 @@ void sceneCheckSpawn(struct Scene* scene, struct Vector3* at, float minThreshold
     }
 }
 
-void sceneApplyPenalty(struct Scene* scene, struct Vector3* at) {
+void sceneApplyPenalty(struct Scene* scene, struct Vector3* at, int isThrown) {
     if (!tutorialIsImmune(&scene->tutorial)) {
         if (!bezosIsActive(&scene->bezos)) {
-            scene->dropPenalty += 1.0f / DROPS_PER_FULL_BAR;
+            scene->dropPenalty += isThrown ? 1.0f / DROPS_PER_FULL_BAR : 1.0f / DROPS_PER_FULL_BAR;
 
             if (scene->dropPenalty > 1.0f) {
                 scene->dropPenalty = 1.0f;
@@ -216,12 +216,10 @@ void sceneUpdate(struct Scene* scene) {
 
     if (endScreenUpdate(&scene->endScreen)) {
         if (endScreenIsDone(&scene->endScreen)) {
-            if (scene->endScreen.success == EndScreenTypeSuccess) {
-                if (gCurrentLevelIndex + 1 == levelGetCount()) {
-                    mainMenuShowCredits(&gMainMenu);
-                } else {
-                    levelQueueLoad(NEXT_LEVEL);
-                }
+            if (scene->endScreen.success == EndScreenTypeSuccessLastLevel) {
+                mainMenuShowCredits(&gMainMenu);
+            } else if (scene->endScreen.success == EndScreenTypeSuccess) {
+                levelQueueLoad(NEXT_LEVEL);
             } else {
                 levelQueueLoad(gCurrentLevelIndex);
             }
@@ -309,10 +307,10 @@ void sceneUpdate(struct Scene* scene) {
 
     struct Vector3 bezosSpawn;
 
-    enum ItemPoolUpdateResult itemPoolResult = itemPoolUpdate(&scene->itemPool, &scene->tutorial, &bezosSpawn);
+    enum ItemPoolUpdateResult itemPoolResult = itemPoolUpdate(&scene->itemPool, &scene->tutorial, &bezosSpawn, sceneDropItem, scene);
 
-    if (itemPoolResult == ItemPoolUpdateResultFail) {
-        sceneApplyPenalty(scene, &bezosSpawn);
+    if (itemPoolResult == ItemPoolUpdateResultFail || itemPoolResult == ItemPoolUpdateResultFailThrow) {
+        sceneApplyPenalty(scene, &bezosSpawn, itemPoolResult == ItemPoolUpdateResultFailThrow);
     } else if (itemPoolResult == ItemPoolUpdateResultSuccess) {
         scene->successTime = GREEN_FLASH_TIME;
     }
@@ -335,6 +333,8 @@ void sceneUpdate(struct Scene* scene) {
         }
     }
 
+    float requesterTime = bezosIsActive(&scene->bezos) ? 0.5f : 1.0f;
+
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         if (!itemRequesterIsActive(&scene->itemRequesters[i])) {
             enum ItemType newItemType = itemCoordinatorNextRequest(&scene->itemCoordinator, activeRequesterCount);
@@ -345,8 +345,8 @@ void sceneUpdate(struct Scene* scene) {
             }
         }
         
-        if (itemRequesterUpdate(&scene->itemRequesters[i])) {
-            sceneApplyPenalty(scene, &scene->itemRequesters[i].transform.position);
+        if (itemRequesterUpdate(&scene->itemRequesters[i], requesterTime)) {
+            sceneApplyPenalty(scene, &scene->itemRequesters[i].transform.position, 0);
         }
     }
 
@@ -375,8 +375,8 @@ void sceneUpdate(struct Scene* scene) {
     scene->successTime = mathfMoveTowards(scene->successTime, 0.0f, FIXED_DELTA_TIME);
 }
 
-struct Colorf32 gAmbientLight = {0.0f, 0.15f, 0.3f, 1.0f};
-struct Colorf32 gAmbientScale = {0.65f, 0.65f, 0.65f, 1.0f};
+struct Colorf32 gAmbientLight = {0.0f, 0.1f, 0.2f, 1.0f};
+struct Colorf32 gAmbientScale = {0.5f, 0.5f, 0.5f, 1.0f};
 struct Colorf32 gLightColor = {0.3f, 0.3f, 0.15f, 1.0f};
 struct Colorf32 gGreenLightColor = {0.3f, 0.5f, 0.3f, 1.0f};
 struct Colorf32 gRedLightColor = {1.5f, 0.1f, 0.1f, 1.0f};
@@ -706,6 +706,8 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
 }
 
 int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt) {
+    int throwSuccess = 0;
+
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         enum ItemDropResult dropResult = itemRequesterDrop(&scene->itemRequesters[i], item, dropAt);
         if (dropResult) {
@@ -713,8 +715,12 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
 
                 if (itemCoordinatorDidWin(&scene->itemCoordinator)) {
-                    endScreenEndGame(&scene->endScreen, EndScreenTypeSuccess);
+                    endScreenEndGame(&scene->endScreen, gCurrentLevelIndex + 1 == levelGetCount() ? EndScreenTypeSuccessLastLevel : EndScreenTypeSuccess);
                     saveFileMarkLevelComplete(gCurrentLevelIndex, scene->currentLevelTime);
+                }
+
+                if (item->flags & ITEM_FLAGS_THROWN) {
+                    throwSuccess = 1;
                 }
             }
 
@@ -734,6 +740,13 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
     for (int i = 0; i < scene->returnBinCount; ++i) {
         if (returnBinDropItem(&scene->returnBins[i], item, dropAt)) {
             return 1;
+        }
+    }
+
+    // get a bonus for a successful throw
+    if (throwSuccess) {
+        for (int i = 0; i < scene->conveyorCount; ++i) {
+            scene->conveyors[i].spawnDelay = 0.0f;
         }
     }
 

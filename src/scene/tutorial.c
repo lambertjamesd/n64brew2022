@@ -14,6 +14,7 @@
 #define TRANSITION_TIME 0.5f
 
 #define CHARACTERS_PER_SECOND   10.0f
+#define SLOW_CHARACTERS_PER_SECOND   5.0f
 
 #define CHARACTER_ANIMATION_OFFSET    4.0f
 
@@ -90,6 +91,13 @@ void tutorialItemDropped(struct Tutorial* tutorial, enum TutorialDropType dropTy
                 tutorialSetNextStep(tutorial, tutorial->currentStep->onSuccess);
             }
             return;
+        case TutorialDropTypeSuccessThrow:
+            if (tutorial->currentStep->onSuccessThrow != TUTORAL_NO_STEP) {
+                tutorialSetNextStep(tutorial, tutorial->currentStep->onSuccessThrow);
+            } else if (tutorial->currentStep->onSuccess != TUTORAL_NO_STEP) {
+                tutorialSetNextStep(tutorial, tutorial->currentStep->onSuccess);
+            }
+            return;
         case TutorialDropTypeFail:
             if (tutorial->currentStep->onFail != TUTORAL_NO_STEP) {
                 tutorialSetNextStep(tutorial, tutorial->currentStep->onFail);
@@ -152,7 +160,13 @@ int tutorialUpdate(struct Tutorial* tutorial) {
             if (tutorial->textEffects & TutorialPromptEffectInstant) {
                 tutorial->currentCharacter = tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET;
             } else {
-                tutorial->currentCharacter = mathfMoveTowards(tutorial->currentCharacter, tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET, FIXED_DELTA_TIME * CHARACTERS_PER_SECOND);
+                tutorial->currentCharacter = mathfMoveTowards(
+                    tutorial->currentCharacter, 
+                    tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET, 
+                    (tutorial->textEffects & TutorialPromptEffectSlow) ?
+                        FIXED_DELTA_TIME * SLOW_CHARACTERS_PER_SECOND :
+                        FIXED_DELTA_TIME * CHARACTERS_PER_SECOND
+                );
             }
         }
     }
@@ -221,6 +235,13 @@ void tutorialModifyColor(void* data, int index, char character, int* x, int* y, 
     *y += (int)(animationDir * direction->y);
 }
 
+u64* gTonyFaces[] = {
+    ui_floor_manager_rgba_16b,
+    ui_floor_manager_angry_rgba_16b,
+    ui_floor_manager_annoyed_rgba_16b,
+    ui_floor_manager_confused_rgba_16b,
+};
+
 void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, struct RenderState* renderState) {
     int animationOffset = (int)((1.0f - showAmount) * SCREEN_WD);
     int blackX = SIDE_PADDING + animationOffset;
@@ -277,6 +298,7 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
             SIDE_PADDING + IMAGE_HEIGHT,
             SCREEN_HT - BOTTOM_PADDING - IMAGE_HEIGHT + TEXT_PADDING, 
             textScale,
+            TEXT_BOX_WIDTH - IMAGE_HEIGHT - TEXT_PADDING,
             tutorial,
             tutorialModifyColor
         );
@@ -284,17 +306,7 @@ void tutorialRenderTextBacking(struct Tutorial* tutorial, float showAmount, stru
         int imageX = blackX + 8;
         int imageY = blackY + 8;
 
-        spriteDraw(renderState, FLOOR_MANAGER_UI_00_INDEX, imageX, imageY, 64, 32, 0, 0, 0, 0);
-        spriteDraw(renderState, FLOOR_MANAGER_UI_10_INDEX, imageX + 64, imageY, 64, 32, 0, 0, 0, 0);
-
-        spriteDraw(renderState, FLOOR_MANAGER_UI_01_INDEX, imageX, imageY + 32, 64, 32, 0, 0, 0, 0);
-        spriteDraw(renderState, FLOOR_MANAGER_UI_11_INDEX, imageX + 64, imageY + 32, 64, 32, 0, 0, 0, 0);
-
-        spriteDraw(renderState, FLOOR_MANAGER_UI_02_INDEX, imageX, imageY + 64, 64, 32, 0, 0, 0, 0);
-        spriteDraw(renderState, FLOOR_MANAGER_UI_12_INDEX, imageX + 64, imageY + 64, 64, 32, 0, 0, 0, 0);
-
-        spriteDraw(renderState, FLOOR_MANAGER_UI_03_INDEX, imageX, imageY + 96, 64, 32, 0, 0, 0, 0);
-        spriteDraw(renderState, FLOOR_MANAGER_UI_13_INDEX, imageX + 64, imageY + 96, 64, 32, 0, 0, 0, 0);
+        spriteCopyImage(renderState, FLOOR_MANAGER_UI_INDEX, gTonyFaces[step->tonyFace], 128, 128, imageX, imageY, 128, 128, 0, 0);
     }
 }
 
@@ -377,6 +389,7 @@ void tutorialRenderButtonPrompt(struct Tutorial* tutorial, float showAmount, cha
         message, 
         BUTTON_SIDE_PADDING + BUTTON_TEXT_PADDING,
         SCREEN_HT - BUTTON_BUTTON_PADDING - BUTTOM_IMAGE_HEIGHT + BUTTON_TEXT_PADDING, 
+        0,
         0,
         tutorial,
         tutorialModifyActionPrompt

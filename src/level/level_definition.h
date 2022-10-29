@@ -19,12 +19,21 @@ enum TutorialPromptEffect {
     TutorialPromptEffectInstant = (1 << 0),
     TutorialPromptEffectShake = (1 << 1),
     TutorialPromptEffectScale = (1 << 2),
+    TutorialPromptEffectSlow = (1 << 3),
+};
+
+enum TutorialTonyFace {
+    TutorialTonyFaceNeutral,
+    TutorialTonyFaceAngry,
+    TutorialTonyFaceAnnoyed,
+    TutorialTonyFaceConfused,
 };
 
 struct TutorialDialogStep {
     char* message;
     enum TutorialPromptEffect effects;
     float preDelay;
+    enum TutorialTonyFace tonyFace;
 };
 
 struct TutorialStep {
@@ -32,6 +41,7 @@ struct TutorialStep {
     short dialogCount;
     short nextState;
     short onSuccess;
+    short onSuccessThrow;
     short onFail;
     short onTable;
     short onPickup;

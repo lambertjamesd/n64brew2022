@@ -1,5 +1,5 @@
 {
-    "name": "level 03",
+    "name": "scares",
     "script": [
         {
             "item_pool": ["Candle", "Cat", "Rat", "Skull", "Candle", "Cat", "Rat", "Skull"],
@@ -74,10 +74,11 @@
                     "message": "Good work yesterday"
                 },
                 {
-                    "message": "Something you should\nknow for today"
+                    "message": "Something you should know for today"
                 },
                 {
-                    "message": "Do not put a cat and\na rat or a crow and\na scarecrow on the\nsame table"
+                    "message": "Do not put #dd3311ffcats with rats#ffffffff or #dd3311ffcrows with scarecrows#ffffffff on the same table",
+                    "tony_face": "annoyed"
                 },
                 {
                     "message": "They dont get along"

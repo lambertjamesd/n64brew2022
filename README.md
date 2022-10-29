@@ -3,20 +3,8 @@
 
 ## TODO
 
-* polish
-  * darken player white
-
 * done feedback
+  tony faces
 
 * playthrough feedback
-  images on level selection
-  credits screen
-
-* level 2
-  longer timeout
-  auto aim
-
-* level 3
-
-* level 4
-  * shorter item timeouts early on
+  number of squares in level selection screen

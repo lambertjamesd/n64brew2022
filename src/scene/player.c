@@ -40,10 +40,23 @@ struct SKAnimationHeader* playerDetermineAnimation(struct Player* player, float*
     float speedSqrd = sqrtf(player->velocity.x * player->velocity.x + player->velocity.z * player->velocity.z);
     *loop = 1;
 
-    if (player->isDead) {
+    if (player->flags & PlayerFlagsIsDead) {
         *playbackSpeed = 1.0f;
         *loop = 0;
         return &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERDEAD_INDEX];
+    } else if (player->flags & PlayerFlagsShouldThrow) {
+        player->flags |= PlayerflagsDidThrow;
+        *loop = 0;
+        *playbackSpeed = 1.0f;
+        return &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERTHROW_INDEX];
+    } else if (player->usingItem) {
+        *playbackSpeed = 1.0f;
+
+        if (player->holdingItem) {
+            return &player_animations[PLAYER_PLAYER__PLAYER_0_RIDEBROOMCARRY_INDEX];
+        }
+
+        return &player_animations[PLAYER_PLAYER__PLAYER_0_RIDEBROOM_INDEX];
     } else if (speedSqrd < 0.00001f) {
         *playbackSpeed = 1.0f;
 
@@ -86,12 +99,29 @@ void playerColliderCallback(void* data, struct Vector3* normal, float depth, str
     }
 }
 
+void playerAnimationCallback(struct SKAnimator* animator, void* data, struct SKAnimationEvent* event) {
+    struct Player* player = (struct Player*)data;
+
+    if (event->id == SK_ANIMATION_EVENT_END) {
+        if (animator->currentAnimation == &player_animations[PLAYER_PLAYER__PLAYER_0_PLAYERTHROW_INDEX]) {
+            player->flags &= ~(PlayerFlagsShouldThrow | PlayerflagsDidThrow);
+
+            if (player->holdingItem) {
+                struct Vector3 lookDir;
+                quatMultVector(&player->transform.rotation, &gForward, &lookDir);
+                itemThrow(player->holdingItem, &lookDir);
+                player->holdingItem = NULL;
+            }   
+        }
+    }
+}
+
 void playerInit(struct Player* player, struct PlayerStartLocation* startLocation, int index, u16* buffer) {
     player->transform.position = startLocation->position;
     quatIdent(&player->transform.rotation);
     player->transform.scale = gOneVec;
     player->playerIndex = index;
-    player->isDead = 0;
+    player->flags = 0;
     player->animationSpeed = 0.0f;
     player->holdingItem = NULL;
     player->velocity = gZeroVec;
@@ -112,8 +142,8 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     skAnimatorInit(
         &player->animator,
         PLAYER_DEFAULT_BONES_COUNT,
-        NULL,
-        NULL
+        playerAnimationCallback,
+        player
     );
 
     player->lookDir.x = 1.0f;
@@ -151,7 +181,7 @@ void playerHandleRotation(struct Player* player, struct Vector3* moveDir, float 
 
 #define ROTATION_DEAD_ZONE   0.15f
 
-void playerAttachedItemToBone(struct Player* player, struct Item* item, int boneIndex) {
+void playerAttachedItemToBone(struct Player* player, struct Item* item, int boneIndex, struct Transform* relativeTransform) {
     struct Transform targetTransform;
     skCalculateBoneTransform(
         &player->armature, 
@@ -164,9 +194,7 @@ void playerAttachedItemToBone(struct Player* player, struct Item* item, int bone
     vector3Scale(&targetTransform.position, &targetTransform.position, 1.0f / SCENE_SCALE);
 
     transformConcat(&player->transform, &targetTransform, &combined);
-
-    struct Transform* relativeTransform = gItemDefinitions[item->type].grabTransform;
-
+    
     if (relativeTransform) {
         struct Transform holdingTransform;
         struct Transform relativeInverse;
@@ -189,7 +217,7 @@ void playerUpdate(struct Player* player) {
     moveDir.y = 0.0f;
     moveDir.z = -input->stick_y * (1.0f / 80.0f);
 
-    if (player->isDead) {
+    if (player->flags & PlayerFlagsIsDead) {
         moveDir = gZeroVec;
     }
 
@@ -220,6 +248,10 @@ void playerUpdate(struct Player* player) {
     } else {
         vector3Scale(&moveDir, &moveDir, moveSpeed);
         rotateDir = moveDir;
+    }
+
+    if (player->flags & PlayerflagsDidThrow) {
+        moveDir = gZeroVec;
     }
 
     moveDir.y = player->velocity.y;
@@ -263,11 +295,20 @@ void playerUpdate(struct Player* player) {
     }
 
     if (player->usingItem) {
-        playerAttachedItemToBone(player, player->usingItem, PLAYER_ATTACHEMENT_LEFTHAND_BONE);
+        playerAttachedItemToBone(player, player->usingItem, PLAYER_ATTACHEMENT_LEFTHAND_BONE, gItemDefinitions[player->usingItem->type].useTransform);
     }
 
     if (player->holdingItem) {
-        playerAttachedItemToBone(player, player->holdingItem, PLAYER_ATTACHEMENT_RIGHTHAND_BONE);
+        playerAttachedItemToBone(
+            player, 
+            player->holdingItem, 
+            PLAYER_ATTACHEMENT_RIGHTHAND_BONE, 
+            player->usingItem ? NULL : gItemDefinitions[player->holdingItem->type].grabTransform
+        );
+    }
+
+    if (player->holdingItem && !player->usingItem && controllerGetButtonDown(player->playerIndex, D_CBUTTONS)) {
+        player->flags |= PlayerFlagsShouldThrow;
     }
 
     playerUpdateColliderPos(player);
@@ -375,7 +416,7 @@ void playerToShadowTarget(struct Player* player, struct ShadowVolumeTarget* targ
 }
 
 void playerKill(struct Player* player) {
-    player->isDead = 1;
+    player->flags |= PlayerFlagsIsDead;
 
     if (player->holdingItem) {
         itemDrop(player->holdingItem);

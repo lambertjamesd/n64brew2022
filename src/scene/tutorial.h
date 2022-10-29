@@ -23,6 +23,7 @@ struct Tutorial {
 
 enum TutorialDropType {
     TutorialDropTypeSuccess,
+    TutorialDropTypeSuccessThrow,
     TutorialDropTypeFail,
     TutorialDropTypeTable,
 };

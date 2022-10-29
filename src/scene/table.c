@@ -116,7 +116,7 @@ void tableRender(struct Table* table, struct RenderScene* renderScene) {
     );
 }
 
-int tableFindSlot(struct Table* table, struct Vector3* grabFrom, int filterEmpty, int filterFilled) {
+int tableFindSlot(struct Table* table, struct Vector3* grabFrom, int filterEmpty, int filterFilled, int wasThrown) {
     int result = -1;
     float resultDistance = 0.0f;
 
@@ -138,7 +138,7 @@ int tableFindSlot(struct Table* table, struct Vector3* grabFrom, int filterEmpty
 
         float distanceSqrd = vector3MagSqrd(&offset);
 
-        if (distanceSqrd < ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS) {
+        if (distanceSqrd < (wasThrown ? ITEM_THROW_RADIUS * ITEM_THROW_RADIUS : ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS)) {
             if (result == -1 || resultDistance > distanceSqrd) {
                 resultDistance = distanceSqrd;
                 result = i;
@@ -150,7 +150,7 @@ int tableFindSlot(struct Table* table, struct Vector3* grabFrom, int filterEmpty
 }
 
 struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom) {
-    int resultIndex = tableFindSlot(table, grabFrom, 1, 0);
+    int resultIndex = tableFindSlot(table, grabFrom, 1, 0, 0);
 
     if (resultIndex == -1) {
         return NULL;
@@ -163,7 +163,7 @@ struct Item* tablePickupItem(struct Table* table, struct Vector3* grabFrom) {
 }
 
 int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt) {
-    int resultIndex = tableFindSlot(table, dropAt, 0, 1);
+    int resultIndex = tableFindSlot(table, dropAt, 0, 1, item->flags & ITEM_FLAGS_THROWN);
 
     if (resultIndex == -1) {
         return 0;
@@ -191,7 +191,7 @@ int tableDropItem(struct Table* table, struct Item* item, struct Vector3* dropAt
 }
 
 int tableHoverItem(struct Table* table, struct Vector3* dropAt, struct Vector3* hoverOutput) {
-    int resultIndex = tableFindSlot(table, dropAt, 0, 0);
+    int resultIndex = tableFindSlot(table, dropAt, 0, 0, 0);
 
     if (resultIndex == -1) {
         return 0;
@@ -204,7 +204,7 @@ int tableHoverItem(struct Table* table, struct Vector3* dropAt, struct Vector3* 
 }
 
 int tableSwapItem(struct Table* table, struct Item* item, struct Vector3* dropAt, struct Item** replacement) {
-    int resultIndex = tableFindSlot(table, dropAt, 0, 0);
+    int resultIndex = tableFindSlot(table, dropAt, 0, 0, 0);
 
     if (resultIndex == -1 || !table->itemSlots[resultIndex]) {
         return 0;

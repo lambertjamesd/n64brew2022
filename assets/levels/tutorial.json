@@ -31,13 +31,16 @@
         "intro": {
             "dialog": [
                 {
-                    "message": "Welcome to your first day of\norientation I am Tony\nYour floor manager"
+                    "message": "Welcome to your first day of orientation"
+                },
+                {
+                    "message": "I am Tony your floor manager"
                 },
                 {
                     "message": "Your job is to fulfill orders"
                 },
                 {
-                    "message": "Products come in on the conveyor\nBelts and you carry them to\nthe portals"
+                    "message": "Products come in on the conveyor belts and you carry them to the portals"
                 }
             ],
             "next": "pickup",
@@ -51,7 +54,15 @@
         "usePortal": {
             "dialog": [
                 {
-                    "message": "Great\nNow place the pumpkin in\nthe portal"
+                    "message": "Great\nNow place the pumpkin in the portal"
+                },
+                {
+                    "message": "and dont throw items using ^",
+                    "effects": ["scale"],
+                    "tony_face": "annoyed"
+                },
+                {
+                    "message": "even though it is more fun. Doing so risks the product"
                 }
             ],
             "next": "drop",
@@ -59,6 +70,7 @@
         },
         "drop": {
             "onSuccess": "table",
+            "onSuccessThrow": "tableThrow",
             "onFail": "wrongDrop",
             "onTable": "wrongTable",
             "prompt": "drop",
@@ -67,7 +79,12 @@
         "wrongDrop": {
             "dialog": [
                 {
-                    "message": "No\nYou need to drop the pumpkin\nin the the portal"
+                    "message": "No",
+                    "effects": ["shake", "scale", "instant"],
+                    "tony_face": "angry"
+                },
+                {
+                    "message": "You need to drop the pumpkin in the the portal"
                 }
             ],
             "next": "pickup",
@@ -76,7 +93,12 @@
         "wrongTable": {
             "dialog": [
                 {
-                    "message": "No\nDo not use a table\nuse the portal"
+                    "message": "No",
+                    "effects": ["shake", "scale", "instant"],
+                    "tony_face": "angry"
+                },
+                {
+                    "message": "Do not use a table use the portal"
                 }
             ],
             "next": "pickup",
@@ -85,10 +107,33 @@
         "table": {
             "dialog": [
                 {
-                    "message": "Excellent work\nNow the shipments coming in\nwont always match the requests\nthat come from the portals"
+                    "message": "Excellent work"
+                }
+            ],
+            "next": "tableCommon",
+            "isImmune": true
+        },
+        "tableThrow": {
+            "dialog": [
+                {
+                    "message": ".........",
+                    "effects": ["shake", "slow"],
+                    "tony_face": "confused"
                 },
                 {
-                    "message": "You can store objects on the\ntables that are not needed\nright away"
+                    "message": "I will pretend I didnt see that"
+                }
+            ],
+            "next": "tableCommon",
+            "isImmune": true
+        },
+        "tableCommon": {
+            "dialog": [
+                {
+                    "message": "Now the shipments coming in wont always match the requests that come from the portals"
+                },
+                {
+                    "message": "You can store objects on the tables that are not needed right away"
                 }
             ],
             "next": "tableDrop",
@@ -103,7 +148,12 @@
         "tableFail": {
             "dialog": [
                 {
-                    "message": "No\ndo not waste product\nyou can store them\non the table"
+                    "message": "No",
+                    "effects": ["shake", "scale", "instant"],
+                    "tony_face": "angry"
+                },
+                {
+                    "message": "Do not waste product you can store them on the table"
                 }
             ],
             "next": "tableDrop",
@@ -112,10 +162,11 @@
         "tableSkip": {
             "dialog": [
                 {
-                    "message": "That is one way to\ndo it"
+                    "message": "That is one way to do it",
+                    "tony_face": "confused"
                 },
                 {
-                    "message": "I do not recommend\nyou keep wasting product\nif you do"
+                    "message": "I do not recommend you keep wasting product if you do"
                 }
             ],
             "next": "heWillCome",
@@ -124,10 +175,10 @@
         "play": {
             "dialog": [
                 {
-                    "message": "Thats all you need to know\nComplete your shift today\ntomorrow we will assign you to\na larger warehouse"
+                    "message": "Thats all you need to know complete your shift today tomorrow we will assign you to a larger warehouse"
                 },
                 {
-                    "message": "Oh and do not drop too many\nitems on the floor or fail\nto fulfill requests\nif you do"
+                    "message": "Oh and do not drop too many items on the floor or fail to fulfill requests if you do"
                 }
             ],
             "next": "heWillCome"
@@ -135,15 +186,18 @@
         "heWillCome": {
             "dialog": [
                 {
-                    "message": "He will come"
+                    "message": "#dd3311ffHe#ffffffff will come",
+                    "effects": ["shake", "slow"],
+                    "tony_face": "annoyed"
                 },
                 {
-                    "message": "and if he catches you\nyou will be ..."
+                    "message": "and if #dd3311ffhe#ffffffff catches you you will be ..."
                 },
                 {
                     "message": "#dd3311ffterminated",
                     "pre_delay": 1,
-                    "effects": ["instant", "shake", "scale"]
+                    "effects": ["instant", "shake", "scale"],
+                    "tony_face": "angry"
                 },
                 {
                     "message": "have a nice shift",

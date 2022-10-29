@@ -6,6 +6,8 @@
 #include "../level/level_definition.h"
 #include "../graphics/render_scene.h"
 #include "../collision/collision_object.h"
+#include "../sk64/skelatool_animator.h"
+#include "../sk64/skelatool_armature.h"
 
 enum ItemRequesterFlags {
     ItemRequesterFlagsHover = (1 << 0),
@@ -14,6 +16,8 @@ enum ItemRequesterFlags {
 struct ItemRequester {
     struct Transform transform;
     struct CollisionCapsule collisionCapsule;
+    struct SKAnimator animator;
+    struct SKArmature armature;
     enum ItemType requestedType;
     float timeLeft;
     float duration;
@@ -28,7 +32,7 @@ enum ItemDropResult {
 };
 
 void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefinition* definition);
-int itemRequesterUpdate(struct ItemRequester* requester);
+int itemRequesterUpdate(struct ItemRequester* requester, float timeScale);
 void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex, struct RenderState* renderState);
 void itemRequesterRender(struct ItemRequester* requester, int itemIndex, struct RenderScene* scene);
 

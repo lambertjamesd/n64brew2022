@@ -1,5 +1,5 @@
 {
-    "name": "level 02",
+    "name": "return bin",
     "script": [
         {
             "item_pool": ["Candle", "Cat", "Scarecrow", "Skull"],
@@ -53,23 +53,23 @@
                     "message": "Welcome back"
                 },
                 {
-                    "message": "You will notice that\nthis warehouse has a\nreturn bin"
+                    "message": "You will notice that this warehouse has a return bin"
                 },
                 {
-                    "message": "If you need to get\nrid of something drop\nit in the return bin\nwith no penalty"
+                    "message": "If you need to get rid of something drop it in the return bin with no penalty"
                 }
             ]
         },
         "delay": {
             "dialog": [
                 {
-                    "message": "It looks like there will be a\ndelay in requests but dont\nlet you think you can take\na break"
+                    "message": "It looks like there will be a delay in requests but dont let you think you can take a break"
                 },
                 {
-                    "message": "when there is a delay\nuse that as a chance\nfill tables with product"
+                    "message": "when there is a delay use that as a chance fill tables with product"
                 },
                 {
-                    "message": "there likely a burst\nof urgent requests about\nto happen"
+                    "message": "there likely a burst of urgent requests about to happen"
                 },
                 {
                     "message": "I will see you tomorrow"

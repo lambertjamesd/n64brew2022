@@ -57,6 +57,22 @@ local function translate_prompt(prompt)
     end
 end
 
+local function parse_face(face)
+    if (face == "angry") then
+        return raw("TutorialTonyFaceAngry")
+    end
+
+    if (face == "annoyed") then
+        return raw("TutorialTonyFaceAnnoyed")
+    end
+
+    if (face == "confused") then
+        return raw("TutorialTonyFaceConfused")
+    end
+
+    return raw("TutorialTonyFaceNeutral")
+end
+
 local tutorial_data = {}
 
 local function parse_tutorial_effects(effects)
@@ -73,6 +89,8 @@ local function parse_tutorial_effects(effects)
             result = result .. " | TutorialPromptEffectInstant"
         elseif (entry == "scale") then
             result = result .. " | TutorialPromptEffectScale"
+        elseif (entry == "slow") then
+            result = result .. " | TutorialPromptEffectSlow"
         end
     end
 
@@ -96,6 +114,7 @@ for _, pair in pairs(ordered_tutorial) do
                 message = reference_to(text_array, #text_array + 1),
                 effects = parse_tutorial_effects(dialogEntry.effects),
                 preDelay = dialogEntry.pre_delay,
+                tonyFace = parse_face(dialogEntry.tony_face),
             })
 
             for i = 1, #dialogEntry.message do
@@ -116,6 +135,7 @@ for _, pair in pairs(ordered_tutorial) do
         dialogCount = dialog_count,
         nextState = tutorial_name_to_index(step.next),
         onSuccess = tutorial_name_to_index(step.onSuccess),
+        onSuccessThrow = tutorial_name_to_index(step.onSuccessThrow),
         onFail = tutorial_name_to_index(step.onFail),
         onTable = tutorial_name_to_index(step.onTable),
         onPickup = tutorial_name_to_index(step.onPickup),

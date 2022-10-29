@@ -18,13 +18,19 @@
 #include "shadow_map.h"
 #include "item.h"
 
+enum PlayerFlags {
+    PlayerFlagsIsDead = (1 << 0),
+    PlayerFlagsShouldThrow = (1 << 1),
+    PlayerflagsDidThrow = (1 << 2),
+};
+
 struct Player {
     struct Transform transform;
     struct SKArmature armature;
     struct SKAnimator animator;
 
     short playerIndex;
-    short isDead;
+    short flags;
 
     struct Vector3 velocity;
     struct Vector2 lookDir;

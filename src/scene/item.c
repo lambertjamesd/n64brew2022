@@ -30,6 +30,9 @@
 
 #define TRANSLATE_SPEED     2.0f
 
+#define THROW_HORZ_VELOCITY 2.5f
+#define THROW_VERTICAL_VELOCITY 3.5f
+
 #define ATTACKED_DELAY      1.5f
 
 struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
@@ -83,6 +86,8 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &broom_light,
         NULL,
         NULL,
+        .grabTransform = &broom_grab_transform,
+        .useTransform = &broom_use_transform,
     },
     [ItemTypeCandle] = {
         candle_model_gfx,
@@ -411,13 +416,26 @@ void itemUpdateTarget(struct Item* item, struct Transform* transform) {
 }
 
 void itemMarkNewTarget(struct Item* item) {
-    item->flags &= ~ITEM_FLAGS_ATTACHED;
+    item->flags &= ~(ITEM_FLAGS_ATTACHED | ITEM_FLAGS_DROPPED);
 }
 
 void itemDrop(struct Item* item) {
     item->flags |= ITEM_FLAGS_DROPPED;
 
     item->dropInfo.velocity = gZeroVec;
+    item->dropInfo.pooftimer = 0.0f;
+}
+
+void itemThrow(struct Item* item, struct Vector3* horizontalDir) {
+    item->flags |= ITEM_FLAGS_DROPPED | ITEM_FLAGS_THROWN;
+
+    item->dropInfo.velocity = *horizontalDir;
+    item->dropInfo.velocity.y = 0.0f;
+
+    vector3Normalize(&item->dropInfo.velocity, &item->dropInfo.velocity);
+    vector3Scale(&item->dropInfo.velocity, &item->dropInfo.velocity, THROW_HORZ_VELOCITY);
+    item->dropInfo.velocity.y = THROW_VERTICAL_VELOCITY;
+
     item->dropInfo.pooftimer = 0.0f;
 }
 
@@ -509,11 +527,12 @@ void itemPoolFree(struct ItemPool* itemPool, struct Item* item) {
     --itemPool->itemCount;
 }
 
-enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos) {
+enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutorial* tutorial, struct Vector3* itemPos, SceneDropCallback dropCallback, struct Scene* scene) {
     struct Item* current = itemPool->itemHead;
     struct Item* prev = NULL;
 
     int hadFailure = 0;
+    int hadThrowFailure = 0;
     int hadSuccess = 0;
 
     while (current != NULL) {
@@ -523,11 +542,18 @@ enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutor
 
         if (current->flags & ITEM_FLAGS_GONE) {
             if (current->flags & ITEM_FLAGS_SUCCESS) {
-                tutorialItemDropped(tutorial, TutorialDropTypeSuccess);
+                if (current->flags & ITEM_FLAGS_THROWN_SUCCESS) {
+                    tutorialItemDropped(tutorial, TutorialDropTypeSuccessThrow);
+                } else {
+                    tutorialItemDropped(tutorial, TutorialDropTypeSuccess);
+                }
                 hadSuccess = 1;
             } else if (!(current->flags & ITEM_FLAGS_RETURNED)) {
                 tutorialItemDropped(tutorial, TutorialDropTypeFail);
                 hadFailure = 1;
+                if (current->flags & ITEM_FLAGS_THROWN) {
+                    hadThrowFailure = 1;
+                }
                 *itemPos = current->transform.position;
             }
             
@@ -540,6 +566,13 @@ enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutor
             current->next = itemPool->unusedHead;
             itemPool->unusedHead = current;
         } else {
+            if (current->flags & ITEM_FLAGS_THROWN && current->dropInfo.velocity.y < 0.0f) {
+                if (dropCallback(scene, current, &current->transform.position)) {
+                    current->flags &= ~ITEM_FLAGS_THROWN;
+                    current->flags |= ITEM_FLAGS_THROWN_SUCCESS;
+                }
+            }
+
             prev = current;
         }
 
@@ -551,7 +584,7 @@ enum ItemPoolUpdateResult itemPoolUpdate(struct ItemPool* itemPool, struct Tutor
     }
     
     if (hadFailure) {
-        return ItemPoolUpdateResultFail;
+        return hadThrowFailure ? ItemPoolUpdateResultFailThrow : ItemPoolUpdateResultFail;
     }
 
     return ItemPoolUpdateResultNone;

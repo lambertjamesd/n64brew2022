@@ -19,17 +19,20 @@ struct Coloru8 gEndScreenRed = {200, 0, 0, 255};
 
 struct Coloru8 gEndScreenColor[] = {
     {76, 3, 73, 255},
-    {200, 0, 0, 255}
+    {200, 0, 0, 255},
+    {76, 3, 73, 255},
 };
 
 char* gEndScreenText[] = {
     "success",
     "terminated",
+    "success?",
 };
 
 int gTextXPosition[] = {
     104,
     64,
+    104,
 };
 
 #define END_SCREEN_WIDTH    512
@@ -50,14 +53,16 @@ int gTextXPosition[] = {
 #define THIRD_FALL_TIME    0.6f
 #define THIRD_FALL_HEIGHT  60.0f
 
-#define EXPLODE_TEXT_DELAY 9.0f
+#define EXPLODE_TEXT_DELAY 11.0f
 
 #define EXPLODE_HEIGHT      100.0f
 #define EXPLODE_DURATION    1.4f
 
 #define WIN_TEXT_INTRO_TIME 4.0f
+#define QUESTION_MARK_TIME_DELAY    5.0f
+#define QUESTION_MARK_TIME          2.0f
 
-#define TOTAL_ANIMATION_TIME    13.0f
+#define TOTAL_ANIMATION_TIME    15.0f
 
 void endScreenLossTextModifier(void* data, int index, char character, int* x, int* y, struct Coloru8* color) {
     struct EndScreen* endScreen = (struct EndScreen*)data;
@@ -113,7 +118,17 @@ void endScreenWinTextModifier(void* data, int index, char character, int* x, int
 
     float introTime = WIN_TEXT_INTRO_TIME - (endScreen->textAnimation - index * TIME_PER_CHARACTER);
 
-    if (introTime > 0.0f) {
+    if (index == 7) {
+        if (endScreen->textAnimation < QUESTION_MARK_TIME_DELAY) {
+            *y += 300;
+        } 
+
+        float timeLerp = 1.0f - (endScreen->textAnimation - QUESTION_MARK_TIME_DELAY) * (1.0f / QUESTION_MARK_TIME_DELAY);
+
+        if (timeLerp > 0.0f) {
+            *y += (int)(timeLerp * 300);
+        }
+    } else if (introTime > 0.0f) {
         float timeLerp = (introTime - 0.5f * EXPLODE_DURATION) * (2.0f / EXPLODE_DURATION);
 
         int offset = timeLerp * timeLerp * EXPLODE_HEIGHT - EXPLODE_HEIGHT;
@@ -146,6 +161,7 @@ void endScreenWinTextModifier(void* data, int index, char character, int* x, int
 CharacterRenderModifier gEndScreenTextModifier[] = {
     endScreenWinTextModifier,
     endScreenLossTextModifier,
+    endScreenWinTextModifier,
 };
 
 void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderState) {
@@ -215,6 +231,7 @@ void endScreenRender(struct EndScreen* endScreen, struct RenderState* renderStat
             screenX + gTextXPosition[endScreen->success],
             screenY + 42,
             2,
+            0,
             endScreen,
             gEndScreenTextModifier[endScreen->success]
         );

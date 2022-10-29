@@ -1,12 +1,83 @@
 {
-    "name": "level 05",
+    "name": "mayhem",
     "script": [
         {
             "item_pool": ["Broom", "Candle", "Skull"],
             "success_count": 3,
             "item_delay": 4,
             "item_timeout": 45,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Hat", "Candle", "Skull"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 8,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Hat", "Candle", "Skull", "Hat", "Candle", "Skull", "Hat", "Candle", "Skull"],
+            "success_count": 9,
+            "item_delay": 1,
+            "item_timeout": 8,
             "item_spawn_delay": 3
+        },
+        {
+            "item_pool": ["Hat", "Broom", "Skull", "Hand"],
+            "success_count": 3,
+            "item_delay": 4,
+            "item_timeout": 45,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Hat", "Skull", "Hand"],
+            "success_count": 1,
+            "item_delay": 30,
+            "item_timeout": 7,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Hat", "Skull", "Hand", "Hat", "Skull", "Hand", "Hat", "Skull", "Hand"],
+            "success_count": 11,
+            "item_delay": 1,
+            "item_timeout": 7,
+            "item_spawn_delay": 3
+        },
+        {
+            "item_pool": ["Hand", "Cat", "Rat"],
+            "success_count": 3,
+            "item_delay": 4,
+            "item_timeout": 45,
+            "item_spawn_delay": 1
+        },
+        {
+            "item_pool": ["Hand", "Cat", "Rat"],
+            "success_count": 1,
+            "item_delay": 20,
+            "item_timeout": 7,
+            "item_spawn_delay": 0
+        },
+        {
+            "item_pool": ["Hand", "Cat", "Rat", "Hand", "Cat", "Rat", "Hand", "Cat", "Rat"],
+            "success_count": 13,
+            "item_delay": 0,
+            "item_timeout": 7,
+            "item_spawn_delay": 0
+        },
+        {
+            "item_pool": ["Hat", "Broom", "Candle", "Cat", "Crow", "Hand", "Rat", "Scarecrow", "Skull"],
+            "success_count": 10,
+            "item_delay": 2,
+            "item_timeout": 25,
+            "item_spawn_delay": 1
+        },
+        {
+            "on_start": "automation",
+            "item_pool": ["Pumpkin"],
+            "success_count": 1,
+            "item_delay": 0,
+            "item_timeout": 45,
+            "item_spawn_delay": 0
         }
     ],
     "tutorialOnStart": "intro",
@@ -15,22 +86,42 @@
         "intro": {
             "dialog": [
                 {
-                    "message": "A special item will\ncome through the warehouse\ntoday"
+                    "message": "You will have a lot of orders coming through today"
                 },
                 {
-                    "message": "The broom"
+                    "message": "You will need to muster everything you have to keep up"
+                }
+            ]
+        },
+
+        "automation": {
+            "dialog": [
+                {
+                    "message": "You have been a stellar employee"
                 },
                 {
-                    "message": "It may be tempting to ride it\nusing the Z button but\nbut resist the urge."
+                    "message": "We have really been able to count on you to deliver"
                 },
                 {
-                    "message": "He does not like it when\nyou do that"
+                    "message": "We have some great news"
                 },
                 {
-                    "message": "Even though you can ride\nthe broom and carry items\nyou should not do it"
+                    "message": "For us",
+                    "effects": ["instant", "scale"],
+                    "pre_delay": 2,
+                    "tony_face": "annoyed"
                 },
                 {
-                    "message": "Instead you should stop riding\nthe broom by pressing Z again\nbefore he comes and forces\nyou to stop"
+                    "message": "We are replacing you with an automation spell"
+                },
+                {
+                    "message": "As good as your work has been magic will do it better"
+                },
+                {
+                    "message": "But we will let fulfull one more order for old times sake"
+                },
+                {
+                    "message": "Be sure to pickup your paycheck before you leave"
                 }
             ]
         }

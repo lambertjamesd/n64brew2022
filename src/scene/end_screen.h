@@ -7,6 +7,7 @@ enum EndScreenType {
     EndScreenTypeNone = -1,
     EndScreenTypeSuccess,
     EndScreenTypeFail,
+    EndScreenTypeSuccessLastLevel,
 };
 
 struct EndScreen {

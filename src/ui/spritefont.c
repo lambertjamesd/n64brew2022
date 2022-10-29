@@ -45,11 +45,30 @@ void fontInit(struct Font* font, int spaceWidth, int lineHeight, struct Characte
     }
 }
 
-void fontRenderText(struct RenderState* renderState, struct Font* font, const char* str, int x, int y, int scaleShift, void* data, CharacterRenderModifier characterModifier)
+int fontRenderWordWidth(struct Font* font, const char* str, int scaleShift) {
+    int len = 0;
+
+    while (*str == ' ') {
+        ++str;
+    }
+
+    while (str[len] != 0 && str[len] != ' ') {
+        ++len;
+    }
+
+    return fontMeasure(font, str, scaleShift, len);
+}
+
+void fontRenderText(struct RenderState* renderState, struct Font* font, const char* str, int x, int y, int scaleShift, int maxWidth, void* data, CharacterRenderModifier characterModifier)
 {
     int startX = x;
 
     int index = 0;
+    int maxX = x + maxWidth;
+
+    if (maxWidth <= 0) {
+        maxX = 0xffffff;
+    }
 
     if (!*str) {
         return;
@@ -66,6 +85,7 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
         {
             int finalX = x;
             int finalY = y;
+
             struct Coloru8 colorCopy = color;
 
             if (characterModifier) {
@@ -98,6 +118,18 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
             } else {
                 x += font->spaceWidth >> -scaleShift;
             }
+
+            int wordWidth = fontRenderWordWidth(font, str, scaleShift);
+
+            if (x + wordWidth > maxX) {
+                x = startX;
+
+                if (scaleShift >= 0) {
+                    y += (font->lineHeight) << scaleShift;
+                } else {
+                    y += font->lineHeight >> -scaleShift;
+                }
+            }
         }
         else if (*str == '\n')
         {
@@ -119,7 +151,7 @@ void fontRenderText(struct RenderState* renderState, struct Font* font, const ch
     }
 }
 
-int fontMeasure(struct Font* font, const char* str, int scaleShift) {
+int fontMeasure(struct Font* font, const char* str, int scaleShift, int maxLength) {
     int result = 0;
     int currentRow = 0;
 
@@ -147,6 +179,11 @@ int fontMeasure(struct Font* font, const char* str, int scaleShift) {
         }
 
         ++str;
+        --maxLength;
+
+        if (maxLength == 0) {
+            break;
+        }
     }
 
     return MAX(result, currentRow);

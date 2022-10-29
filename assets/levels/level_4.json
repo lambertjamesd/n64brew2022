@@ -1,5 +1,5 @@
 {
-    "name": "level 04",
+    "name": "the broom",
     "script": [
         {
             "item_pool": ["Broom", "Candle", "Skull"],
@@ -92,22 +92,30 @@
         "intro": {
             "dialog": [
                 {
-                    "message": "A special item will\ncome through the warehouse\ntoday"
+                    "message": "A special item will come through the warehouse today"
                 },
                 {
-                    "message": "The broom"
+                    "message": "The witch broom",
+                    "effects": ["scale"]
                 },
                 {
-                    "message": "It may be tempting to ride it\nusing the Z button but\nbut resist the urge."
+                    "message": "It may be tempting to ride it using the Z button but but resist the urge."
                 },
                 {
-                    "message": "He does not like it when\nyou do that"
+                    "message": "#dd3311ffHe#ffffffff does not like it when you do that",
+                    "effects": ["shake"],
+                    "tony_face": "annoyed"
                 },
                 {
-                    "message": "Even though you can ride\nthe broom and carry items\nyou should not do it"
+                    "message": "Even though you can ride the broom and carry items at the same time you should not do it"
                 },
                 {
-                    "message": "Instead you should stop riding\nthe broom by pressing Z again\nbefore he comes and forces\nyou to stop"
+                    "message": "Instead you should stop riding the broom by pressing Z again before #dd3311ffhe#ffffffff comes and forces you to stop"
+                },
+                {
+                    "message": "You have been warned",
+                    "effects": ["slow", "shake"],
+                    "tony_face": "angry"
                 }
             ]
         }
