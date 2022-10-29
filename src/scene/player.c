@@ -31,7 +31,7 @@
 
 struct Vector3 gPlayerCenter = {0.0f, 0.8f, 0.0f};
 
-struct Vector3 gPlayerGrabFrom = {0.0f, 0.0f, 0.4f};
+struct Vector3 gPlayerGrabFrom = {0.0f, 0.0f, 0.5f};
 
 struct Vector3 gAttachmentPosition = {0.0f, 0.0f, 0.0f};
 struct Quaternion gAttachementRotation = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -421,6 +421,11 @@ void playerKill(struct Player* player) {
     if (player->holdingItem) {
         itemDrop(player->holdingItem);
         player->holdingItem = NULL;
+    }
+
+    if (player->usingItem) {
+        itemDrop(player->usingItem);
+        player->usingItem = NULL;
     }
 }
 

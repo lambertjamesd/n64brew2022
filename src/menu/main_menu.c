@@ -89,10 +89,6 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
         if (controllerGetButtonDown(0, B_BUTTON)) {
             mainMenu->currentState = MainMenuTitleScreen;
         }
-
-        if (controllerGetButtonDown(0, START_BUTTON)) {
-            mainMenu->currentState = MainMenuCredits;
-        }
     } else if (mainMenu->currentState == MainMenuCredits) {
         if (controllerGetButtonDown(0, START_BUTTON)) {
             mainMenu->currentState = MainMenuTitleScreen;

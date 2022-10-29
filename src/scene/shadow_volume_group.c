@@ -440,7 +440,7 @@ Light* shadowVolumeGroupPopulate(
     for (int i = 0; i < lightCount; ++i) {
         enum LightIntersection spotLightResult = spotLightIsInside(group, &lights[i], target, &furthestBackFace, &furthestFrontFace);
 
-        if (spotLightResult == LightIntersectionInside) {
+        if (spotLightResult == LightIntersectionInside || (intersections != 0)) {
             group->currentCount = startCount;
             return target->light;
         }

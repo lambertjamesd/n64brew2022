@@ -10,7 +10,7 @@
 
 #include "../defs.h"
 
-#define BELT_SPEED  1.0f
+#define BELT_SPEED  2.0f
 #define BELT_OFFSET_GAP     1.0f
 
 #define START_BELT_OFFSET   1.5f
