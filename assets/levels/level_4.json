@@ -86,6 +86,7 @@
             "item_spawn_delay": 4
         }
     ],
+    "music": "SOUNDS_SUNNY_SUMMER_OF_SOUL_N_SACRIFICE",
     "tutorialOnStart": "intro",
     "tutorial": {
         

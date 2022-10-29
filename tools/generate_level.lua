@@ -51,4 +51,6 @@ add_definition("level", "struct LevelDefinition", "_geo", {
 
     returnBins = reference_to(return_bin_output.return_bins, 1),
     returnBinCount = #return_bin_output.return_bins,
+    
+    music = levelJson.music,
 })

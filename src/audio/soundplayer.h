@@ -26,8 +26,10 @@ void soundPlayerStop(ALSndId soundId);
 void soundPlayerUpdatePosition(ALSndId soundId, struct Vector3* at);
 
 int soundPlayerIsPlaying(ALSndId soundId);
+short soundPlayerSoundClipId(ALSndId soundId);
 
 void soundListenerUpdate(struct Vector3* position, struct Quaternion* rotation, int listenerIndex);
 void soundListenerSetCount(int count);
+void soundPlayerStopAll();
 
 #endif

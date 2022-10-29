@@ -147,3 +147,13 @@ float itemCoordinatorPreDelay(struct ItemCoordinator* itemCoordinator) {
 
     return currentStep->itemDelay;
 }
+
+short itemCoordinatorMusic(struct ItemCoordinator* itemCoordinator) {
+    if (itemCoordinator->currentScriptStep >= itemCoordinator->script->stepCount) {
+        return -1;
+    }
+
+    struct ItemScriptStep* currentStep = &itemCoordinator->script->steps[itemCoordinator->currentScriptStep];
+
+    return currentStep->music;
+}

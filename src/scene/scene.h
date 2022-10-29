@@ -67,6 +67,9 @@ struct Scene {
     float currentLevelTime;
     float penaltyTime;
     float successTime;
+
+    short musicSound;
+    ALSndId musicId;
 };
 
 void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int playerCount);

@@ -87,7 +87,7 @@ int itemRequesterIsActive(struct ItemRequester* requester) {
 
 void itemRequesterRenderGenerate(struct ItemRequester* requester, int itemIndex, struct RenderState* renderState) {
     if (requester->requestedType < ItemTypeCount) {
-        itemRenderGenerate(itemIndex, requester->requestedType, MAX((requester->timeLeft - ITEM_DROP_COYOTE_TIME) / requester->duration, 0.0f), requester->duration, renderState);
+        itemRenderGenerate(itemIndex, requester->requestedType, MAX((requester->timeLeft - ITEM_DROP_COYOTE_TIME) / requester->duration, 0.0f), requester->timeLeft, renderState);
     }
 }
 

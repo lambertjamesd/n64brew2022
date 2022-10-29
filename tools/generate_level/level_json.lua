@@ -155,6 +155,12 @@ for _, script_entry in pairs(json_body.script) do
         onStart = tutorial_name_to_index(script_entry.on_start),
     }
 
+    if (script_entry.music) then
+        current_step.music  = raw(script_entry.music)
+    else
+        current_step.music = -1
+    end
+
     for _, item in pairs(script_entry.item_pool) do
         table.insert(script_items, raw("ItemType" .. item))
     end
@@ -172,6 +178,12 @@ level_json_exports.script = {
 level_json_exports.tutorial = reference_to(tutorial_data, 1);
 level_json_exports.tutorial_step_count = #tutorial_data
 level_json_exports.tutorial_on_start = tutorial_name_to_index(json_body.tutorialOnStart)
+
+if (json_body.music) then
+    level_json_exports.music = raw(json_body.music)
+end
+
+add_header('"../build/src/audio/clips.h"')
 
 add_definition("tutorial", "struct TutorialStep[]", "_geo", tutorial_data);
 add_definition("script_step_items", "u8[]", "_geo", script_items);

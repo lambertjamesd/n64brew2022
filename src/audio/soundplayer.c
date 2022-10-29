@@ -20,6 +20,7 @@ struct ActiveSound {
     float estimatedTimeLeft;
     struct Vector3 pos3D;
     float volume;
+    short soundClipId;
 };
 
 struct SoundListener {
@@ -152,6 +153,7 @@ ALSndId soundPlayerPlay(int soundClipId, float volume, float pitch, struct Vecto
     sound->flags = 0;
     sound->estimatedTimeLeft = soundPlayerEstimateLength(alSound, pitch);
     sound->volume = volume;
+    sound->soundClipId = soundClipId;
 
     float startingVolume = volume;
     int panning = 64;
@@ -243,6 +245,14 @@ void soundPlayerStop(ALSndId soundId) {
     }
 }
 
+void soundPlayerStopAll() {
+    for (int i = 0; i < gActiveSoundCount; ++i) {
+        alSndpSetSound(&gSoundPlayer, gActiveSounds[i].soundId);
+        alSndpStop(&gSoundPlayer);
+        gActiveSounds[i].estimatedTimeLeft = 0.0f;
+    }
+}
+
 void soundPlayerUpdatePosition(ALSndId soundId, struct Vector3* at) {
     struct ActiveSound* activeSound = soundPlayerFindActiveSound(soundId);
 
@@ -265,6 +275,16 @@ int soundPlayerIsPlaying(ALSndId soundId) {
 
     alSndpSetSound(&gSoundPlayer, soundId);
     return activeSound->estimatedTimeLeft > 0.0f && alSndpGetState(&gSoundPlayer) != AL_STOPPED;
+}
+
+short soundPlayerSoundClipId(ALSndId soundId) {
+    struct ActiveSound* activeSound = soundPlayerFindActiveSound(soundId);
+
+    if (!activeSound) {
+        return -1;
+    }
+
+    return activeSound->soundClipId;
 }
 
 void soundListenerUpdate(struct Vector3* position, struct Quaternion* rotation, int listenerIndex) {

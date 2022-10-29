@@ -13,6 +13,8 @@
 #include "ui/nightchilde.h"
 #include "menu/main_menu.h"
 #include "savefile/savefile.h"
+#include "audio/soundplayer.h"
+#include "audio/audio.h"
 
 #ifdef WITH_DEBUGGER
 #include "../debugger/debugger.h"
@@ -137,6 +139,9 @@ void gameProc(void *arg) {
 
     u16* memoryEnd = graphicsLayoutScreenBuffers((u16*)PHYS_TO_K0(osMemSize));
 
+    gAudioHeapBuffer = (u8*)memoryEnd - AUDIO_HEAP_SIZE;
+    memoryEnd = (u16*)gAudioHeapBuffer;
+
     int materialChunkSize = _material_dataSegmentRomEnd - _material_dataSegmentRomStart;
 
     memoryEnd -= materialChunkSize / sizeof(u16);
@@ -155,6 +160,8 @@ void gameProc(void *arg) {
     levelQueueLoad(MAIN_MENU_LEVEL);
 
     controllersInit();
+    initAudio();
+    soundPlayerInit();
     saveFileLoad();
     mainMenuInit(&gMainMenu);
 
@@ -176,6 +183,7 @@ void gameProc(void *arg) {
                     if (pendingGFX == 0) {
                         heapInit(_heapStart, memoryEnd);
                         skResetDataPool();
+                        soundPlayerStopAll();
 
                         if (levelGetQueued() == MAIN_MENU_LEVEL) {
                             gCurrentLevelIndex = MAIN_MENU_LEVEL;

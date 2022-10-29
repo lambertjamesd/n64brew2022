@@ -26,6 +26,7 @@
             "item_timeout": 30
         }
     ],
+    "music": "SOUNDS_WAREHOUSE1",
     "tutorialOnStart": "intro",
     "tutorial": {
         "intro": {

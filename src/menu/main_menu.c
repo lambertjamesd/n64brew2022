@@ -3,6 +3,7 @@
 #include "../graphics/image.h"
 
 #include "../build/assets/materials/ui.h"
+#include "../build/src/audio/clips.h"
 #include "../level/level.h"
 #include "../math/mathf.h"
 #include "../util/time.h"
@@ -11,6 +12,9 @@
 #include "../ui/spritefont.h"
 #include "../ui/nightchilde.h"
 #include "../savefile/savefile.h"
+#include "../audio/audio.h"
+#include "../audio/soundplayer.h"
+
 
 #define FADE_TIME       0.5f
 
@@ -42,6 +46,8 @@ void mainMenuEnter(struct MainMenu* mainMenu) {
     mainMenu->titleAnimation = 0.0f;
     mainMenu->windowOpenAnimation = 0.0f;
     mainMenu->levelToLoad = NO_QUEUED_LEVEL;
+
+    soundPlayerPlay(SOUNDS_N64_GONE_AWAY_FINAL, 1.0f, 0.5f, NULL);
 }
 
 void mainMenuShowCredits(struct MainMenu* mainMenu) {
@@ -229,6 +235,9 @@ void mainMenuRender(struct MainMenu* mainMenu, struct RenderState* renderState, 
             if (gLevelImages[mainMenu->selectedLevel]) {
                 spriteCopyImage(renderState, TUTORIAL_THUMB_INDEX, gLevelImages[mainMenu->selectedLevel], 320, 237, 54, 127, 320, 237, 0, 0);
             }
+
+            spriteSetColor(renderState, SOLID_UI_INDEX, gPurpleColor);
+            spriteSolid(renderState, SOLID_UI_INDEX, 189 + 22 + 53 * mainMenu->selectedLevel, 383 + 14, 41, 36);
         } else {
             char timeAsString[16];
             short time = mainMenuTotalTime(mainMenu);

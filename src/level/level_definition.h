@@ -116,6 +116,7 @@ struct ItemScriptStep {
     float itemDelay;
     float itemSpawnDelay;
     short onStart;
+    short music;
 };
 
 struct ItemScript {
@@ -165,6 +166,8 @@ struct LevelDefinition {
 
     struct ReturnBinDefinition* returnBins;
     short returnBinCount;
+
+    short music;
 };
 
 struct LevelDefinition* levelFixPointers(struct LevelDefinition* from, int pointerOffset);

@@ -8,7 +8,7 @@
 
 #define MAX_ITEM_REQUESTERS 8
 
-void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, float duration, struct RenderState* renderState);
+void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, float timeLeft, struct RenderState* renderState);
 
 Gfx* itemRenderUseImage(int itemIndex, struct RenderState* renderState, Gfx* promptGfx);
 

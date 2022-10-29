@@ -43,6 +43,6 @@ int returnBinHover(struct ReturnBin* returnBin, struct Vector3* dropAt, struct V
 void returnBinRender(struct ReturnBin* returnBin, struct RenderScene* renderScene) {
     Mtx* mtx = renderStateRequestMatrices(renderScene->renderState, 1);
     guTranslate(mtx, returnBin->position.x * SCENE_SCALE, returnBin->position.y * SCENE_SCALE, returnBin->position.z * SCENE_SCALE);
-    renderSceneAdd(renderScene, return_bin_model_gfx, mtx, DEFAULT_INDEX, &returnBin->position, NULL, NULL);
+    renderSceneAdd(renderScene, return_bin_model_gfx, mtx, RETURN_BIN_INDEX, &returnBin->position, NULL, NULL);
 
 }

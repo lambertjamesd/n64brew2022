@@ -38,7 +38,7 @@ struct ColorThreshold thresholds[] = {
     {0x41414141, 0.0f},
 };
 
-void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, float duration, struct RenderState* renderState) {
+void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, float timeLeft, struct RenderState* renderState) {
     struct ItemTypeDefinition* itemDef = &gItemDefinitions[itemType];
 
     gDPSetColorImage(renderState->dl++, G_IM_FMT_I, G_IM_SIZ_8b, ITEM_RENDER_SIZE, gItemImages[itemIndex]);
@@ -52,7 +52,7 @@ void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, f
     gDPPipeSync(renderState->dl++);
 
     for (int i = 0; i < sizeof(thresholds) / sizeof(*thresholds); ++i) {
-        if (thresholds[i].durationThreshold <= duration) {
+        if (thresholds[i].durationThreshold <= timeLeft) {
             gDPSetFillColor(renderState->dl++, thresholds[i].colorIndex);
             break;
         }

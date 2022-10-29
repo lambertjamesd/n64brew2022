@@ -6,17 +6,17 @@
 * done feedback
   tony faces
   death on broom bug
+  more reach with drop position
+  progress bars change color
+  number of squares in level selection screen
 
 * playthrough feedback
-  number of squares in level selection screen
   return bin
-  bettet framerate
+  better framerate
   crow
-  progress bars change color
 
 level 4
   more pressure
   lower lights
-  more reach with drop position
 
 update level images

@@ -146,7 +146,7 @@ build/assets/materials/ui.h: assets/materials/ui.skm.yaml $(SKELATOOL64) $(ALL_I
 
 build/src/level/level.o: build/assets/materials/static.h build/assets/levels/level_list.h
 
-build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h build/assets/materials/ui.h
+build/src/scene/scene.o: build/assets/materials/static.h build/assets/materials/pallete.h build/assets/materials/ui.h build/src/audio/clips.h
 
 build/src/menu/ui.o: build/assets/materials/ui.h
 
@@ -212,7 +212,7 @@ build/%.fbx: %.blend
 	@mkdir -p $(@D)
 	$(BLENDER_2_9) $< --background --python tools/export_fbx.py -- $@
 
-build/assets/levels/%.h build/assets/levels/%_geo.c: build/assets/levels/%.fbx assets/levels/%.json assets/materials/static.skm.yaml build/assets/materials/static.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
+build/assets/levels/%.h build/assets/levels/%_geo.c: build/assets/levels/%.fbx assets/levels/%.json assets/materials/static.skm.yaml build/assets/materials/static.h build/src/audio/clips.h tools/generate_level.lua $(LEVEL_GENERATION_SCRIPT) $(SKELATOOL64) $(ALL_IMAGES)
 	@mkdir -p $(@D)
 	$(SKELATOOL64) --script tools/generate_level.lua --ci-buffer --fixed-point-scale 256 --model-scale 0.01 --name $(<:build/assets/levels/%.fbx=%) -m assets/materials/static.skm.yaml --pallete build/assets/materials/pallete.png -o $(<:%.blend=build/%.h) $<
 
@@ -234,11 +234,11 @@ build/assets/levels/level_list.h: $(LEVEL_LIST_HEADERS) tools/generate_level_lis
 ####################
 
 
-SOUND_CLIPS = $(shell find assets/ -type f -name '*.wav')
+SOUND_CLIPS = $(shell find assets/ -type f -name '*.wav') $(shell find assets/ -type f -name '*.aif')
 
 build/assets/sound/sounds.sounds build/assets/sound/sounds.sounds.tbl: $(SOUND_CLIPS)
 	@mkdir -p $(@D)
-	$(SFZ2N64) -o $@ $^
+	$(SFZ2N64) --compress -o $@ $^
 
 
 build/asm/sound_data.o: build/assets/sound/sounds.sounds build/assets/sound/sounds.sounds.tbl
@@ -246,6 +246,9 @@ build/asm/sound_data.o: build/assets/sound/sounds.sounds build/assets/sound/soun
 build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
 	@mkdir -p $(@D)
 	node tools/generate_sound_ids.js -o $@ -p SOUNDS_ $(SOUND_CLIPS)
+
+
+build/src/menu/main_menu.o: build/src/audio/clips.h
 
 ####################
 ## Linking

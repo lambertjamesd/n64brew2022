@@ -65,6 +65,7 @@
             "item_spawn_delay": 3
         }
     ],
+    "music": "SOUNDS_DIES_ICH_BIN_STRUEBEN",
     "tutorialOnStart": "intro",
     "tutorial": {
         

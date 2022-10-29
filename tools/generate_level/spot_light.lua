@@ -8,7 +8,7 @@ for _, current in pairs(nodes_for_type('@lantern')) do
     table.insert(lanterns, {
         position = position,
         rotation = rotation,
-        angle = math.pi * 0.45
+        angle = math.pi * 0.4
     })
 end
 

@@ -45,6 +45,7 @@
             "item_spawn_delay": 4
         }
     ],
+    "music": "SOUNDS_JAH_SPOOKS",
     "tutorialOnStart": "intro",
     "tutorial": {
         "intro": {

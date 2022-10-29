@@ -28,9 +28,12 @@
 #include "../savefile/savefile.h"
 #include "../menu/main_menu.h"
 
+#include "../audio/soundplayer.h"
+
 #include "../build/assets/materials/ui.h"
 #include "../build/assets/materials/static.h"
 #include "../build/assets/materials/pallete.h"
+#include "../build/src/audio/clips.h"
 
 #define ROTATE_PER_SECOND       (M_PI * 0.25f)
 #define MOVE_PER_SECOND         (3.0f)
@@ -156,6 +159,9 @@ void sceneInit(struct Scene* scene, struct LevelDefinition* definition, int play
     endScreenInit(&scene->endScreen);
     itemInitIdleAnimators();
     pauseMenuInit(&scene->pauseMenu);
+
+    scene->musicSound = definition->music;
+    scene->musicId = SOUND_ID_NONE;
 }
 
 unsigned ignoreInputFrames = 10;
@@ -190,6 +196,24 @@ void sceneApplyPenalty(struct Scene* scene, struct Vector3* at, int isThrown) {
     }
 }
 
+short sceneCurrentMusic(struct Scene* scene) {
+    if (pauseMenuIsPaused(&scene->pauseMenu)) {
+        return -1;
+    }
+
+    if (scene->tutorial.animationLerp) {
+        return SOUNDS_TRICK_OR_TREAT;
+    }
+
+    short musicOveride = itemCoordinatorMusic(&scene->itemCoordinator);
+
+    if (musicOveride != -1) {
+        return musicOveride;
+    }
+
+    return scene->musicSound;
+}
+
 void sceneUpdate(struct Scene* scene) {
     if (ignoreInputFrames) {
         --ignoreInputFrames;
@@ -205,9 +229,28 @@ void sceneUpdate(struct Scene* scene) {
         return;
     }
 
+    short desiredMusic = sceneCurrentMusic(scene);
+    short currentMusic;
+    
+    if (soundPlayerIsPlaying(scene->musicId)) {
+        currentMusic = soundPlayerSoundClipId(scene->musicId);
+    } else {
+        currentMusic = -1;
+    }
+
+    if (desiredMusic != currentMusic) {
+        if (desiredMusic == -1) {
+            soundPlayerStop(scene->musicId);
+            scene->musicId = -1;
+        } else {
+            soundPlayerPlay(desiredMusic, 1.0f, 0.5f, NULL);
+        }
+    }
+
     if (scene->endScreen.success == EndScreenTypeNone && pauseMenuUpdate(&scene->pauseMenu)) {
         return;
     }
+
 
     // allow the tutorial to pause
     if (tutorialUpdate(&scene->tutorial)) {

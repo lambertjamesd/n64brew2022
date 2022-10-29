@@ -77,9 +77,11 @@
             "success_count": 1,
             "item_delay": 0,
             "item_timeout": 45,
-            "item_spawn_delay": 0
+            "item_spawn_delay": 0,
+            "music": "SOUNDS_WAREHOUSE1"
         }
     ],
+    "music": "SOUNDS_IS_THIS_HELL_OR_SHOEGAZE",
     "tutorialOnStart": "intro",
     "tutorial": {
         
