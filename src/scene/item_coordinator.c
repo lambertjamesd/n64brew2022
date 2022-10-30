@@ -80,6 +80,12 @@ void itemCoordinatorInit(struct ItemCoordinator* itemCoordinator, struct ItemScr
     itemCoordinator->currentScriptStep = 0;
     itemCoordinator->currentSuccessCount = 0;
     itemCoordinator->script = script;
+    itemCoordinator->totalItems = 0;
+    itemCoordinator->itemsFulfulled = 0;
+
+    for (int i = 0; i < script->stepCount; ++i) {
+        itemCoordinator->totalItems += script->steps[i].successCount;
+    }
 
     itemCoordinatorInitCurrentStep(itemCoordinator);
 }
@@ -110,6 +116,7 @@ void itemCoordinatorMarkSuccess(struct ItemCoordinator* itemCoordinator) {
     }
     
     ++itemCoordinator->currentSuccessCount;
+    ++itemCoordinator->itemsFulfulled;
 
     struct ItemScriptStep* currentStep = &itemCoordinator->script->steps[itemCoordinator->currentScriptStep];
     

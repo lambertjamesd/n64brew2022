@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "audio.h"
 #include "defs.h"
+#include "../util/memory.h"
 
 extern OSPiHandle	*gPiHandle;
 
@@ -89,7 +90,7 @@ static void __clearAudioDMA(void);
 /******************************************************************************
  * Audio Manager API
  *****************************************************************************/
-void amCreateAudioMgr(ALSynConfig *c, OSPri pri, amConfig *amc)
+void amCreateAudioMgr(ALSynConfig *c, OSPri pri, amConfig *amc, int framerate)
 {
     u32     i;
     f32     fsize;
@@ -103,7 +104,7 @@ void amCreateAudioMgr(ALSynConfig *c, OSPri pri, amConfig *amc)
      * Calculate the frame sample parameters from the
      * video field rate and the output rate
      */
-    fsize = (f32) amc->framesPerField * c->outputRate / (f32) 60;
+    fsize = (f32) amc->framesPerField * c->outputRate / (f32) framerate;
     frameSize = (s32) fsize;
     if (frameSize < fsize)
         frameSize++;
@@ -138,6 +139,7 @@ void amCreateAudioMgr(ALSynConfig *c, OSPri pri, amConfig *amc)
         __am.audioInfo[i]->msg.done.type = OS_SC_DONE_MSG;
         __am.audioInfo[i]->msg.done.info = __am.audioInfo[i];
         __am.audioInfo[i]->data = alHeapAlloc(c->heap, 1, 4*maxFrameSize);
+        zeroMemory(__am.audioInfo[i]->data, 4*maxFrameSize);
     }    
     
     osCreateMesgQueue(&__am.audioReplyMsgQ, __am.audioReplyMsgBuf, MAX_AUDIO_MESGS);

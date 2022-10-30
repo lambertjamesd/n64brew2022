@@ -88,7 +88,7 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
 
     if (mainMenu->currentState == MainMenuTitleScreen) {
         if (controllerGetButtonDown(0, START_BUTTON) && !controllerGetButtonDown(0, A_BUTTON)) {
-            if (controllerGetButton(0, L_TRIG | R_TRIG | Z_TRIG)) {
+            if (controllerGetButton(0, R_TRIG | Z_TRIG)) {
                 saveFileErase();
                 soundPlayerPlay(SOUNDS_TRASHITEM, 1.0f, 1.0f, NULL);
             } else {

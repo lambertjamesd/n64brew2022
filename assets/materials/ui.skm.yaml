@@ -86,7 +86,7 @@ materials:
     gDPSetCombineMode: 
       color: ["0", "0", "0", TEXEL0]
       alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
-    sortOrder: 4
+    sortOrder: 11
 
   floor_manager_annoyed_ui:
     gDPSetTile:
@@ -97,7 +97,7 @@ materials:
     gDPSetCombineMode: 
       color: ["0", "0", "0", TEXEL0]
       alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
-    sortOrder: 4
+    sortOrder: 11
 
   floor_manager_confused_ui:
     gDPSetTile:
@@ -108,7 +108,7 @@ materials:
     gDPSetCombineMode: 
       color: ["0", "0", "0", TEXEL0]
       alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
-    sortOrder: 4
+    sortOrder: 11
 
   title_screen:
     gDPSetTile:
@@ -140,25 +140,60 @@ materials:
       filename: "./ui/level_02_thumb.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
-    sortOrder: 5
+    sortOrder: 11
 
   level_03_thumb:
     gDPSetTile:
       filename: "./ui/level_03_thumb.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
-    sortOrder: 5
+    sortOrder: 11
 
   level_04_thumb:
     gDPSetTile:
       filename: "./ui/level_04_thumb.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
-    sortOrder: 5
+    sortOrder: 11
 
   level_05_thumb:
     gDPSetTile:
       filename: "./ui/level_05_thumb.png"
       siz: G_IM_SIZ_16b
       fmt: G_IM_FMT_RGBA
-    sortOrder: 5
+    sortOrder: 11
+
+
+  arrow_empty:
+    gDPSetTile:
+      filename: "./ui/arrow_empty.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", TEXEL0]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
+    gDPSetRenderMode: G_RM_XLU_SURF
+    gDPSetEnvColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 255
+
+    sortOrder: 0
+
+  arrow_filled:
+    gDPSetTile:
+      filename: "./ui/arrow_filled.png"
+      siz: G_IM_SIZ_16b
+      fmt: G_IM_FMT_RGBA
+    gDPSetCombineMode: 
+      color: ["0", "0", "0", TEXEL0]
+      alpha: [TEXEL0, "0", ENVIRONMENT, "0"]
+    gDPSetRenderMode: G_RM_XLU_SURF
+    gDPSetEnvColor:
+      r: 255
+      g: 255
+      b: 255
+      a: 255
+
+    sortOrder: 0

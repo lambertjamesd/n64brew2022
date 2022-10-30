@@ -4,7 +4,6 @@
 #include "controls/controller.h"
 
 struct SaveData gSaveData;
-int gEepromProbe;
 int gShouldSave = 0;
 
 #ifdef DEBUG
@@ -13,44 +12,109 @@ int gShouldSave = 0;
 #define UNLOCK_ALL  0
 #endif
 
+OSPiHandle gSramHandle;
+OSMesgQueue     timerQueue;
+OSMesg     timerQueueBuf;
+
+extern OSMesgQueue dmaMessageQ;
+
 void saveFileNew() {
     zeroMemory(&gSaveData, sizeof(gSaveData));
     gSaveData.header = SAVEFILE_HEADER;
 }
 
+#define SRAM_START_ADDR  0x08000000 
+#define SRAM_SIZE        0x8000 
+#define SRAM_latency     0x5 
+#define SRAM_pulse       0x0c 
+#define SRAM_pageSize    0xd 
+#define SRAM_relDuration 0x2
+
+#define SRAM_CHUNK_DELAY        OS_USEC_TO_CYCLES(10 * 1000)
+
+#define SRAM_ADDR   0x08000000
+
 void saveFileLoad() {
-    OSMesgQueue         serialMsgQ;
-    OSMesg              serialMsg;
+    /* Fill basic information */
 
-    osCreateMesgQueue(&serialMsgQ, &serialMsg, 1);
-    osSetEventMesg(OS_EVENT_SI, &serialMsgQ, (OSMesg)1);
+    gSramHandle.type = 3;
+    gSramHandle.baseAddress = PHYS_TO_K1(SRAM_START_ADDR);
 
-    gEepromProbe = osEepromProbe(&serialMsgQ);
+    /* Get Domain parameters */
 
-    if (gEepromProbe) {
-        osEepromLongRead(&serialMsgQ, 0, (u8*)&gSaveData, sizeof(gSaveData));
+    gSramHandle.latency = (u8)SRAM_latency;
+    gSramHandle.pulse = (u8)SRAM_pulse;
+    gSramHandle.pageSize = (u8)SRAM_pageSize;
+    gSramHandle.relDuration = (u8)SRAM_relDuration;
+    gSramHandle.domain = PI_DOMAIN2;
+    gSramHandle.speed = 0;
 
-        if (gSaveData.header != SAVEFILE_HEADER) {
-            saveFileNew();
-        }
-    } else {
+    osCreateMesgQueue(&timerQueue, &timerQueueBuf, 1);
+
+    /* TODO gSramHandle.speed = */
+
+    zeroMemory(&(gSramHandle.transferInfo), sizeof(gSramHandle.transferInfo));
+
+    /*
+    * Put the gSramHandle onto PiTable
+    */
+
+    OSIntMask saveMask = osGetIntMask();
+    osSetIntMask(OS_IM_NONE);
+    gSramHandle.next = __osPiTable;
+    __osPiTable = &gSramHandle;
+    osSetIntMask(saveMask);
+
+
+    OSTimer timer;
+
+    OSIoMesg dmaIoMesgBuf;
+
+    dmaIoMesgBuf.hdr.pri = OS_MESG_PRI_HIGH;
+    dmaIoMesgBuf.hdr.retQueue = &dmaMessageQ;
+    dmaIoMesgBuf.dramAddr = &gSaveData;
+    dmaIoMesgBuf.devAddr = SRAM_ADDR;
+    dmaIoMesgBuf.size = sizeof(gSaveData);
+
+    osInvalDCache(&gSaveData, sizeof(gSaveData));
+    if (osEPiStartDma(&gSramHandle, &dmaIoMesgBuf, OS_READ) == -1)
+    {
+        saveFileNew();
+        return;
+    }
+    (void) osRecvMesg(&dmaMessageQ, NULL, OS_MESG_BLOCK);
+
+    osSetTimer(&timer, SRAM_CHUNK_DELAY, 0, &timerQueue, 0);
+    (void) osRecvMesg(&timerQueue, NULL, OS_MESG_BLOCK);
+
+    if (gSaveData.header != SAVEFILE_HEADER) {
         saveFileNew();
     }
-
-    controllersListen();
 }
 
 void saveFileCheckSave() {
-    if (gShouldSave && gEepromProbe) {
-        OSMesgQueue         serialMsgQ;
-        OSMesg              serialMsg[8];
+    if (gShouldSave) {
+        OSTimer timer;
 
-        osCreateMesgQueue(&serialMsgQ, &serialMsg[0], 8);
-        osSetEventMesg(OS_EVENT_SI, &serialMsgQ, (OSMesg)1);
+        OSIoMesg dmaIoMesgBuf;
+
+        dmaIoMesgBuf.hdr.pri = OS_MESG_PRI_HIGH;
+        dmaIoMesgBuf.hdr.retQueue = &dmaMessageQ;
+        dmaIoMesgBuf.dramAddr = &gSaveData;
+        dmaIoMesgBuf.devAddr = SRAM_ADDR;
+        dmaIoMesgBuf.size = sizeof(gSaveData);
+
+        osWritebackDCache(&gSaveData, sizeof(gSaveData));
+        if (osEPiStartDma(&gSramHandle, &dmaIoMesgBuf, OS_WRITE) == -1)
+        {
+            gShouldSave = 0;
+            return;
+        }
+        (void) osRecvMesg(&dmaMessageQ, NULL, OS_MESG_BLOCK);
+
+        osSetTimer(&timer, SRAM_CHUNK_DELAY, 0, &timerQueue, 0);
+        (void) osRecvMesg(&timerQueue, NULL, OS_MESG_BLOCK);
         
-        controllersClearState();
-        osEepromLongWrite(&serialMsgQ, 0, (u8*)&gSaveData, sizeof(gSaveData));
-        controllersListen();
         gShouldSave = 0;
     } else {
         gShouldSave = 0;

@@ -245,10 +245,6 @@ void sceneUpdate(struct Scene* scene) {
     float speed = 0.5f;
     short desiredMusic = sceneCurrentMusic(scene);
     short currentMusic;
-
-    if (desiredMusic == SOUNDS_TRICK_OR_TREAT) {
-        speed = 0.25f;
-    }
     
     if (soundPlayerIsPlaying(scene->musicId)) {
         currentMusic = soundPlayerSoundClipId(scene->musicId);
@@ -737,6 +733,12 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
     gSPDisplayList(renderState->dl++, ui_default_ui);
 
     spriteInit(renderState);
+
+    if (scene->itemCoordinator.totalItems && scene->fadeInTime == 0.0f && scene->endScreen.success == EndScreenTypeNone) {
+        int xSlide = 9 + 40 * scene->itemCoordinator.itemsFulfulled / scene->itemCoordinator.totalItems;
+        spriteDraw(renderState, ARROW_FILLED_INDEX, 533, 50, xSlide, 32, 0, 0, 0, 0);
+        spriteDraw(renderState, ARROW_EMPTY_INDEX, 533 + xSlide, 50, 64 - xSlide, 32, xSlide, 0, 0, 0);
+    }
 
     if (scene->endScreen.success == EndScreenTypeNone && pauseMenuIsPaused(&scene->pauseMenu)) {
         pauseMenuRender(&scene->pauseMenu, renderState);

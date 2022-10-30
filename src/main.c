@@ -103,15 +103,19 @@ enum GameState {
 void gameProc(void *arg) {
     u8 schedulerMode = OS_VI_NTSC_HPF1;
 
+    int framerate = 60;
+
 	switch (osTvType) {
 		case 0: // PAL
 			schedulerMode = HIGH_RES ? OS_VI_PAL_HPF1 : OS_VI_PAL_LPF1;
+            framerate = 50;
 			break;
 		case 1: // NTSC
 			schedulerMode = HIGH_RES ? OS_VI_NTSC_HPF1 : OS_VI_NTSC_LPF1;
 			break;
 		case 2: // MPAL
             schedulerMode = HIGH_RES ? OS_VI_MPAL_HPF1 : OS_VI_MPAL_LPF1;
+            framerate = 50;
 			break;
 	}
 
@@ -141,6 +145,7 @@ void gameProc(void *arg) {
     u16* memoryEnd = graphicsLayoutScreenBuffers((u16*)PHYS_TO_K0(osMemSize));
 
     gAudioHeapBuffer = (u8*)memoryEnd - AUDIO_HEAP_SIZE;
+    zeroMemory(gAudioHeapBuffer, AUDIO_HEAP_SIZE);
     memoryEnd = (u16*)gAudioHeapBuffer;
 
     int materialChunkSize = _material_dataSegmentRomEnd - _material_dataSegmentRomStart;
@@ -161,9 +166,8 @@ void gameProc(void *arg) {
     levelQueueLoad(MAIN_MENU_LEVEL);
 
     controllersInit();
-    initAudio();
+    initAudio(framerate);
     soundPlayerInit();
-    saveFileLoad();
     mainMenuInit(&gMainMenu);
 
 #ifdef WITH_DEBUGGER
@@ -171,6 +175,8 @@ void gameProc(void *arg) {
     debugThreads[0] = &gameThread;
     gdbInitDebugger(gPiHandle, &dmaMessageQ, debugThreads, 1);
 #endif
+
+    saveFileLoad();
 
     while (1) {
         OSScMsg *msg = NULL;

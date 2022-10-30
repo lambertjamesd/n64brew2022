@@ -5,6 +5,9 @@
 
 * done feedback
   bring back anim
+  replace sound
+  level 3 is hard
+  check pal
 
 * playthrough feedback
   save file stuff

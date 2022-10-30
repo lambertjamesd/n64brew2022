@@ -125,7 +125,8 @@
                     "tony_face": "confused"
                 },
                 {
-                    "message": "I will pretend I didnt see that"
+                    "message": "I will pretend I didnt see that",
+                    "tony_face": "annoyed"
                 }
             ],
             "next": "tableCommon",
@@ -173,7 +174,7 @@
                     "tony_face": "confused"
                 },
                 {
-                    "message": "I do not recommend you keep wasting product if you do"
+                    "message": "I do not recommend you keep wasting product. If you do"
                 }
             ],
             "next": "heWillCome",
@@ -185,7 +186,7 @@
                     "message": "Thats all you need to know complete your shift today tomorrow we will assign you to a larger warehouse"
                 },
                 {
-                    "message": "Oh and do not drop too many items on the floor or fail to fulfill requests if you do"
+                    "message": "Oh and do not drop too many items on the floor or fail to fulfill requests. If you do"
                 }
             ],
             "next": "heWillCome"

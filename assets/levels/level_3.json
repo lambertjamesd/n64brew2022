@@ -5,21 +5,21 @@
             "item_pool": ["Candle", "Cat", "Rat", "Skull", "Candle", "Cat", "Rat", "Skull"],
             "success_count": 8,
             "item_delay": 0,
-            "item_timeout": 12,
+            "item_timeout": 16,
             "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Candle", "Cat", "Rat", "Skull"],
             "success_count": 1,
             "item_delay": 7,
-            "item_timeout": 10,
+            "item_timeout": 14,
             "item_spawn_delay": 0.5
         },
         {
             "item_pool": ["Candle", "Cat", "Rat", "Skull"],
             "success_count": 4,
             "item_delay": 0.25,
-            "item_timeout": 10,
+            "item_timeout": 14,
             "item_spawn_delay": 1
         },
         {
@@ -33,14 +33,14 @@
             "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
             "success_count": 1,
             "item_delay": 2.5,
-            "item_timeout": 10,
+            "item_timeout": 12,
             "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
             "success_count": 5,
             "item_delay": 0.5,
-            "item_timeout": 10,
+            "item_timeout": 12,
             "item_spawn_delay": 0.25
         },
         {
@@ -54,7 +54,7 @@
             "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
             "success_count": 1,
             "item_delay": 2.5,
-            "item_timeout": 10,
+            "item_timeout": 12,
             "item_spawn_delay": 0.25
         },
         {

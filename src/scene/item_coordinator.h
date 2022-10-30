@@ -27,6 +27,8 @@ struct ItemCoordinator {
     short currentScriptStep;
     short currentSuccessCount;
     short activeRequesterCount;
+    short totalItems;
+    short itemsFulfulled;
 };
 
 void itemCoordinatorInit(struct ItemCoordinator* itemCoordinator, struct ItemScript* script);
