@@ -174,6 +174,7 @@ void sceneCheckSpawn(struct Scene* scene, struct Vector3* at, float minThreshold
 
     if (scene->dropPenalty > minThreshold && mathfRandomFloat() < scene->dropPenalty) {
         bezosActivate(&scene->bezos, at);
+        soundPlayerPlay(SOUNDS_GHOSTAPPEAR, 1.0f, 1.0f, NULL);
         scene->appearTime = gTimePassed;
         scene->dropPenalty = mathfMoveTowards(scene->dropPenalty, 1.0f, 0.5f);
         playerStopUsingItem(&scene->players[0]);
@@ -196,9 +197,21 @@ void sceneApplyPenalty(struct Scene* scene, struct Vector3* at, int isThrown) {
     }
 }
 
-short sceneCurrentMusic(struct Scene* scene) {
+short sceneCurrentMusic(struct Scene* scene) {    
     if (pauseMenuIsPaused(&scene->pauseMenu)) {
-        return -1;
+        return SOUNDS_SUNNY_SUMMER_OF_SOUL_N_SACRIFICE;
+    }
+
+    if (scene->endScreen.success != EndScreenTypeNone) {
+        if (scene->endScreen.success == EndScreenTypeFail) {
+            return SOUNDS_IS_THIS_HELL_OR_SHOEGAZE;
+        }
+
+        return SOUNDS_JAH_SPOOKS;
+    }
+
+    if (bezosIsActive(&scene->bezos)) {
+        return SOUNDS_TONYDANGER;
     }
 
     if (scene->tutorial.animationLerp) {
@@ -229,8 +242,13 @@ void sceneUpdate(struct Scene* scene) {
         return;
     }
 
+    float speed = 0.5f;
     short desiredMusic = sceneCurrentMusic(scene);
     short currentMusic;
+
+    if (desiredMusic == SOUNDS_TRICK_OR_TREAT) {
+        speed = 0.25f;
+    }
     
     if (soundPlayerIsPlaying(scene->musicId)) {
         currentMusic = soundPlayerSoundClipId(scene->musicId);
@@ -239,11 +257,11 @@ void sceneUpdate(struct Scene* scene) {
     }
 
     if (desiredMusic != currentMusic) {
-        if (desiredMusic == -1) {
-            soundPlayerStop(scene->musicId);
-            scene->musicId = -1;
+        soundPlayerStop(scene->musicId);
+        if (desiredMusic != -1) {
+            scene->musicId = soundPlayerPlay(desiredMusic, 1.0f, speed, NULL);
         } else {
-            soundPlayerPlay(desiredMusic, 1.0f, 0.5f, NULL);
+            scene->musicId = -1;
         }
     }
 
@@ -306,6 +324,7 @@ void sceneUpdate(struct Scene* scene) {
 
         if (!didReplace && controllerGetButtonDown(i, B_BUTTON) && player->holdingItem) {
             if (!sceneDropItem(scene, player->holdingItem, &grabFrom)) {
+                soundPlayerPlay(SOUNDS_DROPITEM, 0.7f, 1.0f, NULL);
                 itemDrop(player->holdingItem);
             }
 
@@ -348,6 +367,10 @@ void sceneUpdate(struct Scene* scene) {
         conveyorUpdate(&scene->conveyors[i]);
     }
 
+    for (int i = 0; i < scene->returnBinCount; ++i) {
+        returnBinUpdate(&scene->returnBins[i]);
+    }
+
     struct Vector3 bezosSpawn;
 
     enum ItemPoolUpdateResult itemPoolResult = itemPoolUpdate(&scene->itemPool, &scene->tutorial, &bezosSpawn, sceneDropItem, scene);
@@ -376,7 +399,7 @@ void sceneUpdate(struct Scene* scene) {
         }
     }
 
-    float requesterTime = bezosIsActive(&scene->bezos) ? 0.5f : 1.0f;
+    float requesterTime = bezosIsActive(&scene->bezos) ? 0.75f : 1.0f;
 
     for (int i = 0; i < scene->itemRequesterCount; ++i) {
         if (!itemRequesterIsActive(&scene->itemRequesters[i])) {
@@ -732,6 +755,7 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
         struct Item* result = conveyorPickupItem(&scene->conveyors[i], grabFrom);
 
         if (result) {
+            soundPlayerPlay(SOUNDS_PICKITEMUP, 1.0f, 1.0f, NULL);
             return result;
         }
     }
@@ -740,6 +764,7 @@ struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
         struct Item* result = tablePickupItem(&scene->tables[i], grabFrom);
 
         if (result) {
+            soundPlayerPlay(SOUNDS_PICKITEMUP, 1.0f, 1.0f, NULL);
             return result;
         }
     }
@@ -755,6 +780,8 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
         enum ItemDropResult dropResult = itemRequesterDrop(&scene->itemRequesters[i], item, dropAt);
         if (dropResult) {
             if (dropResult == ItemDropResultSuccess) {
+                soundPlayerPlay(SOUNDS_SUCCESFULREQUEST, 1.0f, 1.0f, NULL);
+            
                 itemCoordinatorMarkSuccess(&scene->itemCoordinator);
 
                 if (itemCoordinatorDidWin(&scene->itemCoordinator)) {
@@ -775,6 +802,7 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 
     for (int i = 0; i < scene->tableCount; ++i) {
         if (tableDropItem(&scene->tables[i], item, dropAt)) {
+            soundPlayerPlay(SOUNDS_SETITEMDOWN, 0.7f, 1.0f, NULL);
             return 1;
         }
     }
@@ -782,6 +810,7 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 
     for (int i = 0; i < scene->returnBinCount; ++i) {
         if (returnBinDropItem(&scene->returnBins[i], item, dropAt)) {
+            soundPlayerPlay(SOUNDS_TRASHITEM, 1.0f, 1.0f, NULL);
             return 1;
         }
     }
@@ -799,6 +828,8 @@ int sceneDropItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt
 int sceneSwapItem(struct Scene* scene, struct Item* item, struct Vector3* dropAt, struct Item** replacement) {
     for (int i = 0; i < scene->tableCount; ++i) {
         if (tableSwapItem(&scene->tables[i], item, dropAt, replacement)) {
+            soundPlayerPlay(SOUNDS_PICKITEMUP, 1.0f, 1.0f, NULL);
+            soundPlayerPlay(SOUNDS_DROPITEM, 1.0f, 1.0f, NULL);
             return 1;
         }
     }

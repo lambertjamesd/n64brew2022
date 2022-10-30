@@ -4,84 +4,84 @@
         {
             "item_pool": ["Broom", "Candle", "Skull"],
             "success_count": 3,
-            "item_delay": 10,
-            "item_timeout": 30,
-            "item_spawn_delay": 1
+            "item_delay": 5,
+            "item_timeout": 14,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Hat", "Candle", "Skull"],
             "success_count": 1,
             "item_delay": 3,
-            "item_timeout": 20,
-            "item_spawn_delay": 1
+            "item_timeout": 12,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Hat", "Candle", "Skull", "Hat", "Candle", "Skull"],
-            "success_count": 9,
-            "item_delay": 5,
-            "item_timeout": 25,
-            "item_spawn_delay": 3
+            "success_count": 7,
+            "item_delay": 3,
+            "item_timeout": 12,
+            "item_spawn_delay": 1
         },
         {
             "item_pool": ["Hat", "Broom", "Skull", "Hand"],
             "success_count": 3,
             "item_delay": 3,
-            "item_timeout": 30,
-            "item_spawn_delay": 1
+            "item_timeout": 15,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Hat", "Skull", "Hand"],
             "success_count": 1,
             "item_delay": 3,
-            "item_timeout": 20,
-            "item_spawn_delay": 1
+            "item_timeout": 10,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Hat", "Skull", "Hand", "Hat", "Skull", "Hand"],
-            "success_count": 11,
+            "success_count": 8,
             "item_delay": 3,
-            "item_timeout": 20,
-            "item_spawn_delay": 3
+            "item_timeout": 10,
+            "item_spawn_delay": 1
         },
         {
             "item_pool": ["Pumpkin", "Cat", "Rat"],
             "success_count": 1,
-            "item_delay": 30,
-            "item_timeout": 20,
-            "item_spawn_delay": 1
+            "item_delay": 7,
+            "item_timeout": 10,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Pumpkin", "Cat", "Rat"],
             "success_count": 3,
-            "item_delay": 8,
-            "item_timeout": 25,
+            "item_delay": 5,
+            "item_timeout": 12,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Pumpkin", "Cat", "Rat", "Pumpkin", "Cat", "Rat"],
-            "success_count": 13,
+            "success_count": 9,
             "item_delay": 3,
-            "item_timeout": 18,
+            "item_timeout": 9,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Hat", "Broom", "Candle", "Cat", "Crow", "Hand", "Rat", "Scarecrow", "Skull"],
-            "success_count": 10,
+            "success_count": 8,
             "item_delay": 3,
-            "item_timeout": 30,
-            "item_spawn_delay": 1
+        "item_timeout": 15,
+            "item_spawn_delay": 0.25
         },
         {
             "on_start": "automation",
             "item_pool": ["Pumpkin"],
             "success_count": 1,
             "item_delay": 0,
-            "item_timeout": 45,
+            "item_timeout": 20,
             "item_spawn_delay": 0,
             "music": "SOUNDS_WAREHOUSE1"
         }
     ],
-    "music": "SOUNDS_IS_THIS_HELL_OR_SHOEGAZE",
+    "music": "SOUNDS_WAREHOUSE1",
     "tutorialOnStart": "intro",
     "tutorial": {
         
@@ -110,7 +110,7 @@
                 {
                     "message": "For us",
                     "effects": ["instant", "scale"],
-                    "pre_delay": 2,
+                    "pre_delay": 1,
                     "tony_face": "annoyed"
                 },
                 {

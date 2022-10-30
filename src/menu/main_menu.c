@@ -47,7 +47,7 @@ void mainMenuEnter(struct MainMenu* mainMenu) {
     mainMenu->windowOpenAnimation = 0.0f;
     mainMenu->levelToLoad = NO_QUEUED_LEVEL;
 
-    soundPlayerPlay(SOUNDS_N64_GONE_AWAY_FINAL, 1.0f, 0.5f, NULL);
+    mainMenu->musicSound = SOUND_ID_NONE;
 }
 
 void mainMenuShowCredits(struct MainMenu* mainMenu) {
@@ -70,6 +70,10 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
         }
     }
 
+    if (!soundPlayerIsPlaying(mainMenu->musicSound)) {
+        mainMenu->musicSound = soundPlayerPlay(SOUNDS_N64_GONE_AWAY_FINAL, 1.0f, 0.5f, NULL);
+    }
+
     mainMenu->windowOpenAnimation = mathfMoveTowards(
         mainMenu->windowOpenAnimation,
         (mainMenu->currentState == MainMenuLevelList || mainMenu->currentState == MainMenuCredits) ? 1.0f : 0.0f,
@@ -84,20 +88,29 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
 
     if (mainMenu->currentState == MainMenuTitleScreen) {
         if (controllerGetButtonDown(0, START_BUTTON) && !controllerGetButtonDown(0, A_BUTTON)) {
-            mainMenu->currentState = MainMenuLevelList;
+            if (controllerGetButton(0, L_TRIG | R_TRIG | Z_TRIG)) {
+                saveFileErase();
+                soundPlayerPlay(SOUNDS_TRASHITEM, 1.0f, 1.0f, NULL);
+            } else {
+                mainMenu->currentState = MainMenuLevelList;
+                soundPlayerPlay(SOUNDS_BONK, 1.0f, 1.0f, NULL);
+            }
         }
     } else if (mainMenu->currentState == MainMenuLevelList) {
         if (controllerGetButtonDown(0, A_BUTTON) && mainMenuCanPlayerLevel(mainMenu, mainMenu->selectedLevel)) {
             mainMenu->levelToLoad = mainMenu->selectedLevel;
             mainMenu->currentState = MainMenuLoading;
+            soundPlayerPlay(SOUNDS_BONK, 1.0f, 1.0f, NULL);
         }
 
         if (controllerGetButtonDown(0, B_BUTTON)) {
             mainMenu->currentState = MainMenuTitleScreen;
+            soundPlayerPlay(SOUNDS_BONK, 1.0f, 1.0f, NULL);
         }
     } else if (mainMenu->currentState == MainMenuCredits) {
         if (controllerGetButtonDown(0, START_BUTTON)) {
             mainMenu->currentState = MainMenuTitleScreen;
+            soundPlayerPlay(SOUNDS_BONK, 1.0f, 1.0f, NULL);
         }
     }
 
@@ -105,12 +118,14 @@ void mainMenuUpdate(struct MainMenu* mainMenu) {
         if (controllerGetDirectionDown(0) & ControllerDirectionRight) {
             if (mainMenu->selectedLevel + 1 < levelGetCount()) {
                 ++mainMenu->selectedLevel;
+                soundPlayerPlay(SOUNDS_BONK, 1.0f, 1.0f, NULL);
             }
         }
 
         if (controllerGetDirectionDown(0) & ControllerDirectionLeft) {
             if (mainMenu->selectedLevel > 0) {
                 --mainMenu->selectedLevel;
+                soundPlayerPlay(SOUNDS_BONK, 1.0f, 1.0f, NULL);
             }
         }
     }
@@ -238,7 +253,7 @@ void mainMenuRender(struct MainMenu* mainMenu, struct RenderState* renderState, 
 
             spriteSetColor(renderState, SOLID_UI_INDEX, gPurpleColor);
             spriteSolid(renderState, SOLID_UI_INDEX, 189 + 22 + 53 * mainMenu->selectedLevel, 383 + 14, 41, 36);
-        } else {
+        } else if (mainMenu->currentState == MainMenuCredits) {
             char timeAsString[16];
             short time = mainMenuTotalTime(mainMenu);
             if (time) {

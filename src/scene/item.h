@@ -46,7 +46,7 @@ enum ItemPoolUpdateResult {
 
 #define ITEM_PICKUP_RADIUS  0.9f
 #define ITEM_DROP_PICKUP_RADIUS  0.9f
-#define ITEM_THROW_RADIUS  0.6f
+#define ITEM_THROW_RADIUS  0.75f
 
 extern struct ItemTypeDefinition gItemDefinitions[ItemTypeCount];
 

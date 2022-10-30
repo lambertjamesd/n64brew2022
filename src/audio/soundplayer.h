@@ -18,6 +18,8 @@ extern char _soundsSegmentRomEnd[];
 extern char _soundsTblSegmentRomStart[];
 extern char _soundsTblSegmentRomEnd[];
 
+float soundClipLength(int soundClipId, float speed);
+
 void soundPlayerInit();
 void soundPlayerUpdate();
 ALSndId soundPlayerPlay(int soundClipId, float volume, float pitch, struct Vector3* at);

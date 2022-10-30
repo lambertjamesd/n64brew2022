@@ -4,26 +4,29 @@
         {
             "item_pool": ["Pumpkin"],
             "success_count": 1,
-            "item_spawn_delay": 1,
-            "item_timeout": 60
+            "item_delay": 0,
+            "item_spawn_delay": 0,
+            "item_timeout": 15,
+            "music": "SOUNDS_TRICK_OR_TREAT"
         },
         {
             "item_pool": ["Hat"],
             "success_count": 1,
             "item_spawn_delay": 1,
-            "item_timeout": 60
+            "item_timeout": 15,
+            "music": "SOUNDS_TRICK_OR_TREAT"
         },
         {
             "item_pool": ["Pumpkin", "Hat", "Hat"],
             "success_count": 8,
             "item_spawn_delay": 0,
-            "item_timeout": 60
+            "item_timeout": 15
         },
         {
             "item_pool": ["Pumpkin", "Hat", "Candle"],
             "success_count": 8,
             "item_spawn_delay": 0,
-            "item_timeout": 30
+            "item_timeout": 7
         }
     ],
     "music": "SOUNDS_WAREHOUSE1",
@@ -135,6 +138,9 @@
                 },
                 {
                     "message": "You can store objects on the tables that are not needed right away"
+                },
+                {
+                    "message": "You can even swap what you are carrying with what is on the table"
                 }
             ],
             "next": "tableDrop",

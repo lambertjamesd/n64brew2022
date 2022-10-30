@@ -112,7 +112,7 @@ struct Item* conveyorReleaseItem(struct Conveyor* conveyor) {
 
     itemMarkNewTarget(result);
 
-    conveyor->spawnDelay = BELT_SPAWN_DELAY;
+    conveyor->spawnDelay = 0.0f;
 
     return result;
 }

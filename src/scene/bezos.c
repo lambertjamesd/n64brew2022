@@ -13,27 +13,27 @@
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
 
-#define BEZOS_MOVE_SPEED   0.35f
+#define BEZOS_MOVE_SPEED   1.4f
 
-#define BEZOS_ACCELERATION 1.0f
+#define BEZOS_ACCELERATION 8.0f
 
 
 float gBezosSpeeds[] = {
-    0.35f,
-    0.4f,
-    0.7f,
     1.0f,
     1.2f,
     1.6f,
+    2.2f,
+    2.8f,
+    3.4f,
 };
 
 float gBezosAcceleration[] = {
-    1.0f,
-    1.2f,
-    1.8f,
-    2.6f,
-    3.4f,
-    4.4f,
+    8.0f,
+    7.6f,
+    14.4f,
+    20.0f,
+    26.0f,
+    36.0f,
 };
 
 

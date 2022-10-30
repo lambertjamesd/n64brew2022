@@ -22,16 +22,16 @@
 
 #define MAX_SNAP_SPEED      4.0f
 
-#define DROP_GRAVITY        -9.8f
+#define DROP_GRAVITY        -80.0f
 
 #define POOF_TIME           1.5f
 #define POOF_DAMPING        0.92f
 #define POOF_SCALING        1.01f
 
-#define TRANSLATE_SPEED     2.0f
+#define TRANSLATE_SPEED     8.0f
 
-#define THROW_HORZ_VELOCITY 2.5f
-#define THROW_VERTICAL_VELOCITY 3.5f
+#define THROW_HORZ_VELOCITY 7.0f
+#define THROW_VERTICAL_VELOCITY 12.0f
 
 #define ATTACKED_DELAY      1.5f
 
@@ -139,7 +139,6 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &crow_light,
         NULL,
         NULL,
-        .grabTransform = &crow_grab_transform,
     },
     [ItemTypeHand] = {
         hand_model_gfx,
@@ -165,7 +164,6 @@ struct ItemTypeDefinition gItemDefinitions[ItemTypeCount] = {
         &rat_light,
         &rat_animations[RAT_RAT_RATIDLE_INDEX],
         NULL,
-        .grabTransform = &rat_grab_transform,
     },
     [ItemTypeScarecrow] = {
         scarecrow_model_gfx,

@@ -10,7 +10,7 @@
 void endScreenInit(struct EndScreen* endScreen) { 
     endScreen->animationLerp = 0.0f;
     endScreen->success = EndScreenTypeNone;
-    endScreen->preDelay = 2.0f;
+    endScreen->preDelay = 0.5f;
     endScreen->textAnimation = 0.0f;
 }
 
@@ -120,13 +120,13 @@ void endScreenWinTextModifier(void* data, int index, char character, int* x, int
 
     if (index == 7) {
         if (endScreen->textAnimation < QUESTION_MARK_TIME_DELAY) {
-            *y += 300;
+            *y += 250;
         } 
 
         float timeLerp = 1.0f - (endScreen->textAnimation - QUESTION_MARK_TIME_DELAY) * (1.0f / QUESTION_MARK_TIME_DELAY);
 
         if (timeLerp > 0.0f) {
-            *y += (int)(timeLerp * 300);
+            *y += (int)(timeLerp * 250);
         }
     } else if (introTime > 0.0f) {
         float timeLerp = (introTime - 0.5f * EXPLODE_DURATION) * (2.0f / EXPLODE_DURATION);
@@ -264,7 +264,7 @@ int endScreenUpdate(struct EndScreen* endScreen) {
         }
     }
 
-    endScreen->textAnimation += FIXED_DELTA_TIME;
+    endScreen->textAnimation += FIXED_DELTA_TIME * 2.0f;
 
     return 1;
 }

@@ -11,18 +11,21 @@
 
 #include "../collision/collision_scene.h"
 
-#define PLAYER_BROOM_SPEED  2.4f
+#include "../audio/soundplayer.h"
+#include "../build/src/audio/clips.h"
 
-#define PLAYER_MOVE_SPEED   1.6f
+#define PLAYER_BROOM_SPEED  7.0f
 
-#define PLAYER_CARRY_SPEED   1.2f
+#define PLAYER_MOVE_SPEED   4.5f
 
-#define PLAYER_MAX_SPRINT_SPEED 3.0f
-#define PLAYER_MAX_WALK_SPEED   0.8f
+#define PLAYER_CARRY_SPEED   3.4f
 
-#define PLAYER_ACCELERATION 8.0f
+#define PLAYER_MAX_SPRINT_SPEED 5.0f
+#define PLAYER_MAX_WALK_SPEED   1.6f
 
-#define PLAYER_ROTATE_RATE  (M_PI * 2.5f)
+#define PLAYER_ACCELERATION 42.0f
+
+#define PLAYER_ROTATE_RATE  (M_PI * 8.0f)
 
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
@@ -99,6 +102,19 @@ void playerColliderCallback(void* data, struct Vector3* normal, float depth, str
     }
 }
 
+#define ANIMATION_EVENT_LEFT_FOOT   0
+#define ANIMATION_EVENT_RIGHT_FOOT   0
+
+struct SKAnimationEvent gWalkEvents[] = {
+    {1, ANIMATION_EVENT_LEFT_FOOT},
+    {9, ANIMATION_EVENT_RIGHT_FOOT},
+};
+
+struct SKAnimationEvent gSprintEvents[] = {
+    {1, ANIMATION_EVENT_LEFT_FOOT},
+    {7, ANIMATION_EVENT_RIGHT_FOOT},
+};
+
 void playerAnimationCallback(struct SKAnimator* animator, void* data, struct SKAnimationEvent* event) {
     struct Player* player = (struct Player*)data;
 
@@ -110,9 +126,18 @@ void playerAnimationCallback(struct SKAnimator* animator, void* data, struct SKA
                 struct Vector3 lookDir;
                 quatMultVector(&player->transform.rotation, &gForward, &lookDir);
                 itemThrow(player->holdingItem, &lookDir);
+                soundPlayerPlay(SOUNDS_THROWITEM, 1.0f, 1.0f, NULL);
                 player->holdingItem = NULL;
             }   
         }
+    }
+
+    if (event->id == ANIMATION_EVENT_LEFT_FOOT) {
+        soundPlayerPlay(SOUNDS_FOOTSTEPL, 0.4f, 1.0f, NULL);
+    }
+
+    if (event->id == ANIMATION_EVENT_RIGHT_FOOT) {
+        soundPlayerPlay(SOUNDS_FOOTSTEPR, 0.4f, 1.0f, NULL);
     }
 }
 
@@ -129,6 +154,18 @@ void playerInit(struct Player* player, struct PlayerStartLocation* startLocation
     player->hoverLocation = gZeroVec;
     player->hoverLocation.y = -1.0f;
     player->dropAnimationTime = 0.0f;
+
+    player_animations[PLAYER_PLAYER__PLAYER_0_WALK_INDEX].animationEvents = gWalkEvents;
+    player_animations[PLAYER_PLAYER__PLAYER_0_WALK_INDEX].numEvents = sizeof(gWalkEvents) / sizeof(&gWalkEvents);
+
+    player_animations[PLAYER_PLAYER__PLAYER_0_WALK_W_ITEM_INDEX].animationEvents = gWalkEvents;
+    player_animations[PLAYER_PLAYER__PLAYER_0_WALK_W_ITEM_INDEX].numEvents = sizeof(gWalkEvents) / sizeof(&gWalkEvents);
+
+    player_animations[PLAYER_PLAYER__PLAYER_0_SPRINT_INDEX].animationEvents = gSprintEvents;
+    player_animations[PLAYER_PLAYER__PLAYER_0_SPRINT_INDEX].numEvents = sizeof(gSprintEvents) / sizeof(&gSprintEvents);
+
+    player_animations[PLAYER_PLAYER__PLAYER_0_SPRINT_W_ITEM_INDEX].animationEvents = gSprintEvents;
+    player_animations[PLAYER_PLAYER__PLAYER_0_SPRINT_W_ITEM_INDEX].numEvents = sizeof(gSprintEvents) / sizeof(&gSprintEvents);
 
     skArmatureInit(
         &player->armature, 

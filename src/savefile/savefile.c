@@ -8,7 +8,7 @@ int gEepromProbe;
 int gShouldSave = 0;
 
 #ifdef DEBUG
-#define UNLOCK_ALL  1
+#define UNLOCK_ALL  0
 #else
 #define UNLOCK_ALL  0
 #endif

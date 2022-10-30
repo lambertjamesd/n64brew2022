@@ -13,7 +13,7 @@ SFZ2N64:=tools/sfz2n64
 SKELATOOL64:=tools/skeletool64
 BLENDER_2_9:=tools/blender/blender
 
-OPTIMIZER		:= -O0
+OPTIMIZER		:= -O1
 LCDEFS			:= -DDEBUG -g -Isrc/ -I/usr/include/n64/nustd -Werror -Wall
 N64LIB			:= -lultra_rom -lnustd
 
@@ -234,7 +234,7 @@ build/assets/levels/level_list.h: $(LEVEL_LIST_HEADERS) tools/generate_level_lis
 ####################
 
 
-SOUND_CLIPS = $(shell find assets/ -type f -name '*.wav') $(shell find assets/ -type f -name '*.aif')
+SOUND_CLIPS = $(shell find assets/sounds -type f -name '*.wav') $(shell find assets/sounds -type f -name '*.aif') $(shell find assets/sounds_ins -type f -name '*.ins')
 
 build/assets/sound/sounds.sounds build/assets/sound/sounds.sounds.tbl: $(SOUND_CLIPS)
 	@mkdir -p $(@D)
@@ -249,6 +249,7 @@ build/src/audio/clips.h: tools/generate_sound_ids.js $(SOUND_CLIPS)
 
 
 build/src/menu/main_menu.o: build/src/audio/clips.h
+build/src/scene/item_requester.o: build/src/audio/clips.h
 
 ####################
 ## Linking

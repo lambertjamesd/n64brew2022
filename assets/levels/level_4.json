@@ -4,89 +4,89 @@
         {
             "item_pool": ["Broom", "Candle", "Skull"],
             "success_count": 3,
-            "item_delay": 2,
-            "item_timeout": 45,
-            "item_spawn_delay": 0
-        },
-        {
-            "item_pool": ["Candle", "Cat", "Skull"],
-            "success_count": 3,
-            "item_delay": 2,
+            "item_delay": 0.5,
             "item_timeout": 20,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Candle", "Cat", "Skull"],
             "success_count": 3,
-            "item_delay": 2,
-            "item_timeout": 10,
+            "item_delay": 0.5,
+            "item_timeout": 12,
+            "item_spawn_delay": 0
+        },
+        {
+            "item_pool": ["Candle", "Cat", "Skull"],
+            "success_count": 3,
+            "item_delay": 1,
+            "item_timeout": 12,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Rat", "Cat", "Skull"],
-            "success_count": 6,
-            "item_delay": 1,
-            "item_timeout": 20,
+            "success_count": 4,
+            "item_delay": 0.25,
+            "item_timeout": 12,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Rat", "Cat", "Skull"],
             "success_count": 3,
-            "item_delay": 1,
+            "item_delay": 0.25,
             "item_timeout": 10,
-            "item_spawn_delay": 1
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Scarecrow", "Crow", "Broom"],
             "success_count": 1,
-            "item_delay": 45,
-            "item_timeout": 8,
+            "item_delay": 10,
+            "item_timeout": 10,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Scarecrow", "Crow", "Broom", "Scarecrow", "Crow"],
             "success_count": 1,
-            "item_delay": 2,
-            "item_timeout": 8,
+            "item_delay": 0.5,
+            "item_timeout": 10,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Crow", "Pumpkin", "Scarecrow", "Crow", "Pumpkin", "Scarecrow"],
             "success_count": 6,
-            "item_delay": 2,
+            "item_delay": 0.5,
             "item_timeout": 10,
-            "item_spawn_delay": 1
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Crow", "Pumpkin", "Rat", "Crow", "Pumpkin", "Rat"],
             "success_count": 6,
-            "item_delay": 2,
+            "item_delay": 0.5,
             "item_timeout": 10,
-            "item_spawn_delay": 1
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Crow", "Pumpkin", "Rat", "Crow", "Pumpkin", "Rat"],
             "success_count": 3,
-            "item_delay": 2,
-            "item_timeout": 6,
-            "item_spawn_delay": 1
+            "item_delay": 0.5,
+            "item_timeout": 14,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Cat", "Scarecrow", "Rat", "Cat", "Scarecrow", "Rat"],
             "success_count": 1,
-            "item_delay": 45,
-            "item_timeout": 12,
+            "item_delay": 10,
+            "item_timeout": 10,
             "item_spawn_delay": 0
         },
         {
             "item_pool": ["Cat", "Scarecrow", "Rat", "Cat", "Scarecrow", "Rat"],
             "success_count": 5,
-            "item_delay": 1,
-            "item_timeout": 6,
-            "item_spawn_delay": 4
+            "item_delay": 0.25,
+            "item_timeout": 8,
+            "item_spawn_delay": 1
         }
     ],
-    "music": "SOUNDS_SUNNY_SUMMER_OF_SOUL_N_SACRIFICE",
+    "music": "SOUNDS_DIES_ICH_BIN_STRUEBEN",
     "tutorialOnStart": "intro",
     "tutorial": {
         

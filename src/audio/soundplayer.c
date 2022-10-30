@@ -133,6 +133,15 @@ float soundPlayerEstimateLength(ALSound* sound, float speed) {
     return sampleCount * (1.0f / OUTPUT_RATE) / speed;
 }
 
+float soundClipLength(int soundClipId, float speed) {
+    if (gActiveSoundCount == MAX_ACTIVE_SOUNDS || soundClipId < 0 || soundClipId >= gSoundClipArray->soundCount) {
+        return 0.0f;
+    }
+
+    ALSound* alSound = gSoundClipArray->sounds[soundClipId];
+    return soundPlayerEstimateLength(alSound, speed);
+}
+
 ALSndId soundPlayerPlay(int soundClipId, float volume, float pitch, struct Vector3* at) {
     if (gActiveSoundCount == MAX_ACTIVE_SOUNDS || soundClipId < 0 || soundClipId >= gSoundClipArray->soundCount) {
         return SOUND_ID_NONE;

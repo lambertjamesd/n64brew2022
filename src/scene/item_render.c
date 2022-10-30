@@ -33,8 +33,8 @@ struct ColorThreshold {
 };
 
 struct ColorThreshold thresholds[] = {
-    {0x39393939, 24.0f},
-    {0x01010101, 12.0f},
+    {0x39393939, 12.0f},
+    {0x01010101, 6.0f},
     {0x41414141, 0.0f},
 };
 
@@ -52,7 +52,7 @@ void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, f
     gDPPipeSync(renderState->dl++);
 
     for (int i = 0; i < sizeof(thresholds) / sizeof(*thresholds); ++i) {
-        if (thresholds[i].durationThreshold <= timeLeft) {
+        if (thresholds[i].durationThreshold * DIFFICULTY_SCALAR <= timeLeft) {
             gDPSetFillColor(renderState->dl++, thresholds[i].colorIndex);
             break;
         }

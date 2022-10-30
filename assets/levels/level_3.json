@@ -3,66 +3,66 @@
     "script": [
         {
             "item_pool": ["Candle", "Cat", "Rat", "Skull", "Candle", "Cat", "Rat", "Skull"],
-            "success_count": 10,
+            "success_count": 8,
             "item_delay": 0,
-            "item_timeout": 20,
-            "item_spawn_delay": 1
+            "item_timeout": 12,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Candle", "Cat", "Rat", "Skull"],
             "success_count": 1,
-            "item_delay": 30,
+            "item_delay": 7,
             "item_timeout": 10,
-            "item_spawn_delay": 2
+            "item_spawn_delay": 0.5
         },
         {
             "item_pool": ["Candle", "Cat", "Rat", "Skull"],
-            "success_count": 6,
-            "item_delay": 1,
+            "success_count": 4,
+            "item_delay": 0.25,
             "item_timeout": 10,
-            "item_spawn_delay": 3
+            "item_spawn_delay": 1
         },
         {
             "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
             "success_count": 4,
-            "item_delay": 5,
-            "item_timeout": 45,
-            "item_spawn_delay": 1
+            "item_delay": 1.5,
+            "item_timeout": 20,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
             "success_count": 1,
-            "item_delay": 30,
+            "item_delay": 2.5,
             "item_timeout": 10,
-            "item_spawn_delay": 1
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Skull", "Scarecrow", "Crow", "Pumpkin"],
-            "success_count": 9,
-            "item_delay": 2,
-            "item_timeout": 10,
-            "item_spawn_delay": 1
-        },
-        {
-            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
             "success_count": 5,
-            "item_delay": 2,
-            "item_timeout": 45,
-            "item_spawn_delay": 1
+            "item_delay": 0.5,
+            "item_timeout": 10,
+            "item_spawn_delay": 0.25
+        },
+        {
+            "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
+            "success_count": 3,
+            "item_delay": 0.5,
+            "item_timeout": 20,
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
             "success_count": 1,
-            "item_delay": 30,
+            "item_delay": 2.5,
             "item_timeout": 10,
-            "item_spawn_delay": 1
+            "item_spawn_delay": 0.25
         },
         {
             "item_pool": ["Cat", "Rat", "Scarecrow", "Crow"],
-            "success_count": 6,
-            "item_delay": 1,
+            "success_count": 4,
+            "item_delay": 0.25,
             "item_timeout": 10,
-            "item_spawn_delay": 3
+            "item_spawn_delay": 1
         }
     ],
     "music": "SOUNDS_DIES_ICH_BIN_STRUEBEN",

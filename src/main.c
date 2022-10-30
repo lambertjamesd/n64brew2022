@@ -136,6 +136,7 @@ void gameProc(void *arg) {
 
     u32 pendingGFX = 0;
     u32 drawBufferIndex = 0;
+    int frameControl = 0;
 
     u16* memoryEnd = graphicsLayoutScreenBuffers((u16*)PHYS_TO_K0(osMemSize));
 
@@ -177,6 +178,12 @@ void gameProc(void *arg) {
         
         switch (msg->type) {
             case (OS_SC_RETRACE_MSG):
+                // control the framerate
+                frameControl = (frameControl + 1) % (FRAME_SKIP + 1);
+                if (frameControl != 0) {
+                    break;
+                }
+                
                 static int renderSkip = 1;
 
                 if (levelGetQueued() != NO_QUEUED_LEVEL) {
@@ -218,6 +225,7 @@ void gameProc(void *arg) {
                     controllersTriggerRead();
                 }
 
+                soundPlayerUpdate();
                 skReadMessages();
                 if (gCurrentLevelIndex == MAIN_MENU_LEVEL) {
                     mainMenuUpdate(&gMainMenu);

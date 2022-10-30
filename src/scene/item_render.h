@@ -8,6 +8,8 @@
 
 #define MAX_ITEM_REQUESTERS 8
 
+#define DIFFICULTY_SCALAR   1.5f
+
 void itemRenderGenerate(int itemIndex, enum ItemType itemType, float progress, float timeLeft, struct RenderState* renderState);
 
 Gfx* itemRenderUseImage(int itemIndex, struct RenderState* renderState, Gfx* promptGfx);

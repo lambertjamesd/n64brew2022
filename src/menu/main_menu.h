@@ -19,6 +19,8 @@ struct MainMenu {
 
     int levelToLoad;
     int selectedLevel;
+
+    ALSndId musicSound;
 };
 
 extern struct MainMenu gMainMenu;

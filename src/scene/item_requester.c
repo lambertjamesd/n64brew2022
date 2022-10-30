@@ -2,10 +2,13 @@
 
 #include "../build/assets/models/ui/item_prompt.h"
 #include "../build/assets/materials/static.h"
+#include "../build/src/audio/clips.h"
 
 #include "../build/assets/models/portal.h"
 
 #include "../collision/collision_scene.h"
+
+#include "../audio/soundplayer.h"
 
 #include "../defs.h"
 
@@ -15,12 +18,12 @@
 
 #include "item_render.h"
 
-#define OSCILATE_PERIOD     4.0f
+#define OSCILATE_PERIOD     2.0f
 #define OSCILATE_HEIGHT     0.15f
 
 #define ITEM_ANIMATE_DELAY    0.5f
 
-#define ITEM_DROP_COYOTE_TIME   1.0f
+#define ITEM_DROP_COYOTE_TIME   0.5f
 
 void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefinition* definition) {
     requester->transform.position = definition->position;
@@ -31,7 +34,8 @@ void itemRequesterInit(struct ItemRequester* requester, struct ItemRequesterDefi
     requester->timeLeft = 0.0f;
     requester->duration = 0.0f;
 
-    requester->requestDelay = 3.5f;
+    requester->requestDelay = 0.5f;
+    requester->endingSoundId = SOUND_ID_NONE;
 
     collisionCapsuleInit(&requester->collisionCapsule, 1.0f, 0.5f);
     requester->collisionCapsule.center = requester->transform.position;
@@ -52,6 +56,8 @@ int itemRequesterUpdate(struct ItemRequester* requester, float timeScale) {
         skAnimatorRunClip(&requester->animator, &portal_animations[PORTAL_PORTAL_PORTALSLOWLOOP_INDEX], SKAnimatorFlagsLoop);
     }
 
+    float timeoutSoundEffect = soundClipLength(SOUNDS_PORTALCLOSING, 1.0f);
+
     if (requester->timeLeft > 0.0f) {
         requester->timeLeft -= FIXED_DELTA_TIME * timeScale;
 
@@ -59,7 +65,18 @@ int itemRequesterUpdate(struct ItemRequester* requester, float timeScale) {
             requester->timeLeft = 0.0f;
             requester->requestedType = ItemTypeCount;
             didFail = 1;
+            soundPlayerStop(requester->endingSoundId);
+            requester->endingSoundId = SOUND_ID_NONE;
         }
+
+    }
+
+    if (requester->endingSoundId == SOUND_ID_NONE && 
+        requester->timeLeft > 0.0f && 
+        requester->timeLeft < timeoutSoundEffect && 
+        requester->requestDelay == 0.0f
+    ) {
+        requester->endingSoundId = soundPlayerPlay(SOUNDS_PORTALCLOSING, 1.0f, 1.0f, NULL);
     }
 
     if (requester->requestDelay > 0.0f) {
@@ -76,8 +93,8 @@ int itemRequesterUpdate(struct ItemRequester* requester, float timeScale) {
 }
 
 void itemRequesterRequestItem(struct ItemRequester* requester, enum ItemType itemType, float duration) {
-    requester->duration = duration;
-    requester->timeLeft = duration + ITEM_DROP_COYOTE_TIME;
+    requester->duration = duration * DIFFICULTY_SCALAR;
+    requester->timeLeft = duration * DIFFICULTY_SCALAR + ITEM_DROP_COYOTE_TIME;
     requester->requestedType = itemType;
 }
 
@@ -176,6 +193,9 @@ enum ItemDropResult itemRequesterDrop(struct ItemRequester* requester, struct It
         } else {
             itemDrop(item);
         }
+
+        soundPlayerStop(requester->endingSoundId);
+        requester->endingSoundId = SOUND_ID_NONE;
 
         requester->timeLeft = 0.0;
         requester->requestedType = ItemTypeCount;

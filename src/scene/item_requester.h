@@ -23,6 +23,7 @@ struct ItemRequester {
     float duration;
     float requestDelay;
     short flags;
+    ALSndId endingSoundId;
 };
 
 enum ItemDropResult {

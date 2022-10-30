@@ -4,48 +4,48 @@
         {
             "item_pool": ["Candle", "Cat", "Scarecrow", "Skull"],
             "success_count": 4,
-            "item_delay": 1,
-            "item_timeout": 20,
+            "item_delay": 0.5,
+            "item_timeout": 10,
             "item_spawn_delay": 1
         },
         {
             "on_start": "delay",
             "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
             "success_count": 1,
-            "item_delay": 30,
+            "item_delay": 7,
+            "item_timeout": 9,
+            "item_spawn_delay": 0.25
+        },
+        {
+            "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
+            "success_count": 4,
+            "item_delay": 0.25,
             "item_timeout": 9,
             "item_spawn_delay": 1
         },
         {
-            "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],
-            "success_count": 6,
-            "item_delay": 1,
-            "item_timeout": 9,
-            "item_spawn_delay": 4
-        },
-        {
             "item_pool": ["Cat", "Scarecrow", "Hand"],
-            "success_count": 8,
-            "item_delay": 1,
-            "item_timeout": 20,
-            "item_spawn_delay": 4
+            "success_count": 4,
+            "item_delay": 0.25,
+            "item_timeout": 16,
+            "item_spawn_delay": 1
         },
         {
             "item_pool": ["Cat", "Scarecrow", "Hand", "Hat"],
-            "success_count": 8,
-            "item_delay": 5,
+            "success_count": 4,
+            "item_delay": 0.25,
             "item_timeout": 12,
-            "item_spawn_delay": 3
+            "item_spawn_delay": 1
         },
         {
             "item_pool": ["Cat", "Scarecrow", "Hand", "Hat"],
-            "success_count": 8,
-            "item_delay": 1,
-            "item_timeout": 8,
-            "item_spawn_delay": 4
+            "success_count": 4,
+            "item_delay": 0.25,
+            "item_timeout": 7,
+            "item_spawn_delay": 1
         }
     ],
-    "music": "SOUNDS_JAH_SPOOKS",
+    "music": "SOUNDS_WAREHOUSE1",
     "tutorialOnStart": "intro",
     "tutorial": {
         "intro": {
