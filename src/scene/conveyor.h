@@ -24,8 +24,8 @@ void conveyorRender(struct Conveyor* conveyor, struct RenderScene* renderScene);
 int conveyorCanAcceptItem(struct Conveyor* conveyor);
 void conveyorAcceptItem(struct Conveyor* conveyor, struct Item* item);
 
-struct Item* conveyorReleaseItem(struct Conveyor* conveyor);
+struct Item* conveyorReleaseItem(struct Conveyor* conveyor, float spawnDelay);
 
-struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabPosition);
+struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabPosition, float spawnDelay);
 
 #endif

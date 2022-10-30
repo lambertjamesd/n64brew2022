@@ -28,6 +28,7 @@ struct Bezos {
     struct CollisionCapsule collider;
     short flags;
     short speedTeir;
+    ALSndId moveSound;
 };
 
 void bezosInit(struct Bezos* bezos);

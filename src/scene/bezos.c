@@ -4,11 +4,15 @@
 #include "../build/assets/models/pumpkin.h"
 #include "../build/assets/materials/static.h"
 
+#include "../build/src/audio/clips.h"
+#include "../audio/soundplayer.h"
+
 #include "../util/time.h"
 
 #include "../collision/collision_scene.h"
 
 #include "../defs.h"
+#include "../math/mathf.h"
 
 #define COLLIDER_RADIUS     0.25f
 #define COLLIDER_HEIGHT     0.25f
@@ -16,6 +20,12 @@
 #define BEZOS_MOVE_SPEED   1.4f
 
 #define BEZOS_ACCELERATION 8.0f
+
+#define MAX_DISTANCE    15.0f
+#define MIN_DISTNACE    1.0f
+
+#define MAX_PITCH       0.25f
+#define MIN_PITCH       1.0f
 
 
 float gBezosSpeeds[] = {
@@ -54,6 +64,21 @@ void bezosColliderCallback(void* data, struct Vector3* normal, float depth, stru
 
 }
 
+void bezosModifySound(struct Bezos* bezos, float targetDistnace) {
+    float lerp = (targetDistnace - MIN_DISTNACE) * (1.0f / (MAX_DISTANCE - MIN_DISTNACE));
+
+    if (lerp < 0.0f) {
+        lerp = 0.0f;
+    }
+
+    if (lerp > 1.0f) {
+        lerp = 1.0f;
+    }
+
+    soundPlayerUpdateVolume(bezos->moveSound, 1.0f - lerp);
+    soundPlayerUpdatePitch(bezos->moveSound, mathfLerp(lerp, MAX_PITCH, MIN_PITCH));
+}
+
 void bezosUpdateColliderPos(struct Bezos* bezos) {
     vector3AddScaled(&bezos->transform.position, &gUp, COLLIDER_HEIGHT * 0.5f + COLLIDER_RADIUS, &bezos->collider.center);
     collisionCapsuleUpdateBB(&bezos->collider);
@@ -68,6 +93,7 @@ void bezosInit(struct Bezos* bezos) {
     bezos->flags = 0;
     bezos->velocity = gZeroVec;
     bezos->speedTeir = 0;
+    bezos->moveSound = SOUND_ID_NONE;
 
     collisionCapsuleInit(&bezos->collider, COLLIDER_HEIGHT, COLLIDER_RADIUS);
     bezosUpdateColliderPos(bezos);
@@ -84,6 +110,9 @@ void bezosActivate(struct Bezos* bezos, struct Vector3* at) {
     skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX], 0);
 
     bezos->flags |= BezosFlagsWaking;
+
+    soundPlayerStop(bezos->moveSound);
+    bezos->moveSound = soundPlayerPlay(SOUNDS_GHOSTSFX, 0.0f, 1.0f, NULL);
 }
 
 
@@ -99,6 +128,8 @@ void bezosDeactivate(struct Bezos* bezos) {
     skAnimatorRunClip(&bezos->animator, &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTIDLE_INDEX], 0);
 
     bezos->flags &= ~BezosFlagsActive;
+    soundPlayerStop(bezos->moveSound);
+    bezos->moveSound = SOUND_ID_NONE;
 }
 
 void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
@@ -121,6 +152,8 @@ void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
 
 
     if ((bezos->flags & BezosFlagsCaughtPlayer) != 0) {
+        soundPlayerStop(bezos->moveSound);
+        bezos->moveSound = SOUND_ID_NONE;
         struct SKAnimationHeader* attackAnimation = &ghostjeff_animations[GHOSTJEFF_GHOSTJEFF_JEFF_ARMATURE_GHOSTATTACKTURN_INDEX];
         if (bezos->animator.currentAnimation != attackAnimation) {
             skAnimatorRunClip(&bezos->animator, attackAnimation, SKAnimatorFlagsLoop);
@@ -129,9 +162,12 @@ void bezosUpdate(struct Bezos* bezos, struct Vector3* nearestPlayerPos) {
     }
 
     struct Vector3 moveDir;
-    vector3Sub(nearestPlayerPos, &bezos->transform.position, &moveDir);
-    moveDir.y = 0.0f;
-    vector3Normalize(&moveDir, &moveDir);
+    struct Vector3 offset;
+    vector3Sub(nearestPlayerPos, &bezos->transform.position, &offset);
+    offset.y = 0.0f;
+    vector3Normalize(&offset, &moveDir);
+
+    bezosModifySound(bezos, vector3Dot(&moveDir, &offset));
 
     struct Vector3 backDir;
     vector3Negate(&moveDir, &backDir);

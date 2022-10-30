@@ -9,6 +9,9 @@
 #include "../math/mathf.h"
 #include "../controls/controller.h"
 
+#include "../build/src/audio/clips.h"
+#include "../audio/soundplayer.h"
+
 #include <string.h>
 
 #define TRANSITION_TIME 0.5f
@@ -70,6 +73,8 @@ void tutorialInit(struct Tutorial* tutorial, struct TutorialStep* script, short 
     tutorial->currentTextDelay = 0;
     tutorial->animationLerp = 0.0f;
     tutorial->promptBoxLerp = 0.0f;
+
+    tutorial->talkingSound = SOUND_ID_NONE;
 
     tutorialSetNextStep(tutorial, tutorialOnStart);
 }
@@ -139,7 +144,13 @@ int tutorialUpdate(struct Tutorial* tutorial) {
 
     struct TutorialDialogStep* step = tutorialCurrentDialog(tutorial);
 
+    int shouldBeTalking = 0;
+
     if (step) {
+        if (tutorial->currentCharacter < tutorial->currentDialogCharacterCount && tutorial->currentTextDelay == 0.0f && tutorial->animationLerp == 1.0f) {
+            shouldBeTalking = 1;
+        }
+
         if (controllerGetButtonDown(0, A_BUTTON)) {
             if (tutorial->currentCharacter < tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET) {
                 tutorial->currentCharacter = tutorial->currentDialogCharacterCount + CHARACTER_ANIMATION_OFFSET;
@@ -169,6 +180,19 @@ int tutorialUpdate(struct Tutorial* tutorial) {
                 );
             }
         }
+    } else if (tutorial->talkingSound != SOUND_ID_NONE) {
+        soundPlayerStop(tutorial->talkingSound);
+        tutorial->talkingSound = SOUND_ID_NONE;
+    }
+
+    if (shouldBeTalking) {
+        if (tutorial->talkingSound == SOUND_ID_NONE) {
+            tutorial->talkingSound = soundPlayerPlay(SOUNDS_TONYTALKING, 0.5f, 1.0f, NULL);
+        } else {
+            soundPlayerUpdateVolume(tutorial->talkingSound, 0.5f);
+        }
+    } else {
+        soundPlayerUpdateVolume(tutorial->talkingSound, 0.0f);
     }
     
     return step != NULL;

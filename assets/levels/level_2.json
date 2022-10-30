@@ -14,7 +14,7 @@
             "success_count": 1,
             "item_delay": 7,
             "item_timeout": 9,
-            "item_spawn_delay": 0.25
+            "item_spawn_delay": 1
         },
         {
             "item_pool": ["Skull", "Scarecrow", "Candle", "Cat"],

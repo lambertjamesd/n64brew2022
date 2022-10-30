@@ -4,7 +4,8 @@
 ## TODO
 
 * done feedback
+  bring back anim
 
 * playthrough feedback
-  better framerate
   save file stuff
+  play sound at boot

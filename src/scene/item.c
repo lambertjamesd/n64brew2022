@@ -311,7 +311,7 @@ void itemUpdate(struct Item* item) {
         return;
     }
 
-    // itemUpdateAnimations(item->type);
+    itemUpdateAnimations(item->type);
     
     if (item->flags & ITEM_FLAGS_HAS_ARMATURE) {
         skAnimatorUpdate(&item->animator, item->armature.boneTransforms, 1.0f);

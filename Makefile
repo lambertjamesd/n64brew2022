@@ -154,6 +154,9 @@ build/src/ui/nightchilde.o: build/assets/materials/ui.h
 
 build/src/scene/pause_menu.o: build/assets/materials/ui.h
 
+build/src/scene/bezos.o: build/src/audio/clips.h
+build/src/scene/tutorial.o: build/src/audio/clips.h
+
 ####################
 ## Models
 ####################

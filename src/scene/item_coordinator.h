@@ -42,6 +42,7 @@ void itemCoordinatorUpdate(struct ItemCoordinator* itemCoordinator);
 
 float itemCoordinatorTimeout(struct ItemCoordinator* itemCoordinator);
 float itemCoordinatorPreDelay(struct ItemCoordinator* itemCoordinator);
+float itemCoordinatorSpawnDelay(struct ItemCoordinator* itemCoordinator);
 
 short itemCoordinatorMusic(struct ItemCoordinator* itemCoordinator);
 

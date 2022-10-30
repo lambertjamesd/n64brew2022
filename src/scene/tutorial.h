@@ -19,6 +19,8 @@ struct Tutorial {
 
     float animationLerp;
     float promptBoxLerp;
+
+    ALSndId talkingSound;
 };
 
 enum TutorialDropType {

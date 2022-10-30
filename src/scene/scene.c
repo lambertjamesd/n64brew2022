@@ -751,8 +751,10 @@ void sceneRender(struct Scene* scene, struct RenderState* renderState, struct Gr
 }
 
 struct Item* scenePickupItem(struct Scene* scene, struct Vector3* grabFrom) {
+    float spawnDelay = itemCoordinatorSpawnDelay(&scene->itemCoordinator);
+
     for (int i = 0; i < scene->conveyorCount; ++i) {
-        struct Item* result = conveyorPickupItem(&scene->conveyors[i], grabFrom);
+        struct Item* result = conveyorPickupItem(&scene->conveyors[i], grabFrom, spawnDelay);
 
         if (result) {
             soundPlayerPlay(SOUNDS_PICKITEMUP, 1.0f, 1.0f, NULL);

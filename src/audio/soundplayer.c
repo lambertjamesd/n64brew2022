@@ -271,6 +271,29 @@ void soundPlayerUpdatePosition(ALSndId soundId, struct Vector3* at) {
     }
 }
 
+void soundPlayerUpdateVolume(ALSndId soundId, float volume) {
+    struct ActiveSound* activeSound = soundPlayerFindActiveSound(soundId);
+
+    if (!activeSound) {
+        return;
+    }
+
+    alSndpSetSound(&gSoundPlayer, soundId);
+    activeSound->volume = volume;
+    alSndpSetVol(&gSoundPlayer, (short)(32767 * volume));
+}
+
+void soundPlayerUpdatePitch(ALSndId soundId, float pitch) {
+    struct ActiveSound* activeSound = soundPlayerFindActiveSound(soundId);
+
+    if (!activeSound) {
+        return;
+    }
+
+    alSndpSetSound(&gSoundPlayer, soundId);
+    alSndpSetPitch(&gSoundPlayer, pitch);
+}
+
 int soundPlayerIsPlaying(ALSndId soundId) {
     struct ActiveSound* activeSound = soundPlayerFindActiveSound(soundId);
 

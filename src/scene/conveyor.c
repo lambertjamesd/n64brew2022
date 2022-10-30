@@ -97,7 +97,7 @@ void conveyorAcceptItem(struct Conveyor* conveyor, struct Item* item) {
     item->flags = ITEM_FLAGS_ATTACHED;
 }
 
-struct Item* conveyorReleaseItem(struct Conveyor* conveyor) {
+struct Item* conveyorReleaseItem(struct Conveyor* conveyor, float spawnDelay) {
     if (!conveyor->pendingItems[0]) {
         return NULL;
     }
@@ -112,12 +112,12 @@ struct Item* conveyorReleaseItem(struct Conveyor* conveyor) {
 
     itemMarkNewTarget(result);
 
-    conveyor->spawnDelay = 0.0f;
+    conveyor->spawnDelay = spawnDelay;
 
     return result;
 }
 
-struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabPosition) {
+struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabPosition, float spawnDelay) {
     if (!conveyor->pendingItems[0]) {
         return NULL;
     }
@@ -130,5 +130,5 @@ struct Item* conveyorPickupItem(struct Conveyor* conveyor, struct Vector3* grabP
         return NULL;
     }
 
-    return conveyorReleaseItem(conveyor);
+    return conveyorReleaseItem(conveyor, spawnDelay);
 }

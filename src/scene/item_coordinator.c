@@ -148,6 +148,16 @@ float itemCoordinatorPreDelay(struct ItemCoordinator* itemCoordinator) {
     return currentStep->itemDelay;
 }
 
+float itemCoordinatorSpawnDelay(struct ItemCoordinator* itemCoordinator) {
+    if (itemCoordinator->currentScriptStep >= itemCoordinator->script->stepCount) {
+        return 0.0f;
+    }
+
+    struct ItemScriptStep* currentStep = &itemCoordinator->script->steps[itemCoordinator->currentScriptStep];
+
+    return currentStep->itemSpawnDelay;
+}
+
 short itemCoordinatorMusic(struct ItemCoordinator* itemCoordinator) {
     if (itemCoordinator->currentScriptStep >= itemCoordinator->script->stepCount) {
         return -1;
